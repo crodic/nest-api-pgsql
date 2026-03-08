@@ -1,3 +1,4 @@
+import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
 import { IS_PUBLIC } from '@/constants/app.constant';
 import {
   ExecutionContext,
@@ -39,6 +40,7 @@ export class AdminAuthGuard extends AuthGuard('admin-jwt') {
 
     // Set CLS values
     this.cls.set('userId', user.id);
+    this.cls.set('userType', AdminUserEntity.name);
 
     return user;
   }

@@ -7,6 +7,7 @@ import {
   EventSubscriber,
   InsertEvent,
   RemoveEvent,
+  SoftRemoveEvent,
   UpdateEvent,
 } from 'typeorm';
 import { AuditLogEntity } from '../entities/audit-log.entity';
@@ -34,6 +35,10 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     await this.saveLog('DELETE', event);
   }
 
+  async afterSoftRemove(event: SoftRemoveEvent<any>) {
+    await this.saveLog('DELETE', event);
+  }
+
   private async saveLog(action: 'INSERT' | 'UPDATE' | 'DELETE', event: any) {
     if (
       event.metadata.name === AuditLogEntity.name ||
@@ -43,14 +48,16 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
 
     const auditRepo = event.manager.getRepository(AuditLogEntity);
     const userId = this.cls.get('userId');
+    const userType = this.cls.get('userType');
 
     const log = auditRepo.create({
       entity: event.metadata.name,
-      entityId: event.entity?.id ?? event.databaseEntity?.id,
+      entityId: event.entity?.id ?? event.databaseEntity?.id ?? event.entityId,
       action,
       oldValue: event.databaseEntity ?? null,
       newValue: event.entity ?? null,
       userId,
+      userType,
     });
 
     await auditRepo.save(log);

@@ -1,3 +1,4 @@
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { IS_PUBLIC } from '@/constants/app.constant';
 import {
   ExecutionContext,
@@ -38,6 +39,7 @@ export class UserAuthGuard extends AuthGuard('user-jwt') {
     req.user = user;
 
     this.cls.set('userId', user.id);
+    this.cls.set('userType', UserEntity.name);
 
     return user;
   }

@@ -54,7 +54,7 @@ export class UserService {
   }
 
   async create(dto: CreateUserReqDto): Promise<UserResDto> {
-    const { username, email, password, bio, image } = dto;
+    const { username, email, password, bio } = dto;
 
     // check uniqueness of username/email
     const user = await this.userRepository.findOne({
@@ -72,12 +72,16 @@ export class UserService {
       throw new ValidationException(ErrorCode.E001);
     }
 
+    if (dto.password !== dto.confirmPassword) {
+      throw new ValidationException(ErrorCode.E003);
+    }
+
     const newUser = new UserEntity({
+      ...dto,
       username,
       email,
       password,
       bio,
-      image,
       createdBy: this.cls.get('userId') || SYSTEM_USER_ID,
       updatedBy: this.cls.get('userId') || SYSTEM_USER_ID,
     });
@@ -99,14 +103,15 @@ export class UserService {
     const user = await this.userRepository.findOneByOrFail({ id });
 
     user.bio = updateUserDto.bio;
-    user.image = updateUserDto.image;
+    user.firstName = updateUserDto.firstName;
+    user.lastName = updateUserDto.lastName;
     user.updatedBy = SYSTEM_USER_ID;
 
     await this.userRepository.save(user);
   }
 
   async remove(id: ID) {
-    await this.userRepository.findOneByOrFail({ id });
-    await this.userRepository.softDelete(id);
+    const user = await this.userRepository.findOneByOrFail({ id });
+    await this.userRepository.softRemove(user);
   }
 }

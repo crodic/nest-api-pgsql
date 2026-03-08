@@ -119,7 +119,7 @@ export class RoleService {
   }
 
   async remove(id: ID) {
-    await this.roleRepository.findOneByOrFail({ id });
-    await this.roleRepository.softDelete(id);
+    const role = await this.roleRepository.findOneByOrFail({ id });
+    await this.roleRepository.softRemove(role);
   }
 }

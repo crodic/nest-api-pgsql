@@ -36,6 +36,9 @@ export class AuditLogEntity {
   @Column({ nullable: true, name: 'user_id', type: 'bigint' })
   userId: ID;
 
+  @Column({ nullable: true, name: 'user_type' })
+  userType: string;
+
   @CreateDateColumn({
     name: 'created_at',
     type: 'timestamptz',

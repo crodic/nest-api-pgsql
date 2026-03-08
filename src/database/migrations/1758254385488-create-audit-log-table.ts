@@ -13,6 +13,7 @@ export class CreateAuditLogTable1758254385488 implements MigrationInterface {
         "old_value" json,
         "new_value" json,
         "user_id" bigint,
+        "user_type" character varying,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         CONSTRAINT "PK_audit_log_id" PRIMARY KEY ("id")
       )

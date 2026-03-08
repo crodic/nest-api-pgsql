@@ -168,7 +168,7 @@ export class AdminUserService {
   }
 
   async remove(id: ID) {
-    await this.adminUserRepository.findOneByOrFail({ id });
-    await this.adminUserRepository.softDelete(id);
+    const admin = await this.adminUserRepository.findOneByOrFail({ id });
+    await this.adminUserRepository.softRemove(admin);
   }
 }

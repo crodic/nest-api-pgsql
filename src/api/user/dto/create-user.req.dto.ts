@@ -27,9 +27,9 @@ export class CreateUserReqDto {
   @PasswordField()
   password: string;
 
-  @StringFieldOptional()
-  bio?: string;
+  @PasswordField()
+  confirmPassword: string;
 
   @StringFieldOptional()
-  image?: string;
+  bio?: string;
 }
