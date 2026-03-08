@@ -17,12 +17,10 @@ function setupSwagger(app: INestApplication) {
       'alice01422@gmail.com',
     )
     .addBearerAuth()
-    // .addApiKey({ type: 'apiKey', name: 'Api-Key', in: 'header' }, 'Api-Key')
     .addServer(
       configService.getOrThrow('app.url', { infer: true }),
       'Development',
     )
-    // .addServer('https://example.com', 'Staging')
     .build();
   const document = SwaggerModule.createDocument(app, config, {
     autoTagControllers: true,
@@ -30,7 +28,6 @@ function setupSwagger(app: INestApplication) {
     linkNameFactory(controllerKey, methodKey, fieldKey) {
       return methodKey;
     },
-    ignoreGlobalPrefix: true,
   });
 
   // ==============================

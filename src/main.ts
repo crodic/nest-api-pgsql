@@ -110,10 +110,6 @@ async function bootstrap() {
     type: VersioningType.URI,
   });
 
-  // app.useGlobalGuards(
-  //   new AuthGuard(reflector, app.get(AdminAuthService), app.get(ClsService)),
-  //   new UserAuthGuard(reflector, app.get(UserAuthService), app.get(ClsService)),
-  // );
   app.useGlobalFilters(new GlobalExceptionFilter(configService));
   app.useGlobalPipes(
     new ValidationPipe({
