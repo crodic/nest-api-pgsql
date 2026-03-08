@@ -1,0 +1,56 @@
+version: '3.9'
+
+services:
+  # Backend NestJS production
+  nestjs-boilerplate-api:
+    image: nestjs-boilerplate-api:prod
+    container_name: nestjs-boilerplate-api
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    env_file:
+      - .env.prod
+    ports:
+      - '3000:3000'
+    networks:
+      - nestjs-boilerplate-network
+
+  # Database Postgres
+  db:
+    image: postgres:16
+    container_name: nestjs-boilerplate-postgres
+    restart: always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: nestjs_boilerplate
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: strong_password_here
+      TZ: 'UTC'
+    networks:
+      - nestjs-boilerplate-network
+
+  # Redis production
+  redis:
+    image: redis/redis-stack:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'ping']
+    environment:
+      REDIS_ARGS: '--requirepass strong_redis_password'
+    networks:
+      - nestjs-boilerplate-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  nestjs-boilerplate-network:
+    driver: bridge
