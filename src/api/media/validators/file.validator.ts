@@ -7,7 +7,10 @@ import {
 
 @Injectable()
 export class FileValidator {
-  validateImage(file: Express.Multer.File, options: UploadImageOptions) {
+  validateImage(
+    file: Express.Multer.File,
+    options: Pick<UploadImageOptions, 'allowedMimeTypes' | 'maxFileSize'>,
+  ) {
     const {
       maxFileSize = 5 * 1024 * 1024,
       allowedMimeTypes = ['jpeg', 'png', 'webp'],

@@ -12,7 +12,6 @@ import {
   Controller,
   FileTypeValidator,
   Get,
-  HttpStatus,
   MaxFileSizeValidator,
   ParseFilePipe,
   Post,
@@ -161,11 +160,17 @@ export class AdminAuthenticationController {
     @UploadedFile(
       new ParseFilePipe({
         validators: [
-          new MaxFileSizeValidator({ maxSize: 5 * 1024 * 1024 }),
-          new FileTypeValidator({ fileType: /(jpeg|png|jpg)$/ }),
+          new FileTypeValidator({
+            fileType: /^image\/(png|webp|jpeg)$/,
+            skipMagicNumbersValidation: true,
+            errorMessage: 'Invalid file type',
+          }),
+          new MaxFileSizeValidator({
+            maxSize: 5 * 1024 * 1024,
+            errorMessage: 'File too large',
+          }),
         ],
         fileIsRequired: false,
-        errorHttpStatusCode: HttpStatus.BAD_REQUEST,
       }),
     )
     image?: Express.Multer.File,

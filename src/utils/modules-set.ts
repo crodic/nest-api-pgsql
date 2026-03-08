@@ -201,6 +201,10 @@ function generateModulesSet() {
           rootPath: join(process.cwd(), 'public'),
           serveRoot: '/public',
         },
+        {
+          rootPath: join(process.cwd(), 'storage', 'avatars'),
+          serveRoot: '/storage/avatars',
+        },
       ];
     },
   });

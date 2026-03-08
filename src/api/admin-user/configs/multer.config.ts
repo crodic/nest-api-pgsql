@@ -9,7 +9,7 @@ const UPLOAD_ROOT = process.env.UPLOAD_FOLDER || 'uploads';
 export const AVATAR_PATH = `${UPLOAD_ROOT}/avatars`;
 
 export const avatarUploadOption: MulterOptions = {
-  limits: { fileSize: 5 * 1024 * 1024 },
+  limits: { files: 1 },
   storage: diskStorage({
     destination: (req, file, cb) => {
       const uploadPath = AVATAR_PATH;
