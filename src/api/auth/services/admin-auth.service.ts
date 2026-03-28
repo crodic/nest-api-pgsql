@@ -361,7 +361,7 @@ export class AdminAuthService {
     Object.assign(user, {
       ...dto,
       updatedBy: id,
-      ...(file && { image: AVATAR_PATH + '/' + file.filename }),
+      ...(file && { avatar: AVATAR_PATH + '/' + file.filename }),
     });
 
     await this.adminUserRepository.save(user);
