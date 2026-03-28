@@ -152,7 +152,7 @@ export class AdminAuthenticationController {
     summary: 'Update current user',
   })
   @SkipThrottle()
-  @UseInterceptors(FileInterceptor('image', avatarUploadOption))
+  @UseInterceptors(FileInterceptor('avatar', avatarUploadOption))
   @Put('me')
   async updateMe(
     @CurrentUser('id') userId: ID,
