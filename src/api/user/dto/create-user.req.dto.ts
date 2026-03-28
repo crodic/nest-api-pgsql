@@ -2,24 +2,17 @@ import {
   EmailField,
   PasswordField,
   StringField,
-  StringFieldOptional,
 } from '@/decorators/field.decorators';
 import { Trim } from '@/decorators/transform.decorators';
-import { lowerCaseTransformer } from '@/utils/transformers/lower-case.transformer';
-import { Transform } from 'class-transformer';
 
 export class CreateUserReqDto {
   @StringField()
-  @Transform(lowerCaseTransformer)
-  username: string;
+  @Trim()
+  firstname: string;
 
   @StringField()
   @Trim()
-  firstName: string;
-
-  @StringField()
-  @Trim()
-  lastName: string;
+  lastname: string;
 
   @EmailField()
   email: string;
@@ -29,7 +22,4 @@ export class CreateUserReqDto {
 
   @PasswordField()
   confirmPassword: string;
-
-  @StringFieldOptional()
-  bio?: string;
 }

@@ -58,8 +58,8 @@ Features:
 Response includes paginated data, metadata, and navigation links.`,
     isPaginated: true,
     paginateOptions: {
-      searchableColumns: ['username', 'email'],
-      sortableColumns: ['id', 'email', 'username', 'createdAt', 'updatedAt'],
+      searchableColumns: ['email'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['posts'],
       multiWordSearch: true,

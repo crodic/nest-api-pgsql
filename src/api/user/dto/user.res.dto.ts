@@ -15,27 +15,19 @@ export class UserResDto {
 
   @StringField()
   @Expose()
-  username: string;
-
-  @StringField()
-  @Expose()
-  firstName: string;
+  firstname: string;
 
   @StringFieldOptional()
   @Expose()
-  lastName?: string;
+  lastname?: string;
 
   @StringField()
   @Expose()
-  fullName: string;
+  fullname: string;
 
   @StringField()
   @Expose()
   email: string;
-
-  @StringFieldOptional()
-  @Expose()
-  bio?: string;
 
   @StringFieldOptional()
   @Expose()

@@ -33,8 +33,8 @@ export class UserService {
     const queryBuilder = this.userRepository.createQueryBuilder('user');
 
     const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'username', 'createdAt', 'updatedAt'],
-      searchableColumns: ['username', 'email', 'id'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
+      searchableColumns: ['email', 'id'],
       defaultSortBy: [['id', 'DESC']],
       relations: [],
       filterableColumns: {
@@ -54,18 +54,13 @@ export class UserService {
   }
 
   async create(dto: CreateUserReqDto): Promise<UserResDto> {
-    const { username, email, password, bio } = dto;
+    const { email, password } = dto;
 
     // check uniqueness of username/email
     const user = await this.userRepository.findOne({
-      where: [
-        {
-          username,
-        },
-        {
-          email,
-        },
-      ],
+      where: {
+        email,
+      },
     });
 
     if (user) {
@@ -78,16 +73,13 @@ export class UserService {
 
     const newUser = new UserEntity({
       ...dto,
-      username,
       email,
       password,
-      bio,
       createdBy: this.cls.get('userId') || SYSTEM_USER_ID,
       updatedBy: this.cls.get('userId') || SYSTEM_USER_ID,
     });
 
     const savedUser = await this.userRepository.save(newUser);
-    // this.logger.debug(savedUser);
 
     return plainToInstance(UserResDto, savedUser);
   }
@@ -102,9 +94,8 @@ export class UserService {
   async update(id: ID, updateUserDto: UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    user.bio = updateUserDto.bio;
-    user.firstName = updateUserDto.firstName;
-    user.lastName = updateUserDto.lastName;
+    user.firstname = updateUserDto.firstname;
+    user.lastname = updateUserDto.lastname;
     user.updatedBy = SYSTEM_USER_ID;
 
     await this.userRepository.save(user);

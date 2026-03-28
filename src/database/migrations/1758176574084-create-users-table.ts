@@ -29,14 +29,12 @@ export class CreateUsersTable1758176574084 implements MigrationInterface {
     await queryRunner.query(`
             CREATE TABLE "users" (
                 "id" BIGSERIAL NOT NULL,
-                "username" character varying(50),
                 "first_name" character varying(100) NOT NULL,
                 "last_name" character varying(100),
                 "full_name" character varying(201) GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED NOT NULL,
                 "email" character varying NOT NULL,
                 "password" character varying,
-                "bio" character varying,
-                "image" character varying,
+                "avatar" character varying,
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
                 "verified_at" TIMESTAMP WITH TIME ZONE,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -48,11 +46,6 @@ export class CreateUsersTable1758176574084 implements MigrationInterface {
         `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX "UQ_user_username" ON "users" ("username")
-      WHERE "deleted_at" IS NULL
-    `);
-
-    await queryRunner.query(`
       CREATE UNIQUE INDEX "UQ_user_email" ON "users" ("email")
       WHERE "deleted_at" IS NULL
     `);
@@ -60,7 +53,6 @@ export class CreateUsersTable1758176574084 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX "public"."UQ_user_email"`);
-    await queryRunner.query(`DROP INDEX "public"."UQ_user_username"`);
     await queryRunner.query(`DROP TABLE "users"`);
     await queryRunner.query(
       `
