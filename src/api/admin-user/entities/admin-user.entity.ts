@@ -28,29 +28,19 @@ export class AdminUserEntity extends AbstractEntity {
   })
   id!: ID;
 
-  @Column({
-    length: 50,
-    nullable: true,
-  })
-  @Index('UQ_admin_user_username', {
-    where: '"deleted_at" IS NULL',
-    unique: true,
-  })
-  username: string;
-
   @Column({ length: 100, name: 'first_name', nullable: false })
-  firstName!: string;
+  firstname!: string;
 
   @Column({ length: 100, name: 'last_name', nullable: true })
-  lastName?: string;
+  lastname?: string;
 
-@Column({
-  generatedType: 'STORED',
-  asExpression: `first_name || ' ' || last_name`,
-  name: 'full_name',
-  length: 201,
-})
-fullName!: string;
+  @Column({
+    generatedType: 'STORED',
+    asExpression: `first_name || ' ' || last_name`,
+    name: 'full_name',
+    length: 201,
+  })
+  fullname!: string;
 
   @Column()
   @Index('UQ_admin_user_email', { where: '"deleted_at" IS NULL', unique: true })
@@ -63,7 +53,7 @@ fullName!: string;
   bio?: string;
 
   @Column({ nullable: true })
-  image?: string;
+  avatar?: string;
 
   @Column({ type: 'date', nullable: true })
   birthday?: Date;

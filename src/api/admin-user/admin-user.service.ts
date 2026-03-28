@@ -62,27 +62,20 @@ export class AdminUserService {
 
   async create(dto: CreateAdminUserReqDto): Promise<AdminUserResDto> {
     const {
-      username,
       email,
       password,
       bio,
-      firstName,
-      lastName,
+      firstname,
+      lastname,
       roleId,
       birthday,
       phone,
     } = dto;
 
-    // check uniqueness of username/email
     const user = await this.adminUserRepository.findOne({
-      where: [
-        {
-          username,
-        },
-        {
-          email,
-        },
-      ],
+      where: {
+        email,
+      },
     });
 
     if (user) {
@@ -100,9 +93,8 @@ export class AdminUserService {
     }
 
     const newUser = new AdminUserEntity({
-      username,
-      firstName,
-      lastName,
+      firstname,
+      lastname,
       email,
       password,
       bio,
@@ -114,7 +106,6 @@ export class AdminUserService {
     });
 
     const savedUser = await this.adminUserRepository.save(newUser);
-    // this.logger.debug(savedUser);
 
     return plainToInstance(AdminUserResDto, savedUser);
   }
@@ -123,14 +114,13 @@ export class AdminUserService {
     const queryBuilder = this.adminUserRepository.createQueryBuilder('admin');
 
     const result = await paginate(query, queryBuilder, {
-      sortableColumns: ['id', 'email', 'username', 'createdAt', 'updatedAt'],
-      searchableColumns: ['username', 'email'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
+      searchableColumns: ['email'],
       defaultSortBy: [['id', 'DESC']],
       filterableColumns: {
         'role.id': [FilterOperator.IN],
         email: [FilterOperator.ILIKE],
-        username: [FilterOperator.ILIKE],
-        fullName: [FilterOperator.ILIKE],
+        fullname: [FilterOperator.ILIKE],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
       },
       relations: ['role'],

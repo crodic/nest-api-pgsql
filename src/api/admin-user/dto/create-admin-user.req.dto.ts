@@ -7,21 +7,16 @@ import {
   StringFieldOptional,
 } from '@/decorators/field.decorators';
 import { Trim } from '@/decorators/transform.decorators';
-import { lowerCaseTransformer } from '@/utils/transformers/lower-case.transformer';
 import { Transform } from 'class-transformer';
 
 export class CreateAdminUserReqDto {
-  @StringFieldOptional()
-  @Transform(lowerCaseTransformer)
-  username: string;
+  @StringField()
+  @Trim()
+  firstname: string;
 
   @StringField()
   @Trim()
-  firstName: string;
-
-  @StringField()
-  @Trim()
-  lastName: string;
+  lastname: string;
 
   @EmailField()
   email: string;

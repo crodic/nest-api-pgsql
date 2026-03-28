@@ -12,9 +12,8 @@ export class AdminSeeder1758099274256 implements Seeder {
 
   public async run(dataSource: DataSource): Promise<void> {
     const { RoleEntity } = await import('@/api/role/entities/role.entity');
-    const { AdminUserEntity } = await import(
-      '@/api/admin-user/entities/admin-user.entity'
-    );
+    const { AdminUserEntity } =
+      await import('@/api/admin-user/entities/admin-user.entity');
 
     const roleRepo = dataSource.getRepository(RoleEntity);
     const userRepo = dataSource.getRepository(AdminUserEntity);
@@ -47,12 +46,11 @@ export class AdminSeeder1758099274256 implements Seeder {
     if (!existingAdmin) {
       const admin = userRepo.create({
         email: SUPER_ADMIN_ACCOUNT.email,
-        firstName: 'System',
-        lastName: 'Administrator',
+        firstname: 'System',
+        lastname: 'Administrator',
         password: SUPER_ADMIN_ACCOUNT.password,
         role: superAdminRole,
         verifiedAt: new Date(),
-        username: SUPER_ADMIN_ACCOUNT.username,
         createdBy: SYSTEM_USER_ID,
         updatedBy: SYSTEM_USER_ID,
       });

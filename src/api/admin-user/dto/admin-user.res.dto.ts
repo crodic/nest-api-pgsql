@@ -18,19 +18,15 @@ export class AdminUserResDto {
 
   @StringField()
   @Expose()
-  username: string;
+  firstname: string;
 
   @StringField()
   @Expose()
-  firstName: string;
+  lastname: string;
 
   @StringField()
   @Expose()
-  lastName: string;
-
-  @StringField()
-  @Expose()
-  fullName: string;
+  fullname: string;
 
   @StringFieldOptional()
   @Expose()
@@ -51,7 +47,7 @@ export class AdminUserResDto {
   @StringField()
   @ToFullUrl()
   @Expose()
-  image: string;
+  avatar?: string;
 
   @ClassFieldOptional(() => RoleResDto)
   @Expose()

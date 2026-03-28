@@ -4,19 +4,14 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateAdminUserReqDto } from './create-admin-user.req.dto';
 
 export class UpdateMeReqDto extends PartialType(
-  OmitType(CreateAdminUserReqDto, [
-    'password',
-    'roleId',
-    'username',
-    'email',
-  ] as const),
+  OmitType(CreateAdminUserReqDto, ['password', 'roleId', 'email'] as const),
 ) {
   @ApiPropertyOptional({
     type: 'string',
     format: 'binary',
     description: 'Avatar image file (JPEG only, max size 5MB)',
   })
-  image?: string;
+  avatar?: string;
 
   @BooleanFieldOptional()
   removeAvatar?: boolean;

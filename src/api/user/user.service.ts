@@ -38,9 +38,8 @@ export class UserService {
       defaultSortBy: [['id', 'DESC']],
       relations: [],
       filterableColumns: {
-        createdAt: [FilterOperator.BTW],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         email: [FilterOperator.ILIKE],
-        username: [FilterOperator.ILIKE],
         id: [FilterOperator.EQ],
       },
     });
@@ -56,7 +55,6 @@ export class UserService {
   async create(dto: CreateUserReqDto): Promise<UserResDto> {
     const { email, password } = dto;
 
-    // check uniqueness of username/email
     const user = await this.userRepository.findOne({
       where: {
         email,

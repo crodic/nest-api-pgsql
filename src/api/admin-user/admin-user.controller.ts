@@ -44,15 +44,14 @@ export class AdminUserController {
     description: 'Admin can find all users in the system with pagination',
     isPaginated: true,
     paginateOptions: {
-      sortableColumns: ['id', 'email', 'username', 'createdAt', 'updatedAt'],
+      sortableColumns: ['id', 'email', 'createdAt', 'updatedAt'],
       defaultSortBy: [['id', 'DESC']],
       relations: ['role'],
       filterableColumns: {
-        createdAt: [FilterOperator.BTW],
+        createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         email: [FilterOperator.ILIKE],
-        username: [FilterOperator.ILIKE],
         'role.id': [FilterOperator.IN],
-        fullName: [FilterOperator.ILIKE],
+        fullname: [FilterOperator.ILIKE],
       },
     },
   })

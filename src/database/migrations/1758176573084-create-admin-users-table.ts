@@ -28,14 +28,13 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
     await queryRunner.query(`
             CREATE TABLE "admin_users" (
                 "id" BIGSERIAL NOT NULL,
-                "username" character varying(50),
                 "first_name" character varying(100) NOT NULL,
                 "last_name" character varying(100),
                 "full_name" character varying(201) GENERATED ALWAYS AS (first_name || ' ' || last_name) STORED NOT NULL,
                 "email" character varying NOT NULL,
                 "password" character varying NOT NULL,
                 "bio" character varying,
-                "image" character varying,
+                "avatar" character varying,
                 "birthday" date,
                 "phone" character varying(20),
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
@@ -50,11 +49,6 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
         `);
 
     await queryRunner.query(`
-      CREATE UNIQUE INDEX "UQ_admin_user_username" ON "admin_users" ("username")
-      WHERE "deleted_at" IS NULL
-    `);
-
-    await queryRunner.query(`
       CREATE UNIQUE INDEX "UQ_admin_user_email" ON "admin_users" ("email")
       WHERE "deleted_at" IS NULL
     `);
@@ -62,7 +56,6 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
 
   public async down(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(`DROP INDEX "public"."UQ_admin_user_email"`);
-    await queryRunner.query(`DROP INDEX "public"."UQ_admin_user_username"`);
     await queryRunner.query(`DROP TABLE "admin_users"`);
     await queryRunner.query(
       `
