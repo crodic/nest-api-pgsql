@@ -66,6 +66,7 @@ Response includes paginated data, metadata, and navigation links.`,
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         email: [FilterOperator.ILIKE],
+        fullname: [FilterOperator.ILIKE],
         id: [FilterOperator.EQ],
       },
     },

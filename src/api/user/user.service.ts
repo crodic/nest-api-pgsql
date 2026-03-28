@@ -39,6 +39,7 @@ export class UserService {
       relations: [],
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
+        fullname: [FilterOperator.ILIKE],
         email: [FilterOperator.ILIKE],
         id: [FilterOperator.EQ],
       },
