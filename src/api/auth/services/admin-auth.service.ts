@@ -137,12 +137,11 @@ export class AdminAuthService {
     }
 
     const user = this.adminUserRepository.create({
-      firstName: dto.first_name,
-      lastName: dto.last_name,
+      firstname: dto.first_name,
+      lastname: dto.last_name,
       email: dto.email,
       password: dto.password,
       roleId: dto.roleId,
-      username: dto.username,
       createdBy: SYSTEM_USER_ID,
       updatedBy: SYSTEM_USER_ID,
     });
@@ -355,8 +354,8 @@ export class AdminAuthService {
     delete user.password;
 
     if (dto.removeAvatar || file) {
-      await deleteFile(user.image);
-      user.image = null;
+      await deleteFile(user.avatar);
+      user.avatar = null;
     }
 
     Object.assign(user, {

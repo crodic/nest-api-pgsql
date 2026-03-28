@@ -41,7 +41,7 @@ export class HomeService {
       );
     }
 
-    const { username, email, password, systemRoleName } = dto;
+    const { email, password, systemRoleName } = dto;
 
     return await this.dataSource.transaction(async (manager) => {
       const role = await this.roleService.createWithManager(manager, {
@@ -51,9 +51,8 @@ export class HomeService {
       });
 
       await this.adminUserService.createWithManager(manager, {
-        firstName: 'System',
-        lastName: 'Administrator',
-        username,
+        firstname: 'System',
+        lastname: 'Administrator',
         email,
         password,
         roleId: role.id,
