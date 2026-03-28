@@ -20,15 +20,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { UploadMultiple, UploadSingle } from './decorators/file.decorator';
-import { MediaService } from './media.service';
+import { FileService } from './file.service';
 
-@ApiTags('Medias')
-@Controller({ path: 'media', version: '1' })
-export class MediaController {
-  constructor(
-    private readonly mediaService: MediaService,
-    // private readonly asyncUpload: AsyncUploadQueueService,
-  ) {}
+@ApiTags('Files')
+@Controller({ path: 'file', version: '1' })
+export class FileController {
+  constructor(private readonly fileService: FileService) {}
 
   @Post('upload')
   @UseInterceptors(FileInterceptor('file'))
@@ -52,16 +49,16 @@ export class MediaController {
     @UploadedFile() file: Express.Multer.File,
     @Body('folder') folder?: string,
   ) {
-    return this.mediaService.upload(file, folder);
+    return this.fileService.upload(file, folder);
   }
 
   @Delete(':publicId')
   @ApiPublic({
-    summary: 'Delete media',
-    description: 'Delete media',
+    summary: 'Delete file',
+    description: 'Delete file',
   })
   async delete(@Param('publicId') publicId: string) {
-    return this.mediaService.delete(publicId);
+    return this.fileService.delete(publicId);
   }
 
   @Post('sync')
@@ -92,7 +89,7 @@ export class MediaController {
   @UploadSingle('file')
   @ApiResponse({ status: 201, description: 'Uploaded successfully' })
   uploadSingle(@UploadedFile() file: Express.Multer.File) {
-    return this.mediaService.uploadImage(file, {
+    return this.fileService.uploadImage(file, {
       folder: 'avatars',
       sizes: [
         { name: 'small', width: 200 },
@@ -136,7 +133,7 @@ export class MediaController {
     if (!files || files.length === 0 || files.length > 2)
       throw new ValidationException(ErrorCode.E001, 'No files provided');
 
-    return this.mediaService.uploadImages(files, {
+    return this.fileService.uploadImages(files, {
       folder: 'gallery',
       sizes: [
         { name: 'preview', width: 500 },
@@ -161,7 +158,7 @@ export class MediaController {
   @UploadSingle('file')
   @ApiResponse({ status: 201, description: 'Uploaded successfully' })
   uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return this.mediaService.uploadFile(file, {
+    return this.fileService.uploadFile(file, {
       folder: 'docs',
       allowedMimeTypes: ['text/plain'],
       maxFileSize: 5 * 1024 * 1024,

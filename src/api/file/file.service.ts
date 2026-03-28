@@ -23,8 +23,8 @@ import path, { join } from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
-import { MediaEntity } from '../media/entities/media.entity';
-import { MediaResponseDto } from './dto/media.res.dto';
+import { FileResDto } from './dto/file.res.dto';
+import { FileEntity } from './entities/file.entity';
 import { TransformationParser } from './parsers/transformation.parser';
 import { ImageTransformer } from './transformers/image.transformer';
 import { VideoTransformer } from './transformers/video.transformer';
@@ -32,14 +32,14 @@ import { UploadFileOptions, UploadImageOptions } from './types/upload.types';
 import { FileValidator } from './validators/file.validator';
 
 @Injectable()
-export class MediaService {
+export class FileService {
   private readonly disk: Storage = Storage.PUBLIC;
 
-  private readonly logger = new Logger(MediaService.name);
+  private readonly logger = new Logger(FileService.name);
 
   constructor(
-    @InjectRepository(MediaEntity)
-    private readonly mediaRepository: Repository<MediaEntity>,
+    @InjectRepository(FileEntity)
+    private readonly fileRepository: Repository<FileEntity>,
     private readonly parser: TransformationParser,
     private readonly imageTransformer: ImageTransformer,
     private readonly videoTransformer: VideoTransformer,
@@ -52,7 +52,7 @@ export class MediaService {
     publicId: string,
     ext: string,
   ): Promise<string> {
-    const media = await this.mediaRepository.findOneByOrFail({
+    const media = await this.fileRepository.findOneByOrFail({
       public_id: publicId,
     });
 
@@ -119,7 +119,7 @@ export class MediaService {
       }
     }
 
-    const media = this.mediaRepository.create({
+    const media = this.fileRepository.create({
       public_id: publicId,
       folder,
       original_name: originalName,
@@ -132,13 +132,11 @@ export class MediaService {
       duration,
       resource_type: resourceType,
       status: 'active',
-      createdBy: 'system',
-      updatedBy: 'system',
     });
 
-    await this.mediaRepository.save(media);
+    await this.fileRepository.save(media);
 
-    return plainToInstance(MediaResponseDto, media, {
+    return plainToInstance(FileResDto, media, {
       excludeExtraneousValues: true,
     });
   }
@@ -157,7 +155,7 @@ export class MediaService {
   }
 
   async delete(publicId: string): Promise<{ message: string }> {
-    const media = await this.mediaRepository.findOneByOrFail({
+    const media = await this.fileRepository.findOneByOrFail({
       public_id: publicId,
     });
 
@@ -165,13 +163,13 @@ export class MediaService {
 
     this.deleteCacheFiles(media);
 
-    await this.mediaRepository.delete({ public_id: publicId });
+    await this.fileRepository.delete({ public_id: publicId });
     return {
       message: 'Successfully deleted',
     };
   }
 
-  protected deleteCacheFiles(media: MediaEntity): void {
+  protected deleteCacheFiles(media: FileEntity): void {
     const cacheBase = join('cache', media.resource_type, media.public_id);
     const cacheFullPath = fullDiskPath(this.disk, cacheBase);
 

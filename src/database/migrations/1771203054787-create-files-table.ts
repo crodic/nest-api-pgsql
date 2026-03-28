@@ -1,11 +1,11 @@
-import { MigrationInterface, QueryRunner } from "typeorm";
+import { MigrationInterface, QueryRunner } from 'typeorm';
 
-export class CreateMediasTable1771203054787 implements MigrationInterface {
-    name = 'CreateMediasTable1771203054787'
+export class CreateFilesTable1771203054787 implements MigrationInterface {
+  name = 'CreateFilesTable1771203054787';
 
-    public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
-            CREATE TABLE "medias" (
+  public async up(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+            CREATE TABLE "files" (
                 "id" BIGSERIAL NOT NULL,
                 "public_id" character varying NOT NULL,
                 "folder" character varying,
@@ -20,24 +20,21 @@ export class CreateMediasTable1771203054787 implements MigrationInterface {
                 "resource_type" character varying NOT NULL,
                 "status" character varying NOT NULL,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "created_by" character varying NOT NULL,
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "updated_by" character varying NOT NULL,
-                CONSTRAINT "PK_media_id" PRIMARY KEY ("id")
+                CONSTRAINT "PK_file_id" PRIMARY KEY ("id")
             )
         `);
-        await queryRunner.query(`
-            CREATE UNIQUE INDEX "UQ_media_public_id" ON "medias" ("public_id")
+    await queryRunner.query(`
+            CREATE UNIQUE INDEX "UQ_file_public_id" ON "files" ("public_id")
         `);
-    }
+  }
 
-    public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`
-            DROP INDEX "public"."UQ_media_public_id"
+  public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+            DROP INDEX "public"."UQ_file_public_id"
         `);
-        await queryRunner.query(`
-            DROP TABLE "medias"
+    await queryRunner.query(`
+            DROP TABLE "files"
         `);
-    }
-
+  }
 }

@@ -1,12 +1,12 @@
 import { Controller, Get, Param, Res } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
-import { MediaService } from './media.service';
+import { FileService } from './file.service';
 
-@ApiTags('Medias')
-@Controller({ path: 'media' })
+@ApiTags('Files')
+@Controller({ path: 'file' })
 export class TransformController {
-  constructor(private readonly media: MediaService) {}
+  constructor(private readonly fileService: FileService) {}
 
   @Get(':resourceType/upload/:publicId.:ext')
   async original(
@@ -15,7 +15,11 @@ export class TransformController {
     @Param('ext') ext: string,
     @Res() res: Response,
   ) {
-    const filePath = await this.media.original(resourceType, publicId, ext);
+    const filePath = await this.fileService.original(
+      resourceType,
+      publicId,
+      ext,
+    );
 
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
@@ -30,7 +34,7 @@ export class TransformController {
     @Param('ext') ext: string,
     @Res() res: Response,
   ) {
-    const filePath = await this.media.transform(
+    const filePath = await this.fileService.transform(
       resourceType,
       publicId,
       params,

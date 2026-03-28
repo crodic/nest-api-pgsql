@@ -1,7 +1,7 @@
 import { Expose } from 'class-transformer';
 import { IsNumber, IsString } from 'class-validator';
 
-export class MediaResponseDto {
+export class FileResDto {
   @IsString()
   @Expose()
   id: string;

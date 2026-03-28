@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { StorageModule } from 'src/storage/storage.module';
-import { MediaEntity } from '../media/entities/media.entity';
-import { MediaController } from './media.controller';
-import { MediaService } from './media.service';
+import { FileEntity } from './entities/file.entity';
+import { FileController } from './file.controller';
+import { FileService } from './file.service';
 import { TransformationParser } from './parsers/transformation.parser';
 import { TransformController } from './transform.controller';
 import { ImageTransformer } from './transformers/image.transformer';
@@ -11,14 +11,14 @@ import { VideoTransformer } from './transformers/video.transformer';
 import { FileValidator } from './validators/file.validator';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([MediaEntity]), StorageModule],
-  controllers: [MediaController, TransformController],
+  imports: [TypeOrmModule.forFeature([FileEntity]), StorageModule],
+  controllers: [FileController, TransformController],
   providers: [
-    MediaService,
+    FileService,
     TransformationParser,
     ImageTransformer,
     VideoTransformer,
     FileValidator,
   ],
 })
-export class MediaModule {}
+export class FileModule {}

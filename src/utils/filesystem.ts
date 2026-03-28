@@ -1,4 +1,4 @@
-import { ImageFormat } from '@/api/media/types/upload.types';
+import { ImageFormat } from '@/api/file/types/upload.types';
 import { Storage } from '@/constants/app.constant';
 import 'dotenv/config';
 import { existsSync } from 'fs';
