@@ -1,4 +1,4 @@
-import { Uuid } from '@/common/types/common.type';
+import { ID } from '@/common/types/common.type';
 import { CaslAbilityFactory } from '@/libs/casl/ability.factory';
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
@@ -48,20 +48,19 @@ describe('UserController', () => {
   describe('createUser', () => {
     it('should return a user', async () => {
       const createUserReqDto = {
+        id: '1' as ID,
         username: 'john',
         email: 'mail@example.com',
         password: 'password',
-        bio: 'bio',
-        image: 'image',
+        firstname: 'John',
+        lastname: 'Doe',
+        confirmPassword: 'password',
       } as CreateUserReqDto;
 
       const userResDto = new UserResDto();
-      userResDto.id = '1';
-      userResDto.username = 'john';
+      userResDto.id = '1' as ID;
       userResDto.email = 'mail@example.com';
-      userResDto.bio = 'bio';
-      userResDto.image = 'image';
-      userResDto.posts = [];
+      userResDto.avatar = 'image';
       userResDto.createdAt = new Date();
       userResDto.updatedAt = new Date();
 
@@ -100,15 +99,6 @@ describe('UserController', () => {
         expect(errors.length).toEqual(0);
       });
 
-      it('should fail with empty username', async () => {
-        createUserReqDto.username = '';
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(1);
-        expect(errors[0].constraints).toEqual({
-          minLength: 'username must be longer than or equal to 1 characters',
-        });
-      });
-
       it('should fail with empty email', async () => {
         createUserReqDto.email = '';
         const errors = await validate(createUserReqDto);
@@ -142,48 +132,6 @@ describe('UserController', () => {
           isPassword: 'password is invalid',
         });
       });
-
-      it('should fail with empty bio', async () => {
-        createUserReqDto.bio = '';
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(1);
-        expect(errors[0].constraints).toEqual({
-          minLength: 'bio must be longer than or equal to 1 characters',
-        });
-      });
-
-      it('should success with bio is null', async () => {
-        createUserReqDto.bio = null;
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(0);
-      });
-
-      it('should success with bio is undefined', async () => {
-        createUserReqDto.bio = undefined;
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(0);
-      });
-
-      it('should fail with empty image', async () => {
-        createUserReqDto.image = '';
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(1);
-        expect(errors[0].constraints).toEqual({
-          minLength: 'image must be longer than or equal to 1 characters',
-        });
-      });
-
-      it('should success with image is null', async () => {
-        createUserReqDto.image = null;
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(0);
-      });
-
-      it('should success with image is undefined', async () => {
-        createUserReqDto.image = undefined;
-        const errors = await validate(createUserReqDto);
-        expect(errors.length).toEqual(0);
-      });
     });
   });
 
@@ -193,17 +141,14 @@ describe('UserController', () => {
   describe('findUser', () => {
     it('should return a user', async () => {
       const userResDto = new UserResDto();
-      userResDto.id = '1';
-      userResDto.username = 'john';
+      userResDto.id = '1' as ID;
       userResDto.email = 'mail@example.com';
-      userResDto.bio = 'bio';
-      userResDto.image = 'image';
-      userResDto.posts = [];
+      userResDto.avatar = 'image';
       userResDto.createdAt = new Date();
       userResDto.updatedAt = new Date();
 
       userServiceValue.findOne.mockReturnValue(userResDto);
-      const user = await controller.findUser('1' as Uuid);
+      const user = await controller.findUser('1' as ID);
 
       expect(user).toBe(userResDto);
       expect(userServiceValue.findOne).toHaveBeenCalledWith('1');
@@ -212,7 +157,7 @@ describe('UserController', () => {
 
     it('should return null', async () => {
       userServiceValue.findOne.mockReturnValue(null);
-      const user = await controller.findUser('1' as Uuid);
+      const user = await controller.findUser('1' as ID);
 
       expect(user).toBeNull();
       expect(userServiceValue.findOne).toHaveBeenCalledWith('1');

@@ -31,7 +31,7 @@ export class UserResDto {
 
   @StringFieldOptional()
   @Expose()
-  image?: string;
+  avatar?: string;
 
   @BooleanField()
   @Transform(({ value }) => !!value)
