@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import ffmpegPath from 'ffmpeg-static';
 import ffmpeg from 'fluent-ffmpeg';
 import { PassThrough } from 'stream';
-import { VideoTransformOptions } from '../types/upload.types';
+import { VideoTransformOptions } from '../../api/file/types/upload.types';
 
 @Injectable()
 export class VideoTransformer {

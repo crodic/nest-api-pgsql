@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import fs from 'fs';
 import path from 'path';
 import sharp from 'sharp';
-import { ImageTransformOptions } from '../types/upload.types';
+import { ImageTransformOptions } from '../../api/file/types/upload.types';
 
 @Injectable()
 export class ImageTransformer {

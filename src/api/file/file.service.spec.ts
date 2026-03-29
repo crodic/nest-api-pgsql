@@ -1,11 +1,11 @@
+import { ImageTransformer } from '@/utils/transformers/image.transformer';
+import { VideoTransformer } from '@/utils/transformers/video.transformer';
 import { StorageService } from '@codebrew/nestjs-storage';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
 import { FileService } from './file.service';
 import { TransformationParser } from './parsers/transformation.parser';
-import { ImageTransformer } from './transformers/image.transformer';
-import { VideoTransformer } from './transformers/video.transformer';
 import { FileValidator } from './validators/file.validator';
 
 describe('FileService', () => {

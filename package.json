@@ -119,7 +119,7 @@
     "@types/passport-jwt": "^4.0.1",
     "@types/qs": "^6.15.0",
     "@types/supertest": "^7.2.0",
-    "@types/uuid": "^11.0.0",
+    "@types/uuid": "^9.0.8",
     "@vuepress/bundler-vite": "2.0.0-rc.17",
     "@vuepress/plugin-markdown-image": "2.0.0-rc.52",
     "@vuepress/plugin-markdown-tab": "2.0.0-rc.52",

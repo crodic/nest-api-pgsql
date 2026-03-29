@@ -6,6 +6,8 @@ import {
   relativeDiskPath,
   storagePath,
 } from '@/utils/filesystem';
+import { ImageTransformer } from '@/utils/transformers/image.transformer';
+import { VideoTransformer } from '@/utils/transformers/video.transformer';
 import { StorageService } from '@codebrew/nestjs-storage';
 import {
   BadRequestException,
@@ -26,8 +28,6 @@ import { v4 as uuidv4 } from 'uuid';
 import { FileResDto } from './dto/file.res.dto';
 import { FileEntity } from './entities/file.entity';
 import { TransformationParser } from './parsers/transformation.parser';
-import { ImageTransformer } from './transformers/image.transformer';
-import { VideoTransformer } from './transformers/video.transformer';
 import { UploadFileOptions, UploadImageOptions } from './types/upload.types';
 import { FileValidator } from './validators/file.validator';
 
