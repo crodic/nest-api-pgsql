@@ -52,7 +52,7 @@ Features:
 - Advanced filters:
   • createdAt: BETWEEN
   • email: ILIKE
-  • username: ILIKE
+  • fullname: ILIKE
   • id: EQ
 
 Response includes paginated data, metadata, and navigation links.`,
