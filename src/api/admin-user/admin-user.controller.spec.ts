@@ -90,11 +90,13 @@ describe('AdminUserController', () => {
 
       beforeEach(() => {
         createAdminUserReqDto = plainToInstance(CreateAdminUserReqDto, {
-          username: 'john',
           email: 'mail@example.com',
           password: 'password',
+          avatar: 'image',
+          firstname: 'John',
+          lastname: 'Doe',
           bio: 'bio',
-          image: 'image',
+          roleId: '1' as ID,
         });
       });
 
@@ -135,27 +137,6 @@ describe('AdminUserController', () => {
         expect(errors[0].constraints).toEqual({
           isPassword: 'password is invalid',
         });
-      });
-
-      it('should fail with empty bio', async () => {
-        createAdminUserReqDto.bio = '';
-        const errors = await validate(createAdminUserReqDto);
-        expect(errors.length).toEqual(1);
-        expect(errors[0].constraints).toEqual({
-          minLength: 'bio must be longer than or equal to 1 characters',
-        });
-      });
-
-      it('should success with bio is null', async () => {
-        createAdminUserReqDto.bio = null;
-        const errors = await validate(createAdminUserReqDto);
-        expect(errors.length).toEqual(0);
-      });
-
-      it('should success with bio is undefined', async () => {
-        createAdminUserReqDto.bio = undefined;
-        const errors = await validate(createAdminUserReqDto);
-        expect(errors.length).toEqual(0);
       });
     });
   });

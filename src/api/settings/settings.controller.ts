@@ -1,4 +1,5 @@
 import { ApiPublic } from '@/decorators/http.decorators';
+import { SettingKeyValidationPipe } from '@/pipes/setting-key-validation.pipe';
 import {
   Body,
   Controller,
@@ -15,7 +16,6 @@ import {
 import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
-import { SettingKeyValidationPipe } from 'src/pipes/setting-key-validation.pipe';
 import { websiteUploadOptions } from './configs/multer.config';
 import { UpdateWebsiteSettingReqDto } from './dto/update-website-setting.req.dto';
 import { WebsiteSettingResDto } from './dto/website-setting.res.dto';

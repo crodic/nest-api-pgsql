@@ -1,6 +1,6 @@
+import { StorageModule } from '@/storage/storage.module';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { StorageModule } from 'src/storage/storage.module';
 import { FileEntity } from './entities/file.entity';
 import { FileController } from './file.controller';
 import { FileService } from './file.service';

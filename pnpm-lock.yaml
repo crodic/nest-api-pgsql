@@ -201,8 +201,8 @@ importers:
         specifier: ^3.9.0
         version: 3.9.0(@faker-js/faker@8.4.1)(typeorm@0.3.28(better-sqlite3@11.10.0)(ioredis@5.9.3)(mysql2@3.17.1)(pg@8.20.0)(redis@4.7.0)(ts-node@10.9.2(@swc/core@1.15.18)(@types/node@25.3.5)(typescript@5.9.3)))
       uuid:
-        specifier: ^13.0.0
-        version: 13.0.0
+        specifier: ^9.0.1
+        version: 9.0.1
     devDependencies:
       '@commitlint/cli':
         specifier: ^20.4.3
@@ -17574,8 +17574,7 @@ snapshots:
 
   uuid@8.0.0: {}
 
-  uuid@9.0.1:
-    optional: true
+  uuid@9.0.1: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

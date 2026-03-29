@@ -86,11 +86,12 @@ describe('UserController', () => {
 
       beforeEach(() => {
         createUserReqDto = plainToInstance(CreateUserReqDto, {
-          username: 'john',
           email: 'mail@example.com',
           password: 'password',
-          bio: 'bio',
-          image: 'image',
+          confirmPassword: 'password',
+          avatar: 'image',
+          firstname: 'John',
+          lastname: 'Doe',
         });
       });
 

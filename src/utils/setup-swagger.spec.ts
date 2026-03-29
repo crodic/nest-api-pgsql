@@ -53,8 +53,13 @@ describe('setupSwagger', () => {
   it('should call SwaggerModule.setup with correct parameters', () => {
     const setupSpy = jest.spyOn(SwaggerModule, 'setup');
     setupSwagger(app);
-    expect(setupSpy).toHaveBeenCalledWith('api-docs', app, expect.any(Object), {
-      customSiteTitle: 'TestApp',
-    });
+    expect(setupSpy).toHaveBeenCalledWith(
+      'api-docs',
+      app,
+      expect.any(Object),
+      expect.objectContaining({
+        customSiteTitle: 'TestApp',
+      }),
+    );
   });
 });

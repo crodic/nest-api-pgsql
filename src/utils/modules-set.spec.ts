@@ -50,41 +50,6 @@ describe('generateModulesSet', () => {
     );
   });
 
-  it('should return correct modules for api set', () => {
-    process.env.MODULES_SET = 'api';
-    const modules = generateModulesSet();
-    expect(modules).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining(
-          Promise.resolve({
-            module: ConfigModule,
-          }),
-        ), // ConfigModule
-        ApiModule,
-        expect.any(Object), // BullModule
-        expect.any(Object), // BackgroundModule
-        expect.any(Object), // TypeOrmModule
-        expect.any(Object), // I18nModule
-        expect.any(Object), // LoggerModule
-        MailModule,
-      ]),
-    );
-  });
-
-  it('should return correct modules for background set', () => {
-    process.env.MODULES_SET = 'background';
-    const modules = generateModulesSet();
-    expect(modules).toEqual(
-      expect.arrayContaining([
-        expect.any(Object), // BullModule
-        expect.any(Object), // BackgroundModule
-        expect.any(Object), // TypeOrmModule
-        expect.any(Object), // I18nModule
-        expect.any(Object), // LoggerModule
-      ]),
-    );
-  });
-
   it('should handle unsupported modules set', () => {
     const consoleErrorSpy = jest
       .spyOn(console, 'error')

@@ -85,7 +85,7 @@ describe('AppConfig', () => {
     });
 
     it('should return the value of PORT as a number', async () => {
-      process.env.PORT = '3000';
+      process.env.APP_PORT = '3000';
       const config = await appConfig();
       expect(config.port).toBe(3000);
     });

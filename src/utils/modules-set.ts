@@ -12,6 +12,7 @@ import { MailWatcherModule } from '@/mail/mail-watcher.module';
 import { MailModule } from '@/mail/mail.module';
 import redisConfig from '@/redis/config/redis.config';
 import { SharedModule } from '@/shared/shared.module';
+import storageConfig from '@/storage/storage.config';
 import { ExpressAdapter } from '@bull-board/express';
 import { BullBoardModule } from '@bull-board/nestjs';
 import KeyvRedis, { Keyv } from '@keyv/redis';
@@ -36,7 +37,6 @@ import {
 import { LoggerModule } from 'nestjs-pino';
 import { NestLensModule } from 'nestlens';
 import path, { join } from 'path';
-import storageConfig from 'src/storage/storage.config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 import loggerFactory from './logger-factory';
 
