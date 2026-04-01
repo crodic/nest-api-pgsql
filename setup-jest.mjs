@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
-process.env.MODULES_SET = 'monolith';
 
 process.env.APP_NAME = 'NestJS API';
 process.env.APP_URL = 'http://localhost:8000';
