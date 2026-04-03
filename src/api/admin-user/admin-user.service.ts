@@ -1,5 +1,4 @@
 import { ID } from '@/common/types/common.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
 import { CacheKey } from '@/constants/cache.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
@@ -101,8 +100,6 @@ export class AdminUserService {
       role,
       birthday: birthday ? new Date(birthday) : null,
       phone,
-      createdBy: this.cls.get('userId') || SYSTEM_USER_ID,
-      updatedBy: this.cls.get('userId') || SYSTEM_USER_ID,
     });
 
     const savedUser = await this.adminUserRepository.save(newUser);
@@ -151,8 +148,6 @@ export class AdminUserService {
 
     delete user.password;
     user.role = updatedRole;
-
-    user.updatedBy = this.cls.get('userId') || SYSTEM_USER_ID;
 
     await this.adminUserRepository.save(user);
   }

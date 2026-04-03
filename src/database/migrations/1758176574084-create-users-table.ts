@@ -38,9 +38,7 @@ export class CreateUsersTable1758176574084 implements MigrationInterface {
                 "deleted_at" TIMESTAMP WITH TIME ZONE,
                 "verified_at" TIMESTAMP WITH TIME ZONE,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "created_by" character varying NOT NULL,
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "updated_by" character varying NOT NULL,
                 CONSTRAINT "PK_user_id" PRIMARY KEY ("id")
             )
         `);

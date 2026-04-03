@@ -14,7 +14,6 @@ import {
 import { ID } from '@/common/types/common.type';
 import { Branded } from '@/common/types/types';
 import { AllConfigType } from '@/config/config.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
 import { CacheKey } from '@/constants/cache.constant';
 import { ESessionUserType } from '@/constants/entity.enum';
 import { ErrorCode } from '@/constants/error-code.constant';
@@ -108,8 +107,6 @@ export class AdminAuthService {
     const session = new SessionEntity({
       hash,
       userId: user.id as ID,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
       userType: ESessionUserType.ADMIN,
     });
     await session.save();
@@ -142,8 +139,6 @@ export class AdminAuthService {
       email: dto.email,
       password: dto.password,
       roleId: dto.roleId,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
     });
 
     await this.adminUserRepository.save(user);
@@ -386,7 +381,6 @@ export class AdminAuthService {
     }
 
     user.password = dto.newPassword;
-    user.updatedBy = id;
 
     await this.adminUserRepository.save(user);
 

@@ -41,9 +41,7 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
                 "role_id" bigint NOT NULL,
                 "verified_at" TIMESTAMP WITH TIME ZONE,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "created_by" character varying NOT NULL,
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "updated_by" character varying NOT NULL,
                 CONSTRAINT "PK_admin_user_id" PRIMARY KEY ("id")
             )
         `);

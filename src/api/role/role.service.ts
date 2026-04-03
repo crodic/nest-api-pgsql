@@ -1,5 +1,4 @@
 import { ID } from '@/common/types/common.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
 import { CacheKey } from '@/constants/cache.constant';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -80,8 +79,6 @@ export class RoleService {
   async create(dto: CreateRoleReqDto): Promise<RoleResDto> {
     const newRole = new RoleEntity({
       ...dto,
-      createdBy: SYSTEM_USER_ID,
-      updatedBy: SYSTEM_USER_ID,
     });
 
     const savedRole = await this.roleRepository.save(newRole);
@@ -113,7 +110,6 @@ export class RoleService {
     role.name = updateRoleDto.name;
     role.description = updateRoleDto.description;
     role.permissions = updateRoleDto.permissions;
-    role.updatedBy = SYSTEM_USER_ID;
 
     await this.roleRepository.save(role);
   }
