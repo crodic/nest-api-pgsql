@@ -27,7 +27,6 @@ async function bootstrap() {
 
   // Use Pino Logger
   app.useLogger(app.get(Logger));
-  // app.useLogger(app.get(NestLensLogger));
   // For high-traffic websites in production, it is strongly recommended to offload compression from the application server - typically in a reverse proxy (e.g., Nginx). In that case, you should not use compression middleware.
   app.use(compression());
 

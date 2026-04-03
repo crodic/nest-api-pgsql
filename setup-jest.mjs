@@ -81,8 +81,6 @@ process.env.SWAGGER_USERNAME = 'swagger';
 process.env.SWAGGER_PASSWORD = 'admin@2026';
 
 process.env.NEST_LENS_ENABLED = 'true';
-process.env.NEST_LENS_USERNAME = 'nestlens';
-process.env.NEST_LENS_PASSWORD = 'admin@2026';
 
 process.env.BULL_BOARD_PATH = '/queues';
 process.env.BULL_BOARD_USERNAME = 'bullboard';

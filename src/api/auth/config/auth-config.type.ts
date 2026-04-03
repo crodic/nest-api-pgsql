@@ -23,10 +23,6 @@ export type AuthConfig = {
   swaggerUsername: string;
   swaggerPassword: string;
 
-  // NestLens
-  nestLensUsername: string;
-  nestLensPassword: string;
-
   // BullBoard
   bullBoardUsername: string;
   bullBoardPassword: string;

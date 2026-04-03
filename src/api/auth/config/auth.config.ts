@@ -99,14 +99,6 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   @IsOptional()
-  NEST_LENS_USERNAME: string;
-
-  @IsString()
-  @IsOptional()
-  NEST_LENS_PASSWORD: string;
-
-  @IsString()
-  @IsOptional()
   BULL_BOARD_USERNAME: string;
 
   @IsString()
@@ -145,8 +137,6 @@ export default registerAs<AuthConfig>('auth', () => {
     // Basic Auth
     swaggerUsername: process.env.SWAGGER_USERNAME || 'swagger',
     swaggerPassword: process.env.SWAGGER_PASSWORD || 'admin@2026',
-    nestLensUsername: process.env.NEST_LENS_USERNAME || 'nestlens',
-    nestLensPassword: process.env.NEST_LENS_PASSWORD || 'admin@2026',
     bullBoardUsername: process.env.BULL_BOARD_USERNAME || 'bullboard',
     bullBoardPassword: process.env.BULL_BOARD_PASSWORD || 'admin@2026',
   };
