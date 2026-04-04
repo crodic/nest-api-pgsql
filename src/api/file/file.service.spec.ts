@@ -1,5 +1,4 @@
 import { ImageTransformer } from '@/utils/transformers/image.transformer';
-import { VideoTransformer } from '@/utils/transformers/video.transformer';
 import { StorageService } from '@codebrew/nestjs-storage';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
@@ -36,10 +35,6 @@ describe('FileService', () => {
         // Mock transformers
         {
           provide: ImageTransformer,
-          useValue: { transform: jest.fn() },
-        },
-        {
-          provide: VideoTransformer,
           useValue: { transform: jest.fn() },
         },
 

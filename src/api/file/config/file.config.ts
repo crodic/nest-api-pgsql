@@ -1,13 +1,6 @@
 import { MulterOptions } from '@nestjs/platform-express/multer/interfaces/multer-options.interface';
 import { memoryStorage } from 'multer';
 
-export const imageMimes = [
-  'image/png',
-  'image/jpeg',
-  'image/jpg',
-  'image/webp',
-];
-
 export const memoryStorageConfig: MulterOptions = {
   storage: memoryStorage(),
 };

@@ -7,7 +7,6 @@ import {
   storagePath,
 } from '@/utils/filesystem';
 import { ImageTransformer } from '@/utils/transformers/image.transformer';
-import { VideoTransformer } from '@/utils/transformers/video.transformer';
 import { StorageService } from '@codebrew/nestjs-storage';
 import {
   BadRequestException,
@@ -42,7 +41,6 @@ export class FileService {
     private readonly fileRepository: Repository<FileEntity>,
     private readonly parser: TransformationParser,
     private readonly imageTransformer: ImageTransformer,
-    private readonly videoTransformer: VideoTransformer,
     private readonly fileValidator: FileValidator,
     private readonly storage: StorageService,
   ) {}
@@ -80,6 +78,16 @@ export class FileService {
     return 'raw';
   }
 
+  /**
+   * Uploads a file to the disk and creates a new file entity.
+   *
+   * @param file The file to upload.
+   * @param folder Optional folder to store the file in.
+   *
+   * @throws {HttpException} If the file is not provided or if the file is not an image.
+   *
+   * @returns A {@link FileResDto} containing information about the uploaded file.
+   */
   async upload(file: Express.Multer.File, folder?: string) {
     if (!file) {
       throw new HttpException('File not provided', HttpStatus.BAD_REQUEST);
@@ -141,11 +149,23 @@ export class FileService {
     });
   }
 
+  /**
+   * Builds a cache path from the given resource type, public ID, and transformation parameters.
+   * @param resourceType The resource type (e.g. 'image', 'video', etc.)
+   * @param publicId The public ID of the file.
+   * @param params The transformation parameters as a string.
+   * @returns The cache path as a string.
+   */
   buildCachePath(resourceType: string, publicId: string, params: string) {
     const hash = createHash('md5').update(params).digest('hex');
     return join('cache', resourceType, publicId, hash);
   }
 
+  /**
+   * Generates a unique hash for the given media.
+   * The hash is based on a combination of the current timestamp, a random UUID, and a random number.
+   * @returns A unique hash as a string.
+   */
   private generateHash(): string {
     const now = Date.now().toString();
     const rand = uuidv4();
@@ -154,6 +174,12 @@ export class FileService {
       .digest('hex');
   }
 
+  /**
+   * Deletes a file from the disk and database.
+   * @param publicId The public ID of the file to delete.
+   * @returns A promise resolving to an object containing a success message.
+   * @throws {HttpException} If the file is not found.
+   */
   async delete(publicId: string): Promise<{ message: string }> {
     const media = await this.fileRepository.findOneByOrFail({
       public_id: publicId,
@@ -169,6 +195,10 @@ export class FileService {
     };
   }
 
+  /**
+   * Deletes all cache files associated with the given media.
+   * @param {FileEntity} media The media entity to delete cache files for.
+   */
   protected deleteCacheFiles(media: FileEntity): void {
     const cacheBase = join('cache', media.resource_type, media.public_id);
     const cacheFullPath = fullDiskPath(this.disk, cacheBase);
@@ -178,6 +208,16 @@ export class FileService {
     rmSync(cacheFullPath, { recursive: true, force: true });
   }
 
+  /**
+   * Transforms an image according to the given transformation parameters.
+   * @param resourceType The resource type (e.g. 'image', 'video', etc.).
+   * @param publicId The public ID of the file to transform.
+   * @param params The transformation parameters as a string.
+   * @param ext The desired file extension (e.g. 'jpeg', 'png', etc.).
+   * @returns A promise resolving to the full path of the transformed image.
+   * @throws {BadRequestException} If the transformation type is not supported.
+   * @throws {NotFoundException} If the file is not found.
+   */
   public async transform(
     resourceType: string,
     publicId: string,
