@@ -59,7 +59,7 @@ export class FileController {
   @Delete(':publicId')
   @ApiPublic({
     summary: 'Delete file',
-    description: 'Delete file',
+    description: 'Delete file by publicId',
   })
   async delete(@Param('publicId') publicId: string) {
     return this.fileService.delete(publicId);
@@ -95,16 +95,12 @@ export class FileController {
   })
   @UploadSingle('file')
   @ApiResponse({ status: 201, description: 'Uploaded successfully' })
-  uploadSingle(@UploadedFile() file: Express.Multer.File) {
+  uploadSingle(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
     return this.fileService.uploadImage(file, {
-      folder: 'avatars',
-      sizes: [
-        { name: 'small', width: 200 },
-        { name: 'medium', width: 600 },
-        { name: 'large', width: 1200 },
-      ],
-      generateThumbnail: true,
-      thumbnailWidth: 250,
+      folder: body.folder,
+      sizes: body.sizes,
+      generateThumbnail: body.generateThumbnail,
+      thumbnailWidth: body.thumbnailWidth,
     });
   }
 
@@ -136,16 +132,16 @@ export class FileController {
     },
   })
   @UploadMultiple('files')
-  uploadMulti(@UploadedFiles() files: Express.Multer.File[]) {
+  uploadMulti(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: any,
+  ) {
     if (!files || files.length === 0 || files.length > 2)
       throw new ValidationException(ErrorCode.E001, 'No files provided');
 
     return this.fileService.uploadImages(files, {
-      folder: 'gallery',
-      sizes: [
-        { name: 'preview', width: 500 },
-        { name: 'full', width: 1500 },
-      ],
+      folder: body.folder,
+      sizes: body.sizes,
     });
   }
 

@@ -36,7 +36,6 @@ export interface UploadImageOptions {
   format?: ImageFormat;
   quality?: number;
   compress?: boolean;
-  withName?: string;
   sizes?: ImageSizeOption[];
   generateThumbnail?: boolean;
   thumbnailWidth?: number;

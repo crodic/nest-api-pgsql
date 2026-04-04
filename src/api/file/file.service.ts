@@ -79,7 +79,7 @@ export class FileService {
 
     const storedPath = join(folderPath, `${publicId}.${ext}`);
 
-    this.storage.getDisk(this.disk).put(storedPath, file.buffer);
+    this.storage.getDisk(Storage.PUBLIC).put(storedPath, file.buffer);
 
     const size = file.size;
     const originalName = file.originalname;
@@ -87,7 +87,6 @@ export class FileService {
 
     let width: number | null = null;
     let height: number | null = null;
-    const duration: number | null = null;
 
     if (resourceType === 'image') {
       try {
@@ -109,7 +108,7 @@ export class FileService {
       size,
       width,
       height,
-      duration,
+      duration: null,
       resource_type: resourceType,
       status: 'active',
     });
@@ -122,13 +121,14 @@ export class FileService {
   }
 
   async delete(publicId: string): Promise<{ message: string }> {
-    const media = await this.fileRepository.findOneByOrFail({
+    const file = await this.fileRepository.findOneByOrFail({
       public_id: publicId,
     });
 
-    await this.storage.getDisk(this.disk).delete(media.path);
+    await this.storage.getDisk(Storage.PUBLIC).delete(file.path);
 
     await this.fileRepository.delete({ public_id: publicId });
+
     return {
       message: 'Successfully deleted',
     };
@@ -143,7 +143,6 @@ export class FileService {
       format,
       quality = 80,
       compress = true,
-      withName,
       sizes = [],
       generateThumbnail = false,
       thumbnailWidth = 300,
@@ -153,7 +152,7 @@ export class FileService {
 
     const detectedExt = extractExt(file.mimetype);
 
-    const baseName = withName ?? file.originalname.replace(/\.[^.]+$/, '');
+    const baseName = file.originalname.replace(/\.[^.]+$/, '');
     const ext = format ?? detectedExt;
     const filename = `${Date.now()}-${baseName}.${ext}`;
 
@@ -167,7 +166,7 @@ export class FileService {
 
     const buffer = await img.toBuffer();
     const targetPath = folder ? `${folder}/${filename}` : filename;
-    await this.storage.getDisk('public').put(targetPath, buffer);
+    await this.storage.getDisk(Storage.PUBLIC).put(targetPath, buffer);
 
     const result = {
       original: storagePath(this.disk, targetPath),
@@ -184,11 +183,11 @@ export class FileService {
       const sizeBuffer = await sharp(file.buffer).resize(size.width).toBuffer();
 
       await this.storage
-        .getDisk('public')
+        .getDisk(Storage.PUBLIC)
         .put(`${resizedFolder}/${resizedName}`, sizeBuffer);
 
       result.sizes[size.name] = storagePath(
-        this.disk,
+        Storage.PUBLIC,
         `${resizedFolder}/${resizedName}`,
       );
     }
@@ -203,10 +202,13 @@ export class FileService {
         .toBuffer();
 
       await this.storage
-        .getDisk(this.disk)
+        .getDisk(Storage.PUBLIC)
         .put(`${thumbFolder}/${thumbName}`, thumbnailBuffer);
 
-      result.thumbnail = storagePath(this.disk, `${thumbFolder}/${thumbName}`);
+      result.thumbnail = storagePath(
+        Storage.PUBLIC,
+        `${thumbFolder}/${thumbName}`,
+      );
     }
 
     return result;
@@ -222,7 +224,7 @@ export class FileService {
   }
 
   async uploadFile(file: Express.Multer.File, options: UploadFileOptions = {}) {
-    const { folder = 'files', rename = true } = options;
+    const { folder = 'docs', rename = true } = options;
 
     this.fileValidator.validateFile(file, options);
 
@@ -234,11 +236,11 @@ export class FileService {
       : file.originalname;
 
     await this.storage
-      .getDisk(this.disk)
+      .getDisk(Storage.PUBLIC)
       .put(`${folder}/${filename}`, file.buffer);
 
     return {
-      path: storagePath(this.disk, `${folder}/${filename}`),
+      path: storagePath(Storage.PUBLIC, `${folder}/${filename}`),
       size: file.size,
       mimeType: file.mimetype,
     };

@@ -1,6 +1,5 @@
 import { StorageModule } from '@/storage/storage.module';
 import { ImageTransformer } from '@/utils/transformers/image.transformer';
-import { VideoTransformer } from '@/utils/transformers/video.transformer';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
@@ -17,7 +16,6 @@ import { FileValidator } from './validators/file.validator';
     FileService,
     TransformationParser,
     ImageTransformer,
-    VideoTransformer,
     FileValidator,
   ],
 })
