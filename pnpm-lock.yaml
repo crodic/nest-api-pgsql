@@ -20,9 +20,6 @@ importers:
       '@casl/ability':
         specifier: ^6.8.0
         version: 6.8.0
-      '@codebrew/nestjs-storage':
-        specifier: ^0.1.7
-        version: 0.1.7(@nestjs/common@11.1.16(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@slynova/flydrive-gcs@1.0.3(@slynova/flydrive@1.0.3)(encoding@0.1.13))(@slynova/flydrive-s3@1.0.3(@slynova/flydrive@1.0.3))(@slynova/flydrive@1.0.3)(reflect-metadata@0.2.2)
       '@keyv/redis':
         specifier: ^5.1.6
         version: 5.1.6(keyv@5.6.0)
@@ -92,6 +89,9 @@ importers:
       '@slynova/flydrive-gcs':
         specifier: ^1.0.3
         version: 1.0.3(@slynova/flydrive@1.0.3)(encoding@0.1.13)
+      '@slynova/flydrive-s3':
+        specifier: ^1.0.3
+        version: 1.0.3(@slynova/flydrive@1.0.3)
       argon2:
         specifier: ^0.44.0
         version: 0.44.0
@@ -686,15 +686,6 @@ packages:
 
   '@casl/ability@6.8.0':
     resolution: {integrity: sha512-Ipt4mzI4gSgnomFdaPjaLgY2MWuXqAEZLrU6qqWBB7khGiBBuuEp6ytYDnq09bRXqcjaeeHiaCvCGFbBA2SpvA==}
-
-  '@codebrew/nestjs-storage@0.1.7':
-    resolution: {integrity: sha512-HQ12Q7BVQhgPHUqv0L3WnkUeAUvxVfHGq4agjELgdcAJ3q1P/I399esekvoOaPKZv3cCxso/fxqxLcIC+nmQLQ==}
-    peerDependencies:
-      '@nestjs/common': ^6.10.0 || ^7.0.0 || ^8.0.0 || ^9.0.0
-      '@slynova/flydrive': ^1.0.2
-      '@slynova/flydrive-gcs': ^1.0.2
-      '@slynova/flydrive-s3': ^1.0.2
-      reflect-metadata: ^0.1.13
 
   '@colors/colors@1.5.0':
     resolution: {integrity: sha512-ooWCrlZP11i8GImSjTHYHLkvFDP48nS4+204nGb1RiX/WXYHmJA2III9/e2DWVabCESdW7hBAEzHRqUn9OUVvQ==}
@@ -8947,14 +8938,6 @@ snapshots:
   '@casl/ability@6.8.0':
     dependencies:
       '@ucast/mongo2js': 1.4.0
-
-  '@codebrew/nestjs-storage@0.1.7(@nestjs/common@11.1.16(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@slynova/flydrive-gcs@1.0.3(@slynova/flydrive@1.0.3)(encoding@0.1.13))(@slynova/flydrive-s3@1.0.3(@slynova/flydrive@1.0.3))(@slynova/flydrive@1.0.3)(reflect-metadata@0.2.2)':
-    dependencies:
-      '@nestjs/common': 11.1.16(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@slynova/flydrive': 1.0.3
-      '@slynova/flydrive-gcs': 1.0.3(@slynova/flydrive@1.0.3)(encoding@0.1.13)
-      '@slynova/flydrive-s3': 1.0.3(@slynova/flydrive@1.0.3)
-      reflect-metadata: 0.2.2
 
   '@colors/colors@1.5.0':
     optional: true

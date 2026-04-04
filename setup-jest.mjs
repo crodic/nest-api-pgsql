@@ -12,8 +12,6 @@ process.env.APP_LOG_SERVICE = 'console';
 process.env.APP_CORS_ORIGIN = 'http://localhost:5173,http://localhost:3000';
 process.env.APP_SECURE_HEADER_ORIGIN =
   'http://localhost:3000,http://localhost:5173';
-process.env.UPLOAD_FOLDER = 'storage';
-process.env.ALLOWED_IMAGES = 'image/png,image/jpg,image/jpeg,image/webp';
 
 process.env.DATABASE_TYPE = 'postgres';
 process.env.DATABASE_HOST = 'localhost';
