@@ -34,7 +34,6 @@
     "docs:build": "vuepress build docs"
   },
   "dependencies": {
-    "@amirrivand/nestjs-file-storage": "^1.1.2",
     "@bull-board/api": "^6.20.3",
     "@bull-board/express": "^6.20.3",
     "@bull-board/nestjs": "^6.20.3",
