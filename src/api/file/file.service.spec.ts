@@ -1,10 +1,8 @@
-import { ImageTransformer } from '@/utils/transformers/image.transformer';
 import { StorageService } from '@codebrew/nestjs-storage';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
 import { FileService } from './file.service';
-import { TransformationParser } from './parsers/transformation.parser';
 import { FileValidator } from './validators/file.validator';
 
 describe('FileService', () => {
@@ -24,18 +22,6 @@ describe('FileService', () => {
             save: jest.fn(),
             delete: jest.fn(),
           },
-        },
-
-        // Mock parser
-        {
-          provide: TransformationParser,
-          useValue: { parse: jest.fn() },
-        },
-
-        // Mock transformers
-        {
-          provide: ImageTransformer,
-          useValue: { transform: jest.fn() },
         },
 
         // Mock validator

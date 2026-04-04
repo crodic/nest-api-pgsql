@@ -35,7 +35,6 @@ export class NotificationService {
 
     await this.notificationRepo.save(notification);
 
-    // Gửi real-time qua Socket.IO tới từng user
     for (const userId of recipientIds) {
       this.gateway.sendToUser(userId, notification);
     }

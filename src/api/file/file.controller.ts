@@ -23,11 +23,15 @@ import { UploadMultiple, UploadSingle } from './decorators/file.decorator';
 import { FileService } from './file.service';
 
 @ApiTags('Files')
-@Controller({ path: 'file', version: '1' })
+@Controller({ path: 'files', version: '1' })
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 
   @Post('upload')
+  @ApiOperation({
+    summary: 'Upload file',
+    description: 'Single file upload',
+  })
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -61,8 +65,11 @@ export class FileController {
     return this.fileService.delete(publicId);
   }
 
-  @Post('sync')
-  @ApiOperation({ summary: 'Upload file' })
+  @Post('images/upload')
+  @ApiOperation({
+    summary:
+      'This endpoint uploads an image. Support multiple sizes and thumbnails.',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'File upload + options',

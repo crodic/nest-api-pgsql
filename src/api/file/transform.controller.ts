@@ -4,11 +4,11 @@ import { Response } from 'express';
 import { FileService } from './file.service';
 
 @ApiTags('Files')
-@Controller({ path: 'file' })
+@Controller({ path: 'storage' })
 export class TransformController {
   constructor(private readonly fileService: FileService) {}
 
-  @Get(':resourceType/upload/:publicId.:ext')
+  @Get(':resourceType/:publicId.:ext')
   async original(
     @Param('resourceType') resourceType: string,
     @Param('publicId') publicId: string,
@@ -23,25 +23,6 @@ export class TransformController {
 
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
 
-    return res.sendFile(filePath);
-  }
-
-  @Get(':resourceType/upload/:params/:publicId.:ext')
-  async transform(
-    @Param('resourceType') resourceType: string,
-    @Param('params') params: string,
-    @Param('publicId') publicId: string,
-    @Param('ext') ext: string,
-    @Res() res: Response,
-  ) {
-    const filePath = await this.fileService.transform(
-      resourceType,
-      publicId,
-      params,
-      ext,
-    );
-
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
     return res.sendFile(filePath);
   }
 }
