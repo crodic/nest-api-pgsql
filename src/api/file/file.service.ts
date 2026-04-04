@@ -1,11 +1,11 @@
 import { Storage } from '@/constants/app.constant';
+import { StorageService } from '@/libs/storage';
 import {
   applyFormat,
   extractExt,
   fullDiskPath,
   storagePath,
 } from '@/utils/filesystem';
-import { StorageService } from '@codebrew/nestjs-storage';
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';

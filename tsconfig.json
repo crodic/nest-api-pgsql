@@ -41,7 +41,9 @@
       "@/shared/*": ["src/shared/*"],
       "@/utils/*": ["src/utils/*"],
       "@/storage/*": ["src/storage/*"],
-      "@/pipes/*": ["src/pipes/*"]
-    }
+      "@/pipes/*": ["src/pipes/*"],
+      "@/*": ["src/*"]
+    },
+    "types": ["jest"]
   }
 }

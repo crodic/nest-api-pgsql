@@ -1,8 +1,6 @@
 import { AllConfigType } from '@/config/config.type';
-import {
-  DriverType,
-  StorageModule as NestStorageModule,
-} from '@codebrew/nestjs-storage';
+import { DriverType } from '@/libs/storage';
+import { StorageModule as NestStorageModule } from '@/libs/storage/storage.module';
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
@@ -49,15 +47,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
               ),
             },
           },
-          // gcs: {
-          //   driver: DriverType.GCS,
-          //   config: {
-          //     keyFilename: configService.getOrThrow<AllConfigType>(
-          //       'storage.gcsKeyFilename',
-          //       { infer: true },
-          //     ),
-          //   },
-          // },
         },
       }),
     }),

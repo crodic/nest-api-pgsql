@@ -16,7 +16,6 @@ import { BullBoardModule } from '@bull-board/nestjs';
 import { BullModule } from '@nestjs/bullmq';
 import expressBasicAuth from 'express-basic-auth';
 
-import { CacheModule } from '@nestjs/cache-manager';
 import {
   AcceptLanguageResolver,
   HeaderResolver,
@@ -34,22 +33,17 @@ import { SharedModule } from '@/shared/shared.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { SentryModule } from '@sentry/nestjs/setup';
 import { ClsModule } from 'nestjs-cls';
-import { NestLensModule } from 'nestlens';
 
 import { AllConfigType } from '@/config/config.type';
 import { Environment } from '@/constants/app.constant';
-import KeyvRedis, { Keyv } from '@keyv/redis';
-import { CacheableMemory } from 'cacheable';
 import path, { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
 
 @Module({
   imports: [
-    // -----------------
-    // GLOBAL CONFIG
-    // -----------------
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -146,31 +140,7 @@ import loggerFactory from './utils/logger-factory';
       inject: [ConfigService],
       useFactory: loggerFactory,
     }),
-
-    // -----------------
-    // CACHE
-    // -----------------
-    CacheModule.registerAsync({
-      imports: [ConfigModule],
-      useFactory: (config: ConfigService<AllConfigType>) => {
-        const host = config.getOrThrow('redis.host', { infer: true });
-        const port = config.getOrThrow('redis.port', { infer: true });
-        const password = config.getOrThrow('redis.password', { infer: true });
-
-        const uri = `redis://${password}@${host}:${port}`;
-
-        return {
-          stores: [
-            new Keyv({
-              store: new CacheableMemory({ ttl: 60000, lruSize: 5000 }),
-            }),
-            new KeyvRedis(uri),
-          ],
-        };
-      },
-      isGlobal: true,
-      inject: [ConfigService],
-    }),
+    RedisModule,
 
     // -----------------
     // STATIC FILES
@@ -193,39 +163,12 @@ import loggerFactory from './utils/logger-factory';
         },
       ],
     }),
-
-    // -----------------
-    // CLS
-    // -----------------
     ClsModule.forRoot({
       middleware: { mount: true },
       global: true,
     }),
 
-    // -----------------
-    // MONITORING (NestLens)
-    // -----------------
-    NestLensModule.forRoot({
-      enabled: !!process.env.NEST_LENS_ENABLED,
-      storage: {
-        driver: 'redis',
-        memory: { maxEntries: 100000 },
-        redis: {
-          host: process.env.REDIS_HOST || '127.0.0.1',
-          port: Number(process.env.REDIS_PORT) || 6379,
-          password: process.env.REDIS_PASSWORD || undefined,
-        },
-      },
-    }),
-
-    // -----------------
-    // SENTRY
-    // -----------------
     SentryModule.forRoot(),
-
-    // -----------------
-    // APPLICATION MODULES
-    // -----------------
     LibsModule,
     BackgroundModule,
     MailModule,

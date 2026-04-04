@@ -1,4 +1,4 @@
-import { StorageService } from '@codebrew/nestjs-storage';
+import { StorageService } from '@/libs/storage';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
