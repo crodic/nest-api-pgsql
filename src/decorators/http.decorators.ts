@@ -3,8 +3,6 @@ import { HttpCode, HttpStatus, Type, applyDecorators } from '@nestjs/common';
 import {
   ApiBasicAuth,
   ApiBearerAuth,
-  ApiBody,
-  ApiConsumes,
   ApiCreatedResponse,
   ApiOkResponse,
   ApiOperation,
@@ -150,34 +148,5 @@ export const ApiAuth = <T extends Type<any>>(
     buildSuccessDecorator(options),
     ...authDecorators,
     ...buildErrorResponses(options.errorResponses || defaultErrorResponses),
-  );
-};
-
-export const ApiFormData = <T extends Type<any>>(dto: T): MethodDecorator => {
-  const instance = new dto();
-  const properties = {};
-
-  for (const key of Object.keys(instance)) {
-    const value = instance[key];
-
-    // Auto-detect file fields
-    const isFile =
-      key.toLowerCase().includes('file') ||
-      key.toLowerCase().includes('image') ||
-      value instanceof File;
-
-    properties[key] = isFile
-      ? { type: 'string', format: 'binary' }
-      : { type: typeof value === 'number' ? 'number' : 'string' };
-  }
-
-  return applyDecorators(
-    ApiConsumes('multipart/form-data'),
-    ApiBody({
-      schema: {
-        type: 'object',
-        properties,
-      },
-    }),
   );
 };
