@@ -89,6 +89,9 @@ importers:
       '@slynova/flydrive':
         specifier: ^1.0.3
         version: 1.0.3
+      '@slynova/flydrive-gcs':
+        specifier: ^1.0.3
+        version: 1.0.3(@slynova/flydrive@1.0.3)(encoding@0.1.13)
       argon2:
         specifier: ^0.44.0
         version: 0.44.0

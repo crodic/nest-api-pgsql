@@ -61,6 +61,7 @@
     "@nestjs/websockets": "^11.1.16",
     "@sentry/nestjs": "^10.42.0",
     "@slynova/flydrive": "^1.0.3",
+    "@slynova/flydrive-gcs": "^1.0.3",
     "argon2": "^0.44.0",
     "aws-sdk": "^2.1693.0",
     "axios": "^1.13.6",
