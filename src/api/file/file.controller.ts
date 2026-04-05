@@ -35,7 +35,7 @@ import { FileService } from './file.service';
 export class FileController {
   constructor(
     private readonly fileService: FileService,
-    @InjectDisk('local')
+    @InjectDisk('public')
     private readonly localDisk: StorageDriver,
   ) {}
 
