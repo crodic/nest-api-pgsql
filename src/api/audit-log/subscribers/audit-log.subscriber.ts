@@ -1,11 +1,12 @@
 import { SessionEntity } from '@/api/auth/entities/session.entity';
 import { Logger } from '@nestjs/common';
-import { ClsService } from 'nestjs-cls';
+import { ClsServiceManager } from 'nestjs-cls';
 import {
   DataSource,
   EntitySubscriberInterface,
   EventSubscriber,
   InsertEvent,
+  RecoverEvent,
   RemoveEvent,
   SoftRemoveEvent,
   UpdateEvent,
@@ -16,10 +17,7 @@ import { AuditLogEntity } from '../entities/audit-log.entity';
 export class AuditLogSubscriber implements EntitySubscriberInterface {
   private readonly logger = new Logger(AuditLogSubscriber.name);
 
-  constructor(
-    private dataSource: DataSource,
-    private cls: ClsService<{ userId?: string }>,
-  ) {
+  constructor(private dataSource: DataSource) {
     this.dataSource.subscribers.push(this);
   }
 
@@ -39,16 +37,46 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     await this.saveLog('DELETE', event);
   }
 
-  private async saveLog(action: 'INSERT' | 'UPDATE' | 'DELETE', event: any) {
+  async afterRecover(event: RecoverEvent<any>) {
+    await this.saveLog('RESTORE', event);
+  }
+
+  private async saveLog(
+    action: 'INSERT' | 'UPDATE' | 'DELETE' | 'RESTORE' | 'SOFT_DELETE',
+    event: any,
+  ) {
     if (
       event.metadata.name === AuditLogEntity.name ||
       event.metadata.name === SessionEntity.name
     )
       return;
 
+    const cls = ClsServiceManager.getClsService();
+
     const auditRepo = event.manager.getRepository(AuditLogEntity);
-    const userId = this.cls.get('userId');
-    const userType = this.cls.get('userType');
+    const currentUser = cls.get('user') ?? {};
+    const userId = currentUser?.id;
+
+    const buildDescription = (
+      action: string,
+      entityType: string,
+      metadata?: any,
+    ) => {
+      switch (action) {
+        case 'INSERT':
+          return `New ${entityType} created`;
+        case 'UPDATE':
+          return `Updated ${entityType}`;
+        case 'DELETE':
+          return `Deleted ${entityType}`;
+        case 'RESTORE':
+          return `Restored ${entityType}`;
+        case 'SOFT_DELETE':
+          return `Soft deleted ${entityType}`;
+        default:
+          return '';
+      }
+    };
 
     const log = auditRepo.create({
       entity: event.metadata.name,
@@ -56,10 +84,20 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       action,
       oldValue: event.databaseEntity ?? null,
       newValue: event.entity ?? null,
-      userId,
-      userType,
+      userId: userId ?? null,
+      ip: cls.get('ip'),
+      userAgent: cls.get('userAgent'),
+      requestId: cls.get('requestId'),
+      timestamp: new Date(),
+      metadata: {
+        ...currentUser,
+      },
+      description: buildDescription(
+        action,
+        `${event.metadata.name}:${event.entity?.id ?? event.databaseEntity?.id ?? event.entityId}`,
+      ),
     });
 
-    await auditRepo.save(log);
+    setImmediate(() => auditRepo.save(log));
   }
 }

@@ -44,6 +44,6 @@
       "@/pipes/*": ["src/pipes/*"],
       "@/*": ["src/*"]
     },
-    "types": ["jest"]
+    "types": ["jest", "node"]
   }
 }

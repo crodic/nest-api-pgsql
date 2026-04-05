@@ -24,7 +24,7 @@ export class AuditLogEntity {
   entityId: ID;
 
   @Column({ type: 'varchar' })
-  action: 'INSERT' | 'UPDATE' | 'DELETE';
+  action: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_DELETE' | 'RESTORE';
 
   @Column('json', { nullable: true, name: 'old_value' })
   oldValue: any;
@@ -32,17 +32,28 @@ export class AuditLogEntity {
   @Column('json', { nullable: true, name: 'new_value' })
   newValue: any;
 
-  @Index('IDX_audit_logs_user_id')
-  @Column({ nullable: true, name: 'user_id', type: 'bigint' })
-  userId: ID;
+  @Column('text', { nullable: true })
+  description: string;
 
-  @Column({ nullable: true, name: 'user_type' })
-  userType: string;
+  @Column({ nullable: true, name: 'user_id', type: 'varchar' })
+  userId: string;
+
+  @Column({ nullable: true })
+  ip: string;
+
+  @Column({ nullable: true, name: 'user_agent' })
+  userAgent: string;
+
+  @Column({ nullable: true, name: 'request_id' })
+  requestId: string;
+
+  @Column({ type: 'json', nullable: true })
+  metadata: Record<string, any>;
 
   @CreateDateColumn({
-    name: 'created_at',
+    name: 'timestamp',
     type: 'timestamptz',
     default: () => 'now()',
   })
-  createdAt: Date;
+  timestamp: Date;
 }

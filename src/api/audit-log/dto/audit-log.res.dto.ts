@@ -1,12 +1,10 @@
-import { WrapperType } from '@/common/types/types';
 import {
   ClassField,
-  ClassFieldOptional,
   JsonFieldOptional,
   StringField,
+  StringFieldOptional,
 } from '@/decorators/field.decorators';
 import { Exclude, Expose } from 'class-transformer';
-import { LogUserResDto } from './log-user.res.dto';
 
 @Exclude()
 export class AuditLogResDto {
@@ -34,15 +32,31 @@ export class AuditLogResDto {
   @Expose()
   newValue?: any;
 
-  @StringField()
+  @StringFieldOptional()
   @Expose()
   userId: string;
 
-  @ClassFieldOptional(() => LogUserResDto)
+  @StringFieldOptional()
   @Expose()
-  user: WrapperType<LogUserResDto>;
+  description: string;
+
+  @StringFieldOptional()
+  @Expose()
+  ip: string;
+
+  @StringFieldOptional()
+  @Expose()
+  userAgent: string;
+
+  @StringFieldOptional()
+  @Expose()
+  requestId: string;
+
+  @JsonFieldOptional()
+  @Expose()
+  metadata?: any;
 
   @ClassField(() => Date)
   @Expose()
-  createdAt: Date;
+  timestamp: Date;
 }

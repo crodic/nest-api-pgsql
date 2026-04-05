@@ -29,11 +29,10 @@ export class AuditLogController {
     summary: 'Get paginated audit logs',
     isPaginated: true,
     paginateOptions: {
-      sortableColumns: ['id', 'createdAt'],
-      defaultSortBy: [['id', 'DESC']],
-      relations: ['posts'],
+      sortableColumns: ['id', 'timestamp'],
+      defaultSortBy: [['timestamp', 'DESC']],
       filterableColumns: {
-        createdAt: [FilterOperator.GTE, FilterOperator.LTE],
+        timestamp: [FilterOperator.GTE, FilterOperator.LTE],
         action: [FilterOperator.IN],
         entity: [FilterOperator.ILIKE],
         entityId: [FilterOperator.EQ],

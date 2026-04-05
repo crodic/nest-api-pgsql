@@ -39,6 +39,8 @@ import { Environment } from '@/constants/app.constant';
 import path, { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
 
@@ -192,6 +194,12 @@ import loggerFactory from './utils/logger-factory';
     MailModule,
     ApiModule,
     SharedModule,
+  ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestContextInterceptor,
+    },
   ],
 })
 export class AppModule {}
