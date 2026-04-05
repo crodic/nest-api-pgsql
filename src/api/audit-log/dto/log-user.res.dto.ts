@@ -13,5 +13,5 @@ export class LogUserResDto {
 
   @StringField()
   @Expose()
-  fullName: string;
+  fullname: string;
 }
