@@ -51,6 +51,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     )
       return;
 
+    const excludeFields = ['password'];
     const cls = ClsServiceManager.getClsService();
 
     const auditRepo = event.manager.getRepository(AuditLogEntity);
@@ -78,19 +79,28 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       }
     };
 
+    const oldValue = {};
+    const newValue = {};
+    for (const key in event.entity) {
+      if (excludeFields.includes(key)) continue;
+      oldValue[key] = event.databaseEntity?.[key];
+      newValue[key] = event.entity?.[key];
+    }
+
     const log = auditRepo.create({
       entity: event.metadata.name,
       entityId: event.entity?.id ?? event.databaseEntity?.id ?? event.entityId,
       action,
-      oldValue: event.databaseEntity ?? null,
-      newValue: event.entity ?? null,
+      oldValue,
+      newValue,
       userId: userId ?? null,
       ip: cls.get('ip'),
       userAgent: cls.get('userAgent'),
       requestId: cls.get('requestId'),
       timestamp: new Date(),
       metadata: {
-        ...currentUser,
+        actorId: userId ?? null,
+        role: currentUser?.role?.name ?? null,
       },
       description: buildDescription(
         action,

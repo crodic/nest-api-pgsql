@@ -1,6 +1,5 @@
 import {
   ClassField,
-  JsonFieldOptional,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorators';
@@ -24,11 +23,9 @@ export class AuditLogResDto {
   @Expose()
   action: string;
 
-  @JsonFieldOptional()
   @Expose()
   oldValue?: any;
 
-  @JsonFieldOptional()
   @Expose()
   newValue?: any;
 
@@ -52,7 +49,6 @@ export class AuditLogResDto {
   @Expose()
   requestId: string;
 
-  @JsonFieldOptional()
   @Expose()
   metadata?: any;
 

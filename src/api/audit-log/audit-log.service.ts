@@ -36,8 +36,6 @@ export class AuditLogService {
       },
     });
 
-    console.log(result.data[0]);
-
     return {
       ...result,
       data: plainToInstance(AuditLogResDto, result.data, {
