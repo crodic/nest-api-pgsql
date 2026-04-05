@@ -99,7 +99,8 @@ async function bootstrap() {
         { method: RequestMethod.POST, path: '__nestlens__/*path' },
         { method: RequestMethod.PUT, path: '__nestlens__/*path' },
         { method: RequestMethod.DELETE, path: '__nestlens__/*path' },
-        'storage/*path',
+        'storage/public/*path',
+        'storage/avatars/*path',
       ],
     },
   );
