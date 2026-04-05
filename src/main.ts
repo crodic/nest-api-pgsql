@@ -27,7 +27,6 @@ async function bootstrap() {
 
   // Use Pino Logger
   app.useLogger(app.get(Logger));
-  // app.useLogger(app.get(NestLensLogger));
   // For high-traffic websites in production, it is strongly recommended to offload compression from the application server - typically in a reverse proxy (e.g., Nginx). In that case, you should not use compression middleware.
   app.use(compression());
 
@@ -41,11 +40,11 @@ async function bootstrap() {
   });
 
   app.use(
-    ['/api-docs', '/api-docs-json'],
+    ['/api-docs', '/api-docs-json', '/nestlens'],
     basicAuth({
       users: {
-        [configService.getOrThrow('auth.swaggerUsername', { infer: true })]:
-          configService.getOrThrow('auth.swaggerPassword', { infer: true }),
+        [configService.getOrThrow('auth.adminPanelUsername', { infer: true })]:
+          configService.getOrThrow('auth.adminPanelPassword', { infer: true }),
       },
       challenge: true,
       unauthorizedResponse: 'Unauthorized',
@@ -100,6 +99,7 @@ async function bootstrap() {
         { method: RequestMethod.POST, path: '__nestlens__/*path' },
         { method: RequestMethod.PUT, path: '__nestlens__/*path' },
         { method: RequestMethod.DELETE, path: '__nestlens__/*path' },
+        'storage/uploads/*path',
       ],
     },
   );

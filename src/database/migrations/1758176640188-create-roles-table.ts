@@ -12,9 +12,7 @@ export class CreateRolesTable1758176640188 implements MigrationInterface {
           "permissions" jsonb NOT NULL DEFAULT '[]',
           "deleted_at" TIMESTAMP WITH TIME ZONE,
           "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-          "created_by" character varying NOT NULL,
           "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-          "updated_by" character varying NOT NULL,
           CONSTRAINT "PK_role_id" PRIMARY KEY ("id")
       )
     `);

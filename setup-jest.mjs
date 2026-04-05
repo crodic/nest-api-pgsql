@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 process.env.NODE_ENV = 'test';
-process.env.MODULES_SET = 'monolith';
 
 process.env.APP_NAME = 'NestJS API';
 process.env.APP_URL = 'http://localhost:8000';
@@ -13,8 +12,6 @@ process.env.APP_LOG_SERVICE = 'console';
 process.env.APP_CORS_ORIGIN = 'http://localhost:5173,http://localhost:3000';
 process.env.APP_SECURE_HEADER_ORIGIN =
   'http://localhost:3000,http://localhost:5173';
-process.env.UPLOAD_FOLDER = 'storage';
-process.env.ALLOWED_IMAGES = 'image/png,image/jpg,image/jpeg,image/webp';
 
 process.env.DATABASE_TYPE = 'postgres';
 process.env.DATABASE_HOST = 'localhost';
@@ -82,8 +79,6 @@ process.env.SWAGGER_USERNAME = 'swagger';
 process.env.SWAGGER_PASSWORD = 'admin@2026';
 
 process.env.NEST_LENS_ENABLED = 'true';
-process.env.NEST_LENS_USERNAME = 'nestlens';
-process.env.NEST_LENS_PASSWORD = 'admin@2026';
 
 process.env.BULL_BOARD_PATH = '/queues';
 process.env.BULL_BOARD_USERNAME = 'bullboard';

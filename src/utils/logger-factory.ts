@@ -80,40 +80,12 @@ function consoleLoggingConfig(): Options {
   return {
     messageKey: 'msg',
     transport: {
-      targets: [
-        {
-          target: 'pino-pretty',
-          options: {
-            singleLine: true,
-            ignore:
-              'req.id,req.method,req.url,req.headers,req.remoteAddress,req.remotePort,res.headers',
-          },
-          level: 'debug',
-        },
-        {
-          target: 'pino-roll',
-          options: {
-            file: 'logs/',
-            frequency: 'daily',
-            mkdir: true,
-            size: '10m',
-            keep: 7,
-            dateFormat: 'yyyy-MM-dd',
-          },
-          level: 'info',
-        },
-        {
-          target: 'pino-roll',
-          options: {
-            file: 'logs/error.log',
-            frequency: 'daily',
-            mkdir: true,
-            size: '5m',
-            keep: 7,
-          },
-          level: 'error',
-        },
-      ],
+      target: 'pino-pretty',
+      options: {
+        singleLine: true,
+        ignore:
+          'req.id,req.method,req.url,req.headers,req.remoteAddress,req.remotePort,res.headers',
+      },
     },
   };
 }

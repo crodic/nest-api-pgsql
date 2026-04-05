@@ -14,9 +14,7 @@ export class CreateSessionsTable1758176745032 implements MigrationInterface {
                 "user_id" bigint NOT NULL,
                 "user_type" "public"."sessions_user_enum" NOT NULL,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "created_by" character varying NOT NULL,
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-                "updated_by" character varying NOT NULL,
                 CONSTRAINT "PK_session_id" PRIMARY KEY ("id")
             )
         `);

@@ -55,7 +55,7 @@ export class FileEntity {
 
   get url() {
     const ext = this.path.split('.').pop();
-    return `${process.env.APP_URL}/api/file/${this.resource_type}/upload/${this.public_id}.${ext}`;
+    return `${process.env.APP_URL}/storage/uploads/${this.resource_type}/${this.public_id}.${ext}`;
   }
 
   @CreateDateColumn({

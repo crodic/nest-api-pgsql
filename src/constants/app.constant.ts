@@ -25,6 +25,7 @@ export enum Storage {
   LOCAL = 'local',
   PUBLIC = 'public',
   S3 = 's3',
+  gcs = 'gcs',
 }
 
 // Redact value of these paths from logs

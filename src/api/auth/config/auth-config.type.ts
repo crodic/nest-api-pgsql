@@ -19,15 +19,6 @@ export type AuthConfig = {
   userConfirmEmailExpires: string;
   clientResetPasswordUrl: string;
 
-  // Swagger
-  swaggerUsername: string;
-  swaggerPassword: string;
-
-  // NestLens
-  nestLensUsername: string;
-  nestLensPassword: string;
-
-  // BullBoard
-  bullBoardUsername: string;
-  bullBoardPassword: string;
+  adminPanelUsername: string;
+  adminPanelPassword: string;
 };

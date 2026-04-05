@@ -1,33 +1,22 @@
 import { Storage } from '@/constants/app.constant';
+import { StorageService } from '@/libs/storage';
 import {
   applyFormat,
   extractExt,
   fullDiskPath,
-  relativeDiskPath,
   storagePath,
 } from '@/utils/filesystem';
-import { ImageTransformer } from '@/utils/transformers/image.transformer';
-import { VideoTransformer } from '@/utils/transformers/video.transformer';
-import { StorageService } from '@codebrew/nestjs-storage';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { plainToInstance } from 'class-transformer';
 import { createHash } from 'crypto';
-import { existsSync, readdirSync, readFileSync, rmSync } from 'fs';
-import path, { join } from 'path';
+import { existsSync } from 'fs';
+import { join } from 'path';
 import sharp from 'sharp';
 import { Repository } from 'typeorm';
 import { v4 as uuidv4 } from 'uuid';
 import { FileResDto } from './dto/file.res.dto';
 import { FileEntity } from './entities/file.entity';
-import { TransformationParser } from './parsers/transformation.parser';
 import { UploadFileOptions, UploadImageOptions } from './types/upload.types';
 import { FileValidator } from './validators/file.validator';
 
@@ -40,9 +29,6 @@ export class FileService {
   constructor(
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
-    private readonly parser: TransformationParser,
-    private readonly imageTransformer: ImageTransformer,
-    private readonly videoTransformer: VideoTransformer,
     private readonly fileValidator: FileValidator,
     private readonly storage: StorageService,
   ) {}
@@ -74,12 +60,6 @@ export class FileService {
     return absPath;
   }
 
-  detectResourceType(mime: string): string {
-    if (mime.includes('image')) return 'image';
-    if (mime.includes('video')) return 'video';
-    return 'raw';
-  }
-
   async upload(file: Express.Multer.File, folder?: string) {
     if (!file) {
       throw new HttpException('File not provided', HttpStatus.BAD_REQUEST);
@@ -99,7 +79,7 @@ export class FileService {
 
     const storedPath = join(folderPath, `${publicId}.${ext}`);
 
-    this.storage.getDisk(this.disk).put(storedPath, file.buffer);
+    this.storage.getDisk(Storage.PUBLIC).put(storedPath, file.buffer);
 
     const size = file.size;
     const originalName = file.originalname;
@@ -107,7 +87,6 @@ export class FileService {
 
     let width: number | null = null;
     let height: number | null = null;
-    const duration: number | null = null;
 
     if (resourceType === 'image') {
       try {
@@ -129,7 +108,7 @@ export class FileService {
       size,
       width,
       height,
-      duration,
+      duration: null,
       resource_type: resourceType,
       status: 'active',
     });
@@ -141,113 +120,18 @@ export class FileService {
     });
   }
 
-  buildCachePath(resourceType: string, publicId: string, params: string) {
-    const hash = createHash('md5').update(params).digest('hex');
-    return join('cache', resourceType, publicId, hash);
-  }
-
-  private generateHash(): string {
-    const now = Date.now().toString();
-    const rand = uuidv4();
-    return createHash('sha256')
-      .update(rand + now + Math.random().toString())
-      .digest('hex');
-  }
-
   async delete(publicId: string): Promise<{ message: string }> {
-    const media = await this.fileRepository.findOneByOrFail({
+    const file = await this.fileRepository.findOneByOrFail({
       public_id: publicId,
     });
 
-    await this.storage.getDisk(this.disk).delete(media.path);
-
-    this.deleteCacheFiles(media);
+    await this.storage.getDisk(Storage.PUBLIC).delete(file.path);
 
     await this.fileRepository.delete({ public_id: publicId });
+
     return {
       message: 'Successfully deleted',
     };
-  }
-
-  protected deleteCacheFiles(media: FileEntity): void {
-    const cacheBase = join('cache', media.resource_type, media.public_id);
-    const cacheFullPath = fullDiskPath(this.disk, cacheBase);
-
-    if (!existsSync(cacheFullPath)) return;
-
-    rmSync(cacheFullPath, { recursive: true, force: true });
-  }
-
-  public async transform(
-    resourceType: string,
-    publicId: string,
-    params: string,
-    ext: string,
-  ): Promise<string> {
-    if (resourceType !== 'image') {
-      throw new BadRequestException('Transformation type not supported.');
-    }
-
-    const uploadsRoot = join(relativeDiskPath(this.disk), resourceType);
-    let found: string | null = null;
-
-    // Try: storage/public/<resourceType>/*/<publicId>.*
-    const level2 = readdirSync(uploadsRoot, { withFileTypes: true });
-
-    for (const dir of level2) {
-      if (dir.isDirectory()) {
-        const folderPath = path.join(uploadsRoot, dir.name);
-        const files = readdirSync(folderPath);
-        const match = files.find((f) => f.startsWith(publicId + '.' + ext));
-        if (match) {
-          found = path.join(folderPath, match);
-          break;
-        }
-      }
-    }
-
-    // Try: storage/public/<resourceType>/<publicId>.*
-    if (!found) {
-      const files = readdirSync(uploadsRoot);
-      const match = files.find((f) => f.startsWith(publicId + '.' + ext));
-      if (match) {
-        found = path.join(uploadsRoot, match);
-      }
-    }
-
-    if (!found) {
-      throw new NotFoundException('File not found');
-    }
-
-    const origFullPath = path.join(process.cwd(), found);
-    const origExt = path.extname(found).replace('.', '');
-
-    const parsed = this.parser.parse(params);
-    const format = parsed.format ?? origExt;
-
-    const cacheBasePath = this.buildCachePath(resourceType, publicId, params);
-    const cacheFullPath = fullDiskPath(this.disk, cacheBasePath + '.' + format);
-
-    // Cache hit
-    if (existsSync(cacheFullPath)) {
-      return cacheFullPath;
-    }
-
-    const buffer = readFileSync(origFullPath);
-
-    const expressFile = {
-      buffer,
-      originalname: path.basename(origFullPath),
-      fieldname: 'file',
-    } as Express.Multer.File;
-
-    const result = await this.imageTransformer.transform(expressFile, parsed);
-
-    await this.storage
-      .getDisk(this.disk)
-      .put(cacheBasePath + '.' + format, result.buffer);
-
-    return cacheFullPath;
   }
 
   async uploadImage(
@@ -259,7 +143,6 @@ export class FileService {
       format,
       quality = 80,
       compress = true,
-      withName,
       sizes = [],
       generateThumbnail = false,
       thumbnailWidth = 300,
@@ -269,7 +152,7 @@ export class FileService {
 
     const detectedExt = extractExt(file.mimetype);
 
-    const baseName = withName ?? file.originalname.replace(/\.[^.]+$/, '');
+    const baseName = file.originalname.replace(/\.[^.]+$/, '');
     const ext = format ?? detectedExt;
     const filename = `${Date.now()}-${baseName}.${ext}`;
 
@@ -283,7 +166,7 @@ export class FileService {
 
     const buffer = await img.toBuffer();
     const targetPath = folder ? `${folder}/${filename}` : filename;
-    await this.storage.getDisk('public').put(targetPath, buffer);
+    await this.storage.getDisk(Storage.PUBLIC).put(targetPath, buffer);
 
     const result = {
       original: storagePath(this.disk, targetPath),
@@ -300,11 +183,11 @@ export class FileService {
       const sizeBuffer = await sharp(file.buffer).resize(size.width).toBuffer();
 
       await this.storage
-        .getDisk('public')
+        .getDisk(Storage.PUBLIC)
         .put(`${resizedFolder}/${resizedName}`, sizeBuffer);
 
       result.sizes[size.name] = storagePath(
-        this.disk,
+        Storage.PUBLIC,
         `${resizedFolder}/${resizedName}`,
       );
     }
@@ -319,10 +202,13 @@ export class FileService {
         .toBuffer();
 
       await this.storage
-        .getDisk(this.disk)
+        .getDisk(Storage.PUBLIC)
         .put(`${thumbFolder}/${thumbName}`, thumbnailBuffer);
 
-      result.thumbnail = storagePath(this.disk, `${thumbFolder}/${thumbName}`);
+      result.thumbnail = storagePath(
+        Storage.PUBLIC,
+        `${thumbFolder}/${thumbName}`,
+      );
     }
 
     return result;
@@ -338,7 +224,7 @@ export class FileService {
   }
 
   async uploadFile(file: Express.Multer.File, options: UploadFileOptions = {}) {
-    const { folder = 'files', rename = true } = options;
+    const { folder = 'docs', rename = true } = options;
 
     this.fileValidator.validateFile(file, options);
 
@@ -350,11 +236,11 @@ export class FileService {
       : file.originalname;
 
     await this.storage
-      .getDisk(this.disk)
+      .getDisk(Storage.PUBLIC)
       .put(`${folder}/${filename}`, file.buffer);
 
     return {
-      path: storagePath(this.disk, `${folder}/${filename}`),
+      path: storagePath(Storage.PUBLIC, `${folder}/${filename}`),
       size: file.size,
       mimeType: file.mimetype,
     };
@@ -369,5 +255,24 @@ export class FileService {
     }
 
     return Promise.all(files.map((f) => this.uploadFile(f, options)));
+  }
+
+  /**
+   * Generates a unique hash for the given media.
+   * The hash is based on a combination of the current timestamp, a random UUID, and a random number.
+   * @returns A unique hash as a string.
+   */
+  private generateHash(): string {
+    const now = Date.now().toString();
+    const rand = uuidv4();
+    return createHash('sha256')
+      .update(rand + now + Math.random().toString())
+      .digest('hex');
+  }
+
+  private detectResourceType(mime: string): string {
+    if (mime.includes('image')) return 'image';
+    if (mime.includes('video')) return 'video';
+    return 'raw';
   }
 }

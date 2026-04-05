@@ -74,14 +74,6 @@ class EnvironmentVariablesValidator {
 
   @IsString()
   @IsOptional()
-  ALLOWED_IMAGES: string;
-
-  @IsString()
-  @IsOptional()
-  UPLOAD_FOLDER: string;
-
-  @IsString()
-  @IsOptional()
   BULL_BOARD_PATH: string;
 }
 
@@ -108,10 +100,6 @@ export default registerAs<AppConfig>('app', () => {
     corsOrigin: getCorsOrigin(),
     secureHeaderOrigin:
       process.env.APP_SECURE_HEADER_ORIGIN || `http://localhost:${port}`,
-    allowedImages: process.env.ALLOWED_IMAGES
-      ? process.env.ALLOWED_IMAGES.split(',')
-      : ['image/png', 'image/jpeg', 'image/jpg', 'image/webp'],
-    uploadFolder: process.env.UPLOAD_FOLDER || 'uploads',
     bullBoardPath: process.env.BULL_BOARD_PATH || '/queues',
   };
 });

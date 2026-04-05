@@ -78,6 +78,7 @@ function setupSwagger(app: INestApplication) {
 
   SwaggerModule.setup('api-docs', app, document, {
     customSiteTitle: appName,
+    customfavIcon: '/favicon.png',
     swaggerOptions: {
       displayOperationId: true,
       persistAuthorization: true,

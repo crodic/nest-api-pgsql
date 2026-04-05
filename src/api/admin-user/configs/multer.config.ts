@@ -5,7 +5,7 @@ import { diskStorage } from 'multer';
 import { extname } from 'path';
 import { v4 as uuidv4 } from 'uuid';
 
-const UPLOAD_ROOT = process.env.UPLOAD_FOLDER || 'uploads';
+const UPLOAD_ROOT = 'storage';
 export const AVATAR_PATH = `${UPLOAD_ROOT}/avatars`;
 
 export const avatarUploadOption: MulterOptions = {

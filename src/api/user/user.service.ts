@@ -1,5 +1,4 @@
 import { ID } from '@/common/types/common.type';
-import { SYSTEM_USER_ID } from '@/constants/app.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
 import { Injectable, Logger } from '@nestjs/common';
@@ -74,8 +73,6 @@ export class UserService {
       ...dto,
       email,
       password,
-      createdBy: this.cls.get('userId') || SYSTEM_USER_ID,
-      updatedBy: this.cls.get('userId') || SYSTEM_USER_ID,
     });
 
     const savedUser = await this.userRepository.save(newUser);
@@ -95,7 +92,6 @@ export class UserService {
 
     user.firstname = updateUserDto.firstname;
     user.lastname = updateUserDto.lastname;
-    user.updatedBy = SYSTEM_USER_ID;
 
     await this.userRepository.save(user);
   }

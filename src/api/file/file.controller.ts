@@ -2,6 +2,13 @@ import { ErrorCode } from '@/constants/error-code.constant';
 import { ApiPublic } from '@/decorators/http.decorators';
 import { ValidationException } from '@/exceptions/validation.exception';
 import {
+  UploadedFile as FileSystemUploadedFile,
+  InjectDisk,
+  UploadFile,
+} from '@/libs/filesystem/decorators';
+import { StorageDriver } from '@/libs/filesystem/lib/file-storage.interface';
+import { StoredFile } from '@/libs/filesystem/types/stored-file.type';
+import {
   Body,
   Controller,
   Delete,
@@ -19,15 +26,24 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import path from 'path';
 import { UploadMultiple, UploadSingle } from './decorators/file.decorator';
 import { FileService } from './file.service';
 
 @ApiTags('Files')
-@Controller({ path: 'file', version: '1' })
+@Controller({ path: 'files', version: '1' })
 export class FileController {
-  constructor(private readonly fileService: FileService) {}
+  constructor(
+    private readonly fileService: FileService,
+    @InjectDisk('public')
+    private readonly localDisk: StorageDriver,
+  ) {}
 
   @Post('upload')
+  @ApiOperation({
+    summary: 'Upload file',
+    description: 'Single file upload',
+  })
   @UseInterceptors(FileInterceptor('file'))
   @ApiConsumes('multipart/form-data')
   @ApiBody({
@@ -55,14 +71,17 @@ export class FileController {
   @Delete(':publicId')
   @ApiPublic({
     summary: 'Delete file',
-    description: 'Delete file',
+    description: 'Delete file by publicId',
   })
   async delete(@Param('publicId') publicId: string) {
     return this.fileService.delete(publicId);
   }
 
-  @Post('sync')
-  @ApiOperation({ summary: 'Upload file' })
+  @Post('images/upload')
+  @ApiOperation({
+    summary:
+      'This endpoint uploads an image. Support multiple sizes and thumbnails.',
+  })
   @ApiConsumes('multipart/form-data')
   @ApiBody({
     description: 'File upload + options',
@@ -88,16 +107,12 @@ export class FileController {
   })
   @UploadSingle('file')
   @ApiResponse({ status: 201, description: 'Uploaded successfully' })
-  uploadSingle(@UploadedFile() file: Express.Multer.File) {
+  uploadSingle(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
     return this.fileService.uploadImage(file, {
-      folder: 'avatars',
-      sizes: [
-        { name: 'small', width: 200 },
-        { name: 'medium', width: 600 },
-        { name: 'large', width: 1200 },
-      ],
-      generateThumbnail: true,
-      thumbnailWidth: 250,
+      folder: body.folder,
+      sizes: body.sizes,
+      generateThumbnail: body.generateThumbnail,
+      thumbnailWidth: body.thumbnailWidth,
     });
   }
 
@@ -129,16 +144,16 @@ export class FileController {
     },
   })
   @UploadMultiple('files')
-  uploadMulti(@UploadedFiles() files: Express.Multer.File[]) {
+  uploadMulti(
+    @UploadedFiles() files: Express.Multer.File[],
+    @Body() body: any,
+  ) {
     if (!files || files.length === 0 || files.length > 2)
       throw new ValidationException(ErrorCode.E001, 'No files provided');
 
     return this.fileService.uploadImages(files, {
-      folder: 'gallery',
-      sizes: [
-        { name: 'preview', width: 500 },
-        { name: 'full', width: 1500 },
-      ],
+      folder: body.folder,
+      sizes: body.sizes,
     });
   }
 
@@ -163,5 +178,82 @@ export class FileController {
       allowedMimeTypes: ['text/plain'],
       maxFileSize: 5 * 1024 * 1024,
     });
+  }
+
+  @Post('images/test')
+  @ApiOperation({
+    summary:
+      'This endpoint uploads an image. Support multiple sizes and thumbnails.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload + options',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UploadSingle('file')
+  @ApiResponse({ status: 201, description: 'Uploaded successfully' })
+  async uploadTest(
+    @UploadedFile() file: Express.Multer.File,
+    @Body() body: any,
+  ) {
+    const rootDisk = this.localDisk.getDiskRoot();
+    const storedPath = path.join(rootDisk, 'test.png');
+    await this.localDisk.put(storedPath, file.buffer);
+    const url = await this.localDisk.url(storedPath);
+    console.log('URL: ', url);
+    await this.localDisk.exists(storedPath).then((exists) => {
+      console.log('File exists: ', exists);
+    });
+    // await this.localDisk.delete('test.txt').then(() => {
+    //   console.log('File is deleted');
+    // });
+
+    const disk = this.localDisk.getDiskRoot();
+
+    return {
+      disk,
+      size: file.size,
+      mimeType: file.mimetype,
+    };
+  }
+
+  @Post('images/test1')
+  @ApiOperation({
+    summary:
+      'This endpoint uploads an image. Support multiple sizes and thumbnails.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload + options',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UploadFile('file', {
+    disk: 'local',
+    rules: [
+      {
+        type: 'type',
+        allowedMimeTypes: ['image/png'],
+        allowedExtensions: ['png'],
+      },
+    ],
+  })
+  @ApiResponse({ status: 201, description: 'Uploaded successfully' })
+  async uploadTest2(@FileSystemUploadedFile() file: StoredFile) {
+    const url = await this.localDisk.url(file.storagePath);
+    return {
+      size: file.size,
+      mimeType: file.mimetype,
+      url: url,
+    };
   }
 }
