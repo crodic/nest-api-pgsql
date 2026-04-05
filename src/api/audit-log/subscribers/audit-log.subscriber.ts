@@ -87,6 +87,11 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       newValue[key] = event.entity?.[key];
     }
 
+    const userType =
+      currentUser && Object.keys(currentUser).length
+        ? (currentUser.role?.name ?? 'User')
+        : 'Guest';
+
     const log = auditRepo.create({
       entity: event.metadata.name,
       entityId: event.entity?.id ?? event.databaseEntity?.id ?? event.entityId,
@@ -101,6 +106,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       metadata: {
         actorId: userId ?? null,
         role: currentUser?.role?.name ?? null,
+        userType,
       },
       description: buildDescription(
         action,
