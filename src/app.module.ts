@@ -92,11 +92,29 @@ import loggerFactory from './utils/logger-factory';
         adapter: ExpressAdapter,
         middleware: expressBasicAuth({
           users: {
-            [config.getOrThrow('auth.bullBoardUsername', { infer: true })]:
-              config.getOrThrow('auth.bullBoardPassword', { infer: true }),
+            [config.getOrThrow('auth.adminPanelUsername', {
+              infer: true,
+            })]: config.getOrThrow('auth.adminPanelPassword', {
+              infer: true,
+            }),
           },
           challenge: true,
         }),
+        boardOptions: {
+          uiConfig: {
+            boardLogo: {
+              path: '/logo.png',
+              width: 50,
+              height: 50,
+            },
+            boardTitle: config.getOrThrow('app.name', { infer: true }),
+            favIcon: {
+              default: '/favicon.png',
+              alternative: '/favicon.png',
+            },
+            environment: config.getOrThrow('app.nodeEnv', { infer: true }),
+          },
+        },
       }),
     }),
 
@@ -155,7 +173,7 @@ import loggerFactory from './utils/logger-factory';
         },
         {
           rootPath: join(process.cwd(), 'public'),
-          serveRoot: '/public',
+          serveRoot: '/',
         },
         {
           rootPath: join(process.cwd(), 'storage', 'avatars'),

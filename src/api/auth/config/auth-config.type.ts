@@ -19,11 +19,6 @@ export type AuthConfig = {
   userConfirmEmailExpires: string;
   clientResetPasswordUrl: string;
 
-  // Swagger
-  swaggerUsername: string;
-  swaggerPassword: string;
-
-  // BullBoard
-  bullBoardUsername: string;
-  bullBoardPassword: string;
+  adminPanelUsername: string;
+  adminPanelPassword: string;
 };

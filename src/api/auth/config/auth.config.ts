@@ -1,7 +1,7 @@
 import { IsMs } from '@/decorators/validators/is-ms.decorator';
 import validateConfig from '@/utils/validate-config';
 import { registerAs } from '@nestjs/config';
-import { IsNotEmpty, IsOptional, IsString, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsString, IsUrl } from 'class-validator';
 import { AuthConfig } from './auth-config.type';
 
 class EnvironmentVariablesValidator {
@@ -90,20 +90,10 @@ class EnvironmentVariablesValidator {
   AUTH_CLIENT_RESET_PASSWORD_URL: string;
 
   @IsString()
-  @IsOptional()
-  SWAGGER_USERNAME: string;
+  ADMIN_PANEL_USERNAME: string;
 
   @IsString()
-  @IsOptional()
-  SWAGGER_PASSWORD: string;
-
-  @IsString()
-  @IsOptional()
-  BULL_BOARD_USERNAME: string;
-
-  @IsString()
-  @IsOptional()
-  BULL_BOARD_PASSWORD: string;
+  ADMIN_PANEL_PASSWORD: string;
 }
 
 export default registerAs<AuthConfig>('auth', () => {
@@ -134,10 +124,7 @@ export default registerAs<AuthConfig>('auth', () => {
       process.env.USER_AUTH_CONFIRM_EMAIL_TOKEN_EXPIRES_IN,
     clientResetPasswordUrl: process.env.USER_AUTH_CLIENT_RESET_PASSWORD_URL,
 
-    // Basic Auth
-    swaggerUsername: process.env.SWAGGER_USERNAME || 'swagger',
-    swaggerPassword: process.env.SWAGGER_PASSWORD || 'admin@2026',
-    bullBoardUsername: process.env.BULL_BOARD_USERNAME || 'bullboard',
-    bullBoardPassword: process.env.BULL_BOARD_PASSWORD || 'admin@2026',
+    adminPanelUsername: process.env.ADMIN_PANEL_USERNAME,
+    adminPanelPassword: process.env.ADMIN_PANEL_PASSWORD,
   };
 });

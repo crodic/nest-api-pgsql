@@ -40,11 +40,11 @@ async function bootstrap() {
   });
 
   app.use(
-    ['/api-docs', '/api-docs-json'],
+    ['/api-docs', '/api-docs-json', '/nestlens'],
     basicAuth({
       users: {
-        [configService.getOrThrow('auth.swaggerUsername', { infer: true })]:
-          configService.getOrThrow('auth.swaggerPassword', { infer: true }),
+        [configService.getOrThrow('auth.adminPanelUsername', { infer: true })]:
+          configService.getOrThrow('auth.adminPanelPassword', { infer: true }),
       },
       challenge: true,
       unauthorizedResponse: 'Unauthorized',
@@ -99,8 +99,7 @@ async function bootstrap() {
         { method: RequestMethod.POST, path: '__nestlens__/*path' },
         { method: RequestMethod.PUT, path: '__nestlens__/*path' },
         { method: RequestMethod.DELETE, path: '__nestlens__/*path' },
-        'storage/public/*path',
-        'storage/avatars/*path',
+        'storage/uploads/*path',
       ],
     },
   );

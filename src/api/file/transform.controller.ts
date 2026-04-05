@@ -4,7 +4,7 @@ import { Response } from 'express';
 import { FileService } from './file.service';
 
 @ApiTags('Files')
-@Controller({ path: 'storage' })
+@Controller({ path: 'storage/uploads' })
 export class TransformController {
   constructor(private readonly fileService: FileService) {}
 
