@@ -97,7 +97,7 @@ export class AdminUserService {
       email,
       password,
       bio,
-      role,
+      roleId: role.id,
       birthday: birthday ? new Date(birthday) : null,
       phone,
     });
@@ -147,7 +147,7 @@ export class AdminUserService {
     Object.assign(user, updateUserDto);
 
     delete user.password;
-    user.role = updatedRole;
+    user.roleId = updatedRole.id;
 
     await this.adminUserRepository.save(user);
   }

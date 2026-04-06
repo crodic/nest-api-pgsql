@@ -87,10 +87,13 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       newValue[key] = event.entity?.[key];
     }
 
-    const userType =
-      currentUser && Object.keys(currentUser).length
-        ? (currentUser.role?.name ?? 'User')
-        : 'Guest';
+    const isEmptyUser = !currentUser || Object.keys(currentUser).length === 0;
+
+    const userType = isEmptyUser
+      ? 'System'
+      : currentUser.role?.name
+      ? 'Admin'
+      : 'User';
 
     const log = auditRepo.create({
       entity: event.metadata.name,
