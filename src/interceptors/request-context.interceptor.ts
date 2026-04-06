@@ -14,7 +14,8 @@ export class RequestContextInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
 
-    this.cls.set('user', req.user);
+    console.log(req.ip)
+
     this.cls.set('ip', req.ip);
     this.cls.set('userAgent', req.headers['user-agent']);
     this.cls.set('requestId', req.headers['x-request-id']);

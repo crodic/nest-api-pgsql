@@ -38,7 +38,7 @@ export class UserAuthGuard extends AuthGuard('user-jwt') {
     const req = context.switchToHttp().getRequest();
     req.user = user;
 
-    this.cls.set('userId', user.id);
+    this.cls.set('user', user);
     this.cls.set('userType', UserEntity.name);
 
     return user;

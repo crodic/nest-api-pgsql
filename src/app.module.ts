@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import authConfig from '@/api/auth/config/auth.config';
@@ -43,6 +43,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
+import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 
 @Module({
   imports: [
@@ -202,4 +203,8 @@ import loggerFactory from './utils/logger-factory';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}
