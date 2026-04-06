@@ -34,7 +34,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
   }
 
   async afterSoftRemove(event: SoftRemoveEvent<any>) {
-    await this.saveLog('DELETE', event);
+    await this.saveLog('SOFT_DELETE', event);
   }
 
   async afterRecover(event: RecoverEvent<any>) {
