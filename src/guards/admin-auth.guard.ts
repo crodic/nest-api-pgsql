@@ -38,8 +38,7 @@ export class AdminAuthGuard extends AuthGuard('admin-jwt') {
     const request = context.switchToHttp().getRequest();
     request.user = user;
 
-    // Set CLS values
-    this.cls.set('userId', user.id);
+    this.cls.set('user', user);
     this.cls.set('userType', AdminUserEntity.name);
 
     return user;

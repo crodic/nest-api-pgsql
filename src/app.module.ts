@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 
 import authConfig from '@/api/auth/config/auth.config';
@@ -39,6 +39,9 @@ import { Environment } from '@/constants/app.constant';
 import path, { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
+import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
 
@@ -193,5 +196,15 @@ import loggerFactory from './utils/logger-factory';
     ApiModule,
     SharedModule,
   ],
+  providers: [
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: RequestContextInterceptor,
+    },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(RequestIdMiddleware).forRoutes('*');
+  }
+}
