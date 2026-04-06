@@ -14,11 +14,11 @@ export class RequestContextInterceptor implements NestInterceptor {
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const req = context.switchToHttp().getRequest();
 
-    console.log(req.ip)
-
-    this.cls.set('ip', req.ip);
-    this.cls.set('userAgent', req.headers['user-agent']);
-    this.cls.set('requestId', req.headers['x-request-id']);
+    if (this.cls?.isActive()) {
+      this.cls.set('ip', req.ip);
+      this.cls.set('userAgent', req.headers['user-agent']);
+      this.cls.set('requestId', req.headers['x-request-id'] || req.requestId);
+    }
 
     return next.handle();
   }

@@ -41,9 +41,9 @@ import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
+import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
-import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 
 @Module({
   imports: [
