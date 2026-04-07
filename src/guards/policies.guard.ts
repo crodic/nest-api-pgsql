@@ -2,12 +2,16 @@ import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
 import { IS_PUBLIC } from '@/constants/app.constant';
 import {
   CHECK_POLICIES_KEY,
-  CHECK_ALL_POLICIES_KEY,
   CHECK_ANY_POLICIES_KEY,
   PolicyHandler,
 } from '@/decorators/policies.decorator';
 import { CaslAbilityFactory } from '@/libs/casl/ability.factory';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
@@ -32,17 +36,20 @@ export class PoliciesGuard implements CanActivate {
         [context.getHandler(), context.getClass()],
       ) || [];
 
-    const allPolicies =
-      this.reflector.getAllAndOverride<PolicyHandler[]>(
-        CHECK_ALL_POLICIES_KEY,
-        [context.getHandler(), context.getClass()],
-      ) || [];
-
     const anyPolicies =
       this.reflector.getAllAndOverride<PolicyHandler[]>(
         CHECK_ANY_POLICIES_KEY,
         [context.getHandler(), context.getClass()],
       ) || [];
+
+    const decoratorsUsed = [policies.length > 0, anyPolicies.length > 0]
+      .filter(Boolean).length;
+
+    if (decoratorsUsed > 1) {
+      throw new InternalServerErrorException(
+        'Only one policy decorator is allowed per route',
+      );
+    }
 
     const request = context
       .switchToHttp()
@@ -50,16 +57,12 @@ export class PoliciesGuard implements CanActivate {
 
     const ability = this.caslFactory.createForUser(request.user);
 
-    if (policies.length && !policies.every((handler) => handler(ability))) {
-      return false;
+    if (policies.length) {
+      return policies.every((handler) => handler(ability));
     }
 
-    if (allPolicies.length && !allPolicies.every((handler) => handler(ability))) {
-      return false;
-    }
-
-    if (anyPolicies.length && !anyPolicies.some((handler) => handler(ability))) {
-      return false;
+    if (anyPolicies.length) {
+      return anyPolicies.some((handler) => handler(ability));
     }
 
     return true;

@@ -6,14 +6,10 @@ export interface PolicyHandler {
 }
 
 export const CHECK_POLICIES_KEY = 'check_policies';
-export const CHECK_ALL_POLICIES_KEY = 'check_all_policies';
 export const CHECK_ANY_POLICIES_KEY = 'check_any_policies';
 
 export const CheckPolicies = (...handlers: PolicyHandler[]) =>
   SetMetadata(CHECK_POLICIES_KEY, handlers);
-
-export const CheckAllPolicies = (...handlers: PolicyHandler[]) =>
-  SetMetadata(CHECK_ALL_POLICIES_KEY, handlers);
 
 export const CheckAnyPolicies = (...handlers: PolicyHandler[]) =>
   SetMetadata(CHECK_ANY_POLICIES_KEY, handlers);
