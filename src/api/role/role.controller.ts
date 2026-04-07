@@ -2,7 +2,6 @@ import { ID } from '@/common/types/common.type';
 import { ApiAuth } from '@/decorators/http.decorators';
 import {
   CheckPolicies,
-  CheckPoliciesLogic,
 } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
 import { PoliciesGuard } from '@/guards/policies.guard';
@@ -74,7 +73,6 @@ export class RoleController {
     (ability: AppAbility) => ability.can(AppActions.Read, AppSubjects.Role),
     (ability: AppAbility) => ability.can(AppActions.Read, AppSubjects.Admin),
   )
-  @CheckPoliciesLogic('OR')
   roleFormOptions() {
     return this.roleService.formOptions();
   }
