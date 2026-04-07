@@ -15,6 +15,19 @@ import { NestLensModule } from 'nestlens';
           password: process.env.REDIS_PASSWORD || undefined,
         },
       },
+      watchers: {
+        request: {
+          enabled: true,
+          ignorePaths: ['/health', '/metrics'],
+        },
+        query: {
+          enabled: true,
+          slowThreshold: 100, // milliseconds
+        },
+        model: {
+          enabled: true,
+        },
+      },
     }),
   ],
 })
