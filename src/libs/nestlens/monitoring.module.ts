@@ -18,14 +18,6 @@ import { NestLensModule } from 'nestlens';
       watchers: {
         request: {
           enabled: true,
-          ignorePaths: ['/health', '/metrics'],
-        },
-        query: {
-          enabled: true,
-          slowThreshold: 100, // milliseconds
-        },
-        model: {
-          enabled: true,
         },
       },
     }),
