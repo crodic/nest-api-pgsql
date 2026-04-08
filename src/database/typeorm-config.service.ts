@@ -29,7 +29,6 @@ export class TypeOrmConfigService implements TypeOrmOptionsFactory {
       ),
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
-      subscribers: [__dirname + '/subscribers/**/*{.ts,.js}'],
       migrationsTableName: 'migrations',
       poolSize: this.configService.get('database.maxConnections', {
         infer: true,
