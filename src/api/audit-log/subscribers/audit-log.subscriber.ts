@@ -16,6 +16,7 @@ import { AuditLogEntity } from '../entities/audit-log.entity';
 @EventSubscriber()
 export class AuditLogSubscriber implements EntitySubscriberInterface {
   private readonly logger = new Logger(AuditLogSubscriber.name);
+  private readonly ignoreEntities = [AuditLogEntity.name, SessionEntity.name];
 
   constructor(private dataSource: DataSource) {
     this.dataSource.subscribers.push(this);
@@ -46,8 +47,9 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     event: any,
   ) {
     if (
-      event.metadata.name === AuditLogEntity.name ||
-      event.metadata.name === SessionEntity.name
+      !event.entity ||
+      !event.entityId ||
+      this.ignoreEntities.includes(event.metadata.name)
     )
       return;
 
@@ -57,27 +59,6 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
     const auditRepo = event.manager.getRepository(AuditLogEntity);
     const currentUser = cls.get('user') ?? {};
     const userId = currentUser?.id;
-
-    const buildDescription = (
-      action: string,
-      entityType: string,
-      metadata?: any,
-    ) => {
-      switch (action) {
-        case 'INSERT':
-          return `New ${entityType} created`;
-        case 'UPDATE':
-          return `Updated ${entityType}`;
-        case 'DELETE':
-          return `Deleted ${entityType}`;
-        case 'RESTORE':
-          return `Restored ${entityType}`;
-        case 'SOFT_DELETE':
-          return `Soft deleted ${entityType}`;
-        default:
-          return '';
-      }
-    };
 
     const oldValue = {};
     const newValue = {};
@@ -105,7 +86,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
         role: currentUser?.role?.name ?? null,
         userType,
       },
-      description: buildDescription(
+      description: this.buildDescription(
         action,
         `${event.metadata.name}:${event.entity?.id ?? event.databaseEntity?.id ?? event.entityId}`,
       ),
@@ -113,4 +94,25 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
 
     setImmediate(() => auditRepo.save(log));
   }
+
+  private buildDescription = (
+    action: string,
+    entityType: string,
+    metadata?: any,
+  ) => {
+    switch (action) {
+      case 'INSERT':
+        return `New ${entityType} created`;
+      case 'UPDATE':
+        return `Updated ${entityType}`;
+      case 'DELETE':
+        return `Deleted ${entityType}`;
+      case 'RESTORE':
+        return `Restored ${entityType}`;
+      case 'SOFT_DELETE':
+        return `Soft deleted ${entityType}`;
+      default:
+        return `${action} ${entityType}`;
+    }
+  };
 }
