@@ -1,13 +1,17 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
-import { IS_PUBLIC, SKIP_POLICIES } from '@/constants/app.constant';
+import { IS_PUBLIC } from '@/constants/app.constant';
 import {
   CHECK_POLICIES_KEY,
-  CHECK_POLICIES_LOGIC_KEY,
+  CHECK_ANY_POLICIES_KEY,
   PolicyHandler,
-  PolicyLogic,
 } from '@/decorators/policies.decorator';
 import { CaslAbilityFactory } from '@/libs/casl/ability.factory';
-import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  CanActivate,
+  ExecutionContext,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 
@@ -24,36 +28,43 @@ export class PoliciesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    const isSkipPolices = this.reflector.getAllAndOverride<boolean>(
-      SKIP_POLICIES,
-      [context.getHandler(), context.getClass()],
-    );
+    if (isPublic) return true;
 
-    if (isPublic || isSkipPolices) return true;
-
-    const handlers =
-      this.reflector.get<PolicyHandler[]>(
+    const policies =
+      this.reflector.getAllAndOverride<PolicyHandler[]>(
         CHECK_POLICIES_KEY,
-        context.getHandler(),
+        [context.getHandler(), context.getClass()],
       ) || [];
 
-    const logic =
-      this.reflector.get<PolicyLogic>(
-        CHECK_POLICIES_LOGIC_KEY,
-        context.getHandler(),
-      ) || 'AND';
+    const anyPolicies =
+      this.reflector.getAllAndOverride<PolicyHandler[]>(
+        CHECK_ANY_POLICIES_KEY,
+        [context.getHandler(), context.getClass()],
+      ) || [];
+
+    const decoratorsUsed = [policies.length > 0, anyPolicies.length > 0]
+      .filter(Boolean).length;
+
+    if (decoratorsUsed > 1) {
+      throw new InternalServerErrorException(
+        'Only one policy decorator is allowed per route',
+      );
+    }
 
     const request = context
       .switchToHttp()
       .getRequest<Request & { user: AdminUserEntity }>();
-    const user = request.user;
 
-    const ability = this.caslFactory.createForUser(user);
+    const ability = this.caslFactory.createForUser(request.user);
 
-    if (logic === 'OR') {
-      return handlers.some((handler) => handler(ability));
+    if (policies.length) {
+      return policies.every((handler) => handler(ability));
     }
 
-    return handlers.every((handler) => handler(ability));
+    if (anyPolicies.length) {
+      return anyPolicies.some((handler) => handler(ability));
+    }
+
+    return true;
   }
 }
