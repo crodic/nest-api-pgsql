@@ -20,7 +20,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: nestjs_boilerplate
+      POSTGRES_DB: boilerplate
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       TZ: 'UTC'
@@ -68,20 +68,6 @@ services:
       PGADMIN_DEFAULT_PASSWORD: 12345678
       PGADMIN_CONFIG_WTF_CSRF_ENABLED: 'False'
       PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION: 'False'
-    networks:
-      - nestjs-boilerplate-network
-
-  pictshare:
-    image: hascheksolutions/pictshare
-    container_name: pictshare
-    restart: unless-stopped
-    ports:
-      - '5050:80'
-    environment:
-      - URL=http://localhost:5050/
-      - MAX_UPLOAD_SIZE=1024
-    volumes:
-      - /data/pictshareuploads:/usr/share/nginx/html/data
     networks:
       - nestjs-boilerplate-network
 
