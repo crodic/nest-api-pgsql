@@ -1,5 +1,6 @@
 import { Storage } from '@/constants/app.constant';
-import { StorageService } from '@/libs/storage';
+import { InjectDisk } from '@/libs/filesystem/decorators';
+import { StorageDriver } from '@/libs/filesystem/lib/file-storage.interface';
 import {
   applyFormat,
   extractExt,
@@ -30,7 +31,8 @@ export class FileService {
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
     private readonly fileValidator: FileValidator,
-    private readonly storage: StorageService,
+    @InjectDisk('public')
+    private readonly localDisk: StorageDriver,
   ) {}
 
   async original(
@@ -77,9 +79,12 @@ export class FileService {
     const ext = file.originalname.split('.').pop();
     const folderPath = folder ? join(resourceType, folder) : join(resourceType);
 
-    const storedPath = join(folderPath, `${publicId}.${ext}`);
+    const disk = this.localDisk.getDiskRoot();
+    const storedPath = join(disk, folderPath, `${publicId}.${ext}`);
 
-    this.storage.getDisk(Storage.PUBLIC).put(storedPath, file.buffer);
+    this.localDisk.put(storedPath, file.buffer);
+
+    // this.storage.getDisk(Storage.PUBLIC).put(storedPath, file.buffer);
 
     const size = file.size;
     const originalName = file.originalname;
@@ -125,7 +130,7 @@ export class FileService {
       public_id: publicId,
     });
 
-    await this.storage.getDisk(Storage.PUBLIC).delete(file.path);
+    await this.localDisk.delete(file.path);
 
     await this.fileRepository.delete({ public_id: publicId });
 
@@ -166,7 +171,10 @@ export class FileService {
 
     const buffer = await img.toBuffer();
     const targetPath = folder ? `${folder}/${filename}` : filename;
-    await this.storage.getDisk(Storage.PUBLIC).put(targetPath, buffer);
+    const disk = this.localDisk.getDiskRoot();
+    const storedPath = join(disk, targetPath);
+
+    await this.localDisk.put(storedPath, buffer);
 
     const result = {
       original: storagePath(this.disk, targetPath),
@@ -182,9 +190,10 @@ export class FileService {
 
       const sizeBuffer = await sharp(file.buffer).resize(size.width).toBuffer();
 
-      await this.storage
-        .getDisk(Storage.PUBLIC)
-        .put(`${resizedFolder}/${resizedName}`, sizeBuffer);
+      await this.localDisk.put(
+        join(disk, `${resizedFolder}/${resizedName}`),
+        sizeBuffer,
+      );
 
       result.sizes[size.name] = storagePath(
         Storage.PUBLIC,
@@ -198,12 +207,13 @@ export class FileService {
       const thumbName = `${Date.now()}-${baseName}-thumb.${ext}`;
 
       const thumbnailBuffer = await sharp(file.buffer)
-        .resize(thumbnailWidth)
+        .resize(Number(thumbnailWidth))
         .toBuffer();
 
-      await this.storage
-        .getDisk(Storage.PUBLIC)
-        .put(`${thumbFolder}/${thumbName}`, thumbnailBuffer);
+      await this.localDisk.put(
+        join(disk, `${thumbFolder}/${thumbName}`),
+        thumbnailBuffer,
+      );
 
       result.thumbnail = storagePath(
         Storage.PUBLIC,
@@ -235,9 +245,8 @@ export class FileService {
       ? `${Date.now()}-${base}.${ext}`
       : file.originalname;
 
-    await this.storage
-      .getDisk(Storage.PUBLIC)
-      .put(`${folder}/${filename}`, file.buffer);
+    const disk = this.localDisk.getDiskRoot();
+    await this.localDisk.put(join(disk, `${folder}/${filename}`), file.buffer);
 
     return {
       path: storagePath(Storage.PUBLIC, `${folder}/${filename}`),

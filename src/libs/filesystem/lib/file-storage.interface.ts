@@ -183,6 +183,7 @@ export interface S3DiskConfig {
   endpoint?: string;
   cdnBaseUrl?: string;
   apiVersion?: string;
+  forcePathStyle?: boolean;
 }
 
 /**

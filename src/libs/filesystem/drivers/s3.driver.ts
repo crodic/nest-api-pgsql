@@ -14,7 +14,11 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { PassThrough, Readable } from 'stream';
-import { FileMetadata, S3DiskConfig, StorageDriver } from '../lib/file-storage.interface';
+import {
+  FileMetadata,
+  S3DiskConfig,
+  StorageDriver,
+} from '../lib/file-storage.interface';
 
 /**
  * Storage driver for AWS S3 operations using the AWS SDK.
@@ -38,6 +42,7 @@ export class S3StorageDriver implements StorageDriver {
       region: config.region || 'default',
       endpoint: config.endpoint,
       apiVersion: config.apiVersion,
+      forcePathStyle: true,
     });
     this.bucket = config.bucket;
     this.cdnBaseUrl = config.cdnBaseUrl || '';
@@ -92,7 +97,10 @@ export class S3StorageDriver implements StorageDriver {
    * @param path Path of the file.
    * @param visibility Visibility setting.
    */
-  async setVisibility(path: string, visibility: 'public' | 'private'): Promise<void> {
+  async setVisibility(
+    path: string,
+    visibility: 'public' | 'private',
+  ): Promise<void> {
     await this.s3Client.send(
       new PutObjectCommand({
         Bucket: this.bucket,
@@ -280,7 +288,9 @@ export class S3StorageDriver implements StorageDriver {
     );
     let dirs: string[] = [];
     if (response.CommonPrefixes) {
-      dirs = response.CommonPrefixes.map((cp) => cp.Prefix || '').filter(Boolean);
+      dirs = response.CommonPrefixes.map((cp) => cp.Prefix || '').filter(
+        Boolean,
+      );
     }
     if (recursive && dirs.length > 0) {
       for (const dir of dirs) {
@@ -314,7 +324,9 @@ export class S3StorageDriver implements StorageDriver {
     options?: { ip?: string; deviceId?: string },
   ): Promise<string> {
     if (options?.ip || options?.deviceId) {
-      throw new Error('IP/device restriction is not supported for S3 temporary URLs');
+      throw new Error(
+        'IP/device restriction is not supported for S3 temporary URLs',
+      );
     }
     const command = new GetObjectCommand({
       Bucket: this.bucket,
@@ -398,7 +410,11 @@ export class S3StorageDriver implements StorageDriver {
   async putTimed(
     path: string,
     content: Buffer | string,
-    options: { expiresAt?: Date; ttl?: number; visibility?: 'public' | 'private' },
+    options: {
+      expiresAt?: Date;
+      ttl?: number;
+      visibility?: 'public' | 'private';
+    },
   ): Promise<void> {
     await this.put(path, content, options);
     const expiresAt = options.expiresAt
@@ -407,7 +423,9 @@ export class S3StorageDriver implements StorageDriver {
         ? Date.now() + options.ttl * 1000
         : undefined;
     if (expiresAt) {
-      const tagging: Tagging = { TagSet: [{ Key: 'expiresAt', Value: String(expiresAt) }] };
+      const tagging: Tagging = {
+        TagSet: [{ Key: 'expiresAt', Value: String(expiresAt) }],
+      };
       await this.s3Client.send(
         new PutObjectTaggingCommand({
           Bucket: this.bucket,
@@ -442,7 +460,9 @@ export class S3StorageDriver implements StorageDriver {
         );
         const expiresTag = tagResp.TagSet?.find((t) => t.Key === 'expiresAt');
         if (expiresTag && Date.now() > Number(expiresTag.Value)) {
-          await this.s3Client.send(new DeleteObjectCommand({ Bucket: this.bucket, Key: obj.Key }));
+          await this.s3Client.send(
+            new DeleteObjectCommand({ Bucket: this.bucket, Key: obj.Key }),
+          );
           deleted++;
         }
       }

@@ -110,9 +110,11 @@ export class FileController {
   uploadSingle(@UploadedFile() file: Express.Multer.File, @Body() body: any) {
     return this.fileService.uploadImage(file, {
       folder: body.folder,
-      sizes: body.sizes,
-      generateThumbnail: body.generateThumbnail,
-      thumbnailWidth: body.thumbnailWidth,
+      sizes: JSON.parse(body.sizes),
+      generateThumbnail: body.generateThumbnail === 'true' ? true : false,
+      thumbnailWidth: body.thumbnailWidth
+        ? parseInt(body.thumbnailWidth)
+        : undefined,
     });
   }
 
@@ -249,6 +251,41 @@ export class FileController {
   })
   @ApiResponse({ status: 201, description: 'Uploaded successfully' })
   async uploadTest2(@FileSystemUploadedFile() file: StoredFile) {
+    const url = await this.localDisk.url(file.storagePath);
+    return {
+      size: file.size,
+      mimeType: file.mimetype,
+      url: url,
+    };
+  }
+
+  @Post('images/minio')
+  @ApiOperation({
+    summary:
+      'This endpoint uploads an image. Support multiple sizes and thumbnails1.',
+  })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload + options',
+    schema: {
+      type: 'object',
+      properties: {
+        file: { type: 'string', format: 'binary' },
+      },
+    },
+  })
+  @UploadFile('file', {
+    disk: 's3',
+    rules: [
+      {
+        type: 'type',
+        allowedMimeTypes: ['image/png'],
+        allowedExtensions: ['png'],
+      },
+    ],
+  })
+  @ApiResponse({ status: 201, description: 'Uploaded successfully' })
+  async uploadMinio(@FileSystemUploadedFile() file: StoredFile) {
     const url = await this.localDisk.url(file.storagePath);
     return {
       size: file.size,
