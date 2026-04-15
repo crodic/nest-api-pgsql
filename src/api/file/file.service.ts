@@ -224,6 +224,15 @@ export class FileService {
     return result;
   }
 
+  async uploadImages(
+    files: Express.Multer.File[],
+    options: UploadImageOptions = {},
+  ) {
+    if (!files || files.length === 0) throw new Error('No files provided');
+
+    return Promise.all(files.map((file) => this.uploadImage(file, options)));
+  }
+
   async uploadFile(file: Express.Multer.File, options: UploadFileOptions = {}) {
     const { folder = 'docs', rename = true } = options;
 
@@ -244,6 +253,17 @@ export class FileService {
       size: file.size,
       mimeType: file.mimetype,
     };
+  }
+
+  async uploadFiles(
+    files: Express.Multer.File[],
+    options: UploadFileOptions = {},
+  ) {
+    if (!files || files.length === 0) {
+      throw new Error('No files provided');
+    }
+
+    return Promise.all(files.map((f) => this.uploadFile(f, options)));
   }
 
   /**
