@@ -3,6 +3,7 @@ export enum AppSubjects {
   Role = 'ROLE',
   Log = 'LOG',
   Admin = 'ADMIN',
+  Dashboard = 'DASHBOARD',
 
   All = 'all',
 }
@@ -38,6 +39,9 @@ export const ALL_PERMISSIONS = [
 
   // Log
   { name: `${AppActions.Read}:${AppSubjects.Log}` },
+
+  // Dashboard
+  { name: `${AppActions.Read}:${AppSubjects.Dashboard}` },
 
   // SUPER
   { name: `${AppActions.Manage}:${AppSubjects.All}` },
