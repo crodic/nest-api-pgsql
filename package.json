@@ -87,7 +87,6 @@
     "nestjs-i18n": "^10.6.0",
     "nestjs-paginate": "^12.9.0",
     "nestjs-pino": "^4.6.0",
-    "nestlens": "^0.4.0",
     "node-fetch": "^3.3.2",
     "nodemailer": "^8.0.1",
     "passport": "^0.7.0",
