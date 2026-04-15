@@ -28,5 +28,7 @@ import { CacheableMemory, Keyv } from 'cacheable';
       inject: [ConfigService],
     }),
   ],
+  providers: [],
+  exports: [],
 })
 export class RedisModule {}

@@ -19,8 +19,18 @@ import { NestLensModule } from 'nestlens';
         request: {
           enabled: true,
         },
+        query: {
+          enabled: true,
+        },
+        mail: {
+          enabled: true,
+        },
+        cache: {
+          enabled: true,
+        },
       },
     }),
   ],
+  providers: [],
 })
 export class MonitoringModule {}
