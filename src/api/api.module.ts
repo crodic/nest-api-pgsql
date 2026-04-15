@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module';
 import { FileModule } from './file/file.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
+import { NotificationModule } from './notification/notification.module';
 import { RoleModule } from './role/role.module';
 import { SettingsModule } from './settings/settings.module';
 import { UserModule } from './user/user.module';
@@ -18,6 +19,7 @@ import { UserModule } from './user/user.module';
     AuditLogModule,
     RoleModule,
     AdminUserModule,
+    NotificationModule,
     SettingsModule,
     FileModule,
   ],
