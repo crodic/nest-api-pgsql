@@ -1,7 +1,8 @@
-import 'reflect-metadata';
 import { Test, TestingModule } from '@nestjs/testing';
-import { FileStorageService } from './file-storage.service';
+import 'reflect-metadata';
 import { StorageConfig } from '../types/storage-config.type';
+import { LocalDiskConfig } from './file-storage.interface';
+import { FileStorageService } from './file-storage.service';
 
 const mockDriver = {
   put: jest.fn(),
@@ -16,7 +17,7 @@ const mockDriver = {
   url: jest.fn(),
 };
 
-const config: StorageConfig = {
+const config: StorageConfig<{ local: LocalDiskConfig }> = {
   default: 'local',
   disks: {
     local: {
@@ -48,7 +49,11 @@ describe('FileStorageService', () => {
 
   it('should call put on the driver', async () => {
     await service.put('file.txt', Buffer.from('data'));
-    expect(mockDriver.put).toHaveBeenCalledWith('file.txt', Buffer.from('data'), undefined);
+    expect(mockDriver.put).toHaveBeenCalledWith(
+      'file.txt',
+      Buffer.from('data'),
+      undefined,
+    );
   });
 
   it('should call get on the driver', async () => {

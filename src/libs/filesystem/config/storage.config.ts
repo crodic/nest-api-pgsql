@@ -1,8 +1,8 @@
 import { Storage } from '@/constants/app.constant';
+import validateConfig from '@/utils/validate-config';
 import { registerAs } from '@nestjs/config';
 import { IsEnum, IsOptional, IsString, IsUrl } from 'class-validator';
 import process from 'node:process';
-import validateConfig from '../../../utils/validate-config';
 import { StorageConfig } from './storage-config.type';
 
 class EnvironmentVariablesValidator {

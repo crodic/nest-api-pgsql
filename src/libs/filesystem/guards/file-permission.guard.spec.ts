@@ -1,6 +1,6 @@
-import 'reflect-metadata';
-import { FilePermissionGuard, FILE_PERMISSION_POLICY_KEY } from './file-permission.guard';
 import { Reflector } from '@nestjs/core';
+import 'reflect-metadata';
+import { FilePermissionGuard } from './file-permission.guard';
 
 describe('FilePermissionGuard', () => {
   let guard: FilePermissionGuard;
@@ -25,7 +25,9 @@ describe('FilePermissionGuard', () => {
     const policy = jest.fn().mockResolvedValue(false);
     (reflector.getAllAndOverride as any).mockReturnValue(policy);
     const ctx: any = {
-      switchToHttp: () => ({ getRequest: () => ({ params: { path: 'a', disk: 'd' } }) }),
+      switchToHttp: () => ({
+        getRequest: () => ({ params: { path: 'a', disk: 'd' } }),
+      }),
       getHandler: () => ({}),
       getClass: () => ({}),
     };

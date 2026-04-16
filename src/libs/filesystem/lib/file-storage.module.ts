@@ -1,14 +1,17 @@
 import { DynamicModule, Module, Provider, Type } from '@nestjs/common';
 import { createDiskProvider } from '../providers/dynamic-disk.provider';
 import { StorageConfig } from '../types/storage-config.type';
-import { DiskObjectValidation, StorageDiskConfig } from './file-storage.interface';
+import { StorageDiskConfig } from './file-storage.interface';
 import { FileStorageService } from './file-storage.service';
 
 /**
  * Options for asynchronously configuring the FileStorageModule.
  */
 export interface FileStorageModuleAsyncOptions<
-  T extends Record<string, StorageDiskConfig> = Record<string, StorageDiskConfig>,
+  T extends Record<string, StorageDiskConfig> = Record<
+    string,
+    StorageDiskConfig
+  >,
 > {
   isGlobal?: boolean;
   imports?: any[];
@@ -36,12 +39,20 @@ export class FileStorageModule {
    * @param config Storage configuration and optional global flag.
    * @returns A dynamic module for NestJS.
    */
-  static forRoot<T extends Record<string, StorageDiskConfig> = Record<string, StorageDiskConfig>>({
+  static forRoot<
+    T extends Record<string, StorageDiskConfig> = Record<
+      string,
+      StorageDiskConfig
+    >,
+  >({
     isGlobal,
     ...config
   }: StorageConfig<T> & { isGlobal?: boolean }): DynamicModule {
-    const diskProviders: Provider[] = Object.keys(config.disks).map((diskName) =>
-      createDiskProvider(diskName, (storage: FileStorageService<T>) => storage.disk(diskName)),
+    const diskProviders: Provider[] = Object.keys(config.disks).map(
+      (diskName) =>
+        createDiskProvider(diskName, (storage: FileStorageService<T>) =>
+          storage.disk(diskName),
+        ),
     );
     return {
       global: isGlobal ?? false,
@@ -61,7 +72,10 @@ export class FileStorageModule {
    * @returns A dynamic module for NestJS.
    */
   static forRootAsync<
-    T extends Record<string, StorageDiskConfig> = Record<string, StorageDiskConfig>,
+    T extends Record<string, StorageDiskConfig> = Record<
+      string,
+      StorageDiskConfig
+    >,
   >(options: FileStorageModuleAsyncOptions<T>): DynamicModule {
     const asyncProvider: Provider = options.useFactory
       ? {
@@ -76,10 +90,12 @@ export class FileStorageModule {
     // Build explicit per-disk providers based on the declared diskNames.
     // In async registration we cannot compute provider tokens from the resolved
     // config at compile time, so we rely on the caller to provide diskNames.
-    const diskProviders: Provider[] = (options.injectables || []).map((diskName) =>
-      createDiskProvider<T>(diskName as string, (storage: FileStorageService<T>) =>
-        storage.disk(diskName as string),
-      ),
+    const diskProviders: Provider[] = (options.injectables || []).map(
+      (diskName) =>
+        createDiskProvider<T>(
+          diskName as string,
+          (storage: FileStorageService<T>) => storage.disk(diskName as string),
+        ),
     );
     return {
       global: options.isGlobal ?? false,

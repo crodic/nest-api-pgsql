@@ -8,9 +8,6 @@ import { Inject } from '@nestjs/common';
  * private readonly fileStorageService: FileStorageService,
  * @InjectDisk('s3')
  * private readonly fileStorageService: FileStorageService,
- * @InjectDisk('ftp')
- * private readonly fileStorageService: FileStorageService,
- * @InjectDisk('sftp')
  * private readonly fileStorageService: FileStorageService,
  * @InjectDisk('dropbox')
  * private readonly fileStorageService: FileStorageService,

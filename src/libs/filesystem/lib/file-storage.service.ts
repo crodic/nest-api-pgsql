@@ -1,23 +1,17 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BufferStorageDriver } from '../drivers/buffer.driver';
 import { DropboxStorageDriver } from '../drivers/dropbox.driver';
-import { FTPStorageDriver } from '../drivers/ftp.driver';
 import { GoogleDriveStorageDriver } from '../drivers/google-drive.driver';
 import { LocalStorageDriver } from '../drivers/local.driver';
 import { S3StorageDriver } from '../drivers/s3.driver';
-import { ScopedStorageDriver } from '../drivers/scoped.driver';
-import { SFTPStorageDriver } from '../drivers/sftp.driver';
 import { StorageConfig } from '../types/storage-config.type';
 import {
   BufferDiskConfig,
   DiskObjectValidation,
   DropboxDiskConfig,
-  FTPDiskConfig,
   GoogleDriveDiskConfig,
   LocalDiskConfig,
   S3DiskConfig,
-  ScopedDiskConfig,
-  SFTPDiskConfig,
   StorageDisk,
   StorageDiskConfig,
   StorageDriver,
@@ -62,14 +56,6 @@ export class FileStorageService<T = any> {
           case 's3':
             driverInstance = new S3StorageDriver(diskConfig as S3DiskConfig);
             break;
-          case 'ftp':
-            driverInstance = new FTPStorageDriver(diskConfig as FTPDiskConfig);
-            break;
-          case 'sftp':
-            driverInstance = new SFTPStorageDriver(
-              diskConfig as SFTPDiskConfig,
-            );
-            break;
           case 'dropbox':
             driverInstance = new DropboxStorageDriver(
               diskConfig as DropboxDiskConfig,
@@ -78,13 +64,6 @@ export class FileStorageService<T = any> {
           case 'gdrive':
             driverInstance = new GoogleDriveStorageDriver(
               diskConfig as GoogleDriveDiskConfig,
-            );
-            break;
-          case 'scoped':
-            // برای scoped باید یک driver دیگر هم پاس داده شود، اینجا فرض می‌کنیم local به عنوان پیش‌فرض
-            driverInstance = new ScopedStorageDriver(
-              diskConfig as ScopedDiskConfig,
-              new LocalStorageDriver({ driver: 'local', root: '' }),
             );
             break;
           default:

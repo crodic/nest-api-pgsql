@@ -196,35 +196,6 @@ export interface DropboxDiskConfig {
 }
 
 /**
- * Configuration for an FTP disk storage driver.
- */
-export interface FTPDiskConfig {
-  driver: 'ftp';
-  host: string;
-  user: string;
-  password: string;
-  port?: number;
-  secure?: boolean;
-  basePublicUrl?: string;
-  root: string;
-}
-
-/**
- * Configuration for an SFTP disk storage driver.
- */
-export interface SFTPDiskConfig {
-  driver: 'sftp';
-  host: string;
-  port?: number;
-  username: string;
-  password?: string;
-  privateKey?: string;
-  passphrase?: string;
-  basePublicUrl?: string;
-  root: string;
-}
-
-/**
  * Configuration for a Google Drive disk storage driver.
  */
 export interface GoogleDriveDiskConfig {
@@ -235,14 +206,6 @@ export interface GoogleDriveDiskConfig {
   basePublicUrl?: string;
 }
 
-/**
- * Configuration for a scoped disk storage driver.
- */
-export interface ScopedDiskConfig {
-  driver: 'scoped';
-  prefix: string;
-}
-
 export interface BufferDiskConfig {
   driver: 'buffer';
 }
@@ -251,10 +214,7 @@ export type StorageDiskConfig =
   | LocalDiskConfig
   | S3DiskConfig
   | DropboxDiskConfig
-  | FTPDiskConfig
-  | SFTPDiskConfig
   | GoogleDriveDiskConfig
-  | ScopedDiskConfig
   | BufferDiskConfig;
 
 /**

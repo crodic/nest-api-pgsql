@@ -4,9 +4,9 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import authConfig from '@/api/auth/config/auth.config';
 import appConfig from '@/config/app.config';
 import databaseConfig from '@/database/config/database.config';
+import storageConfig from '@/libs/filesystem/config/storage.config';
 import mailConfig from '@/mail/config/mail.config';
 import redisConfig from '@/redis/config/redis.config';
-import storageConfig from '@/libs/filesystem/config/storage.config';
 
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -40,14 +40,14 @@ import path, { join } from 'path';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 import { APP_INTERCEPTOR } from '@nestjs/core';
+import { ScheduleModule } from '@nestjs/schedule';
+import { CommandModule } from './commands/command.module';
 import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
+import { HttpClientModule } from './libs/http-client.module';
 import { MonitoringModule } from './libs/nestlens/monitoring.module';
 import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
-import { CqrsNestlensBridgeModule } from './commands/cqrs-nest-bride.module';
-import { ScheduleModule } from '@nestjs/schedule';
-import { HttpClientModule } from './libs/http-client.module';
 
 @Module({
   imports: [
@@ -199,7 +199,7 @@ import { HttpClientModule } from './libs/http-client.module';
     MailModule,
     ApiModule,
     SharedModule,
-    CqrsNestlensBridgeModule,
+    CommandModule,
     HttpClientModule,
     MonitoringModule,
   ],
