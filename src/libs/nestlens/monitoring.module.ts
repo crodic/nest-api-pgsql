@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import 'dotenv/config';
 import { NestLensModule } from 'nestlens';
 
