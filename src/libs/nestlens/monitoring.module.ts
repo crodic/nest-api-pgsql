@@ -30,6 +30,9 @@ import { NestLensModule } from 'nestlens';
         },
         command: {
           enabled: true,
+        },
+        httpClient: {
+          enabled: true
         }
       },
     }),

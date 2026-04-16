@@ -47,6 +47,7 @@ import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
 import { CqrsNestlensBridgeModule } from './commands/cqrs-nest-bride.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { HttpClientModule } from './libs/http-client.module';
 
 @Module({
   imports: [
@@ -199,6 +200,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     ApiModule,
     SharedModule,
     CqrsNestlensBridgeModule,
+    HttpClientModule,
     MonitoringModule,
   ],
   providers: [
