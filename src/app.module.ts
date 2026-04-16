@@ -6,7 +6,7 @@ import appConfig from '@/config/app.config';
 import databaseConfig from '@/database/config/database.config';
 import mailConfig from '@/mail/config/mail.config';
 import redisConfig from '@/redis/config/redis.config';
-import storageConfig from '@/storage/config/storage.config';
+import storageConfig from '@/libs/filesystem/config/storage.config';
 
 import { TypeOrmConfigService } from '@/database/typeorm-config.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -45,8 +45,7 @@ import { MonitoringModule } from './libs/nestlens/monitoring.module';
 import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
-import { CqrsNestlensBridgeModule } from './libs/cqrs-nest-bride.module';
-import { ScheduleNestModule } from './libs/schedule-nest.module';
+import { CqrsNestlensBridgeModule } from './commands/cqrs-nest-bride.module';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
@@ -200,7 +199,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     ApiModule,
     SharedModule,
     CqrsNestlensBridgeModule,
-    ScheduleNestModule,
     MonitoringModule,
   ],
   providers: [

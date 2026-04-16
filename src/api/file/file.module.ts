@@ -1,4 +1,4 @@
-import { StorageModule } from '@/storage/storage.module';
+import { StorageModule } from '@/libs/filesystem/storage.module';
 import { ImageTransformer } from '@/utils/transformers/image.transformer';
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';

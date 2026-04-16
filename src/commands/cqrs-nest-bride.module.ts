@@ -10,7 +10,7 @@ import { NESTLENS_COMMAND_BUS } from "nestlens";
       provide: NESTLENS_COMMAND_BUS,
       useFactory: (commandBus: CommandBus) => commandBus,
       inject: [CommandBus],
-    },
+    }
   ],
   exports: [NESTLENS_COMMAND_BUS],
 })
