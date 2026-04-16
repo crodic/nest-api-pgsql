@@ -5,7 +5,6 @@ import { NestLensModule } from 'nestlens';
 
 @Module({
   imports: [
-    ScheduleModule.forRoot(),
     NestLensModule.forRoot({
       enabled: !!process.env.NEST_LENS_ENABLED,
       storage: {
@@ -32,9 +31,6 @@ import { NestLensModule } from 'nestlens';
         },
         command: {
           enabled: true,
-        },
-        schedule: {
-          enabled: true
         }
       },
     }),
