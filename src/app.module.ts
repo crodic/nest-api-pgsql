@@ -45,6 +45,9 @@ import { MonitoringModule } from './libs/nestlens/monitoring.module';
 import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';
 import loggerFactory from './utils/logger-factory';
+import { CqrsNestlensBridgeModule } from './libs/cqrs-nest-bride.module';
+import { ScheduleNestModule } from './libs/schedule-nest.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -189,13 +192,15 @@ import loggerFactory from './utils/logger-factory';
       middleware: { mount: true },
       global: true,
     }),
-
+    ScheduleModule.forRoot(),
     SentryModule.forRoot(),
     LibsModule,
     BackgroundModule,
     MailModule,
     ApiModule,
     SharedModule,
+    CqrsNestlensBridgeModule,
+    ScheduleNestModule,
     MonitoringModule,
   ],
   providers: [
@@ -204,6 +209,7 @@ import loggerFactory from './utils/logger-factory';
       useClass: RequestContextInterceptor,
     },
   ],
+  exports: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {

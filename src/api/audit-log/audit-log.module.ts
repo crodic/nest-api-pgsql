@@ -9,9 +9,9 @@ import { AuditLogSubscriber } from './subscribers/audit-log.subscriber';
 @Module({
   imports: [
     TypeOrmModule.forFeature([AuditLogEntity]),
-    ScheduleModule.forRoot(),
   ],
   providers: [AuditLogSubscriber, AuditLogService],
   controllers: [AuditLogController],
+  exports: [AuditLogService],
 })
 export class AuditLogModule {}

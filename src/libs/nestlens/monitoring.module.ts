@@ -1,9 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ScheduleModule } from '@nestjs/schedule';
 import 'dotenv/config';
 import { NestLensModule } from 'nestlens';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     NestLensModule.forRoot({
       enabled: !!process.env.NEST_LENS_ENABLED,
       storage: {
@@ -28,9 +30,14 @@ import { NestLensModule } from 'nestlens';
         cache: {
           enabled: true,
         },
+        command: {
+          enabled: true,
+        },
+        schedule: {
+          enabled: true
+        }
       },
     }),
   ],
-  providers: [],
 })
 export class MonitoringModule {}

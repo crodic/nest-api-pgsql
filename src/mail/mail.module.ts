@@ -1,6 +1,6 @@
 import { AllConfigType } from '@/config/config.type';
 import { MailerModule, MailerService } from '@nestjs-modules/mailer';
-import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/adapters/handlebars.adapter'
 import { Global, Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NESTLENS_MAILER_SERVICE } from 'nestlens';

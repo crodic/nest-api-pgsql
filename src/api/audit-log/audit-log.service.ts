@@ -19,7 +19,9 @@ export class AuditLogService {
   constructor(
     @InjectRepository(AuditLogEntity)
     private readonly auditLogRepository: Repository<AuditLogEntity>,
-  ) {}
+  ) {
+
+  }
 
   async findAll(query: PaginateQuery): Promise<Paginated<AuditLogResDto>> {
     const qb = this.auditLogRepository.createQueryBuilder('log');
