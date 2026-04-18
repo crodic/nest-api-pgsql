@@ -32,8 +32,14 @@ import { NestLensModule } from 'nestlens';
           enabled: true,
         },
         httpClient: {
-          enabled: true
-        }
+          enabled: true,
+        },
+        exception: {
+          enabled: true,
+        },
+        log: {
+          enabled: true,
+        },
       },
     }),
   ],
