@@ -14,7 +14,6 @@ import { AdminAuthService } from './services/admin-auth.service';
 import { UserAuthService } from './services/user-auth.service';
 import { AdminJwtStrategy } from './strategy/admin.strategy';
 import { UserJwtStrategy } from './strategy/user.strategy';
-import { CqrsModule } from '@nestjs/cqrs';
 
 @Module({
   imports: [
