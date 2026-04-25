@@ -43,7 +43,7 @@ import { APP_INTERCEPTOR } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CommandModule } from './commands/command.module';
 import { RequestContextInterceptor } from './interceptors/request-context.interceptor';
-import { HttpClientModule } from './libs/http-client.module';
+import { HttpClientModule } from './libs/nestlens/http-client.module';
 import { MonitoringModule } from './libs/nestlens/monitoring.module';
 import { RequestIdMiddleware } from './middlewares/request-id.middleware';
 import { RedisModule } from './redis/redis.module';

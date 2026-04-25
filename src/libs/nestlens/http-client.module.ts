@@ -1,6 +1,6 @@
-import { HttpModule, HttpService } from "@nestjs/axios";
-import { Global, Module } from "@nestjs/common";
-import { NESTLENS_HTTP_CLIENT } from "nestlens";
+import { HttpModule, HttpService } from '@nestjs/axios';
+import { Global, Module } from '@nestjs/common';
+import { NESTLENS_HTTP_CLIENT } from 'nestlens';
 
 @Global()
 @Module({
