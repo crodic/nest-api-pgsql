@@ -124,11 +124,6 @@
     "@types/qs": "^6.15.0",
     "@types/supertest": "^7.2.0",
     "@types/uuid": "^9.0.8",
-    "@vuepress/bundler-vite": "2.0.0-rc.17",
-    "@vuepress/plugin-markdown-image": "2.0.0-rc.52",
-    "@vuepress/plugin-markdown-tab": "2.0.0-rc.52",
-    "@vuepress/plugin-search": "2.0.0-rc.52",
-    "@vuepress/theme-default": "2.0.0-rc.52",
     "env-cmd": "^11.0.0",
     "eslint": "^10.2.0",
     "eslint-config-prettier": "^10.1.8",
@@ -146,10 +141,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.58.2",
-    "vue": "^3.5.32",
-    "vuepress": "2.0.0-rc.17",
-    "vuepress-plugin-md-enhance": "2.0.0-rc.103"
+    "typescript-eslint": "^8.58.2"
   },
   "packageManager": "pnpm@10.30.3"
 }
