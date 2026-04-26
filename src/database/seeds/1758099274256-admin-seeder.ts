@@ -42,8 +42,8 @@ export class AdminSeeder1758099274256 implements Seeder {
     if (!existingAdmin) {
       const admin = userRepo.create({
         email: SUPER_ADMIN_ACCOUNT.email,
-        firstname: 'System',
-        lastname: 'Administrator',
+        firstName: 'System',
+        lastName: 'Administrator',
         password: SUPER_ADMIN_ACCOUNT.password,
         role: superAdminRole,
         verifiedAt: new Date(),

@@ -52,8 +52,8 @@ describe('UserController', () => {
         username: 'john',
         email: 'mail@example.com',
         password: 'password',
-        firstname: 'John',
-        lastname: 'Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         confirmPassword: 'password',
       } as CreateUserReqDto;
 
@@ -90,8 +90,8 @@ describe('UserController', () => {
           password: 'password',
           confirmPassword: 'password',
           avatar: 'image',
-          firstname: 'John',
-          lastname: 'Doe',
+          firstName: 'John',
+          lastName: 'Doe',
         });
       });
 

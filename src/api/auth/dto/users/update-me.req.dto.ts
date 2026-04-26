@@ -4,9 +4,9 @@ import { Trim } from '@/decorators/transform.decorators';
 export class UpdateAuthUserMeReqDto {
   @StringField()
   @Trim()
-  firstname: string;
+  firstName: string;
 
   @StringField()
   @Trim()
-  lastname: string;
+  lastName: string;
 }

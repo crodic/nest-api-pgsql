@@ -29,10 +29,10 @@ export class AdminUserEntity extends AbstractEntity {
   id!: ID;
 
   @Column({ length: 100, name: 'first_name', nullable: false })
-  firstname!: string;
+  firstName!: string;
 
   @Column({ length: 100, name: 'last_name', nullable: true })
-  lastname?: string;
+  lastName?: string;
 
   @Column({
     generatedType: 'STORED',
@@ -40,7 +40,7 @@ export class AdminUserEntity extends AbstractEntity {
     name: 'full_name',
     length: 201,
   })
-  fullname!: string;
+  fullName!: string;
 
   @Column()
   @Index('UQ_admin_user_email', { where: '"deleted_at" IS NULL', unique: true })

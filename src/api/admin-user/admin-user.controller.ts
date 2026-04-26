@@ -51,7 +51,7 @@ export class AdminUserController {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         email: [FilterOperator.ILIKE],
         'role.id': [FilterOperator.IN],
-        fullname: [FilterOperator.ILIKE],
+        fullName: [FilterOperator.ILIKE],
       },
     },
   })

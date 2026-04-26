@@ -51,8 +51,8 @@ export class HomeService {
       });
 
       await this.adminUserService.createWithManager(manager, {
-        firstname: 'System',
-        lastname: 'Administrator',
+        firstName: 'System',
+        lastName: 'Administrator',
         email,
         password,
         roleId: role.id,

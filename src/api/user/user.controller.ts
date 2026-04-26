@@ -52,7 +52,7 @@ Features:
 - Advanced filters:
   • createdAt: BETWEEN
   • email: ILIKE
-  • fullname: ILIKE
+  • fullName: ILIKE
   • id: EQ
 
 Response includes paginated data, metadata, and navigation links.`,
@@ -66,7 +66,7 @@ Response includes paginated data, metadata, and navigation links.`,
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
         email: [FilterOperator.ILIKE],
-        fullname: [FilterOperator.ILIKE],
+        fullName: [FilterOperator.ILIKE],
         id: [FilterOperator.EQ],
       },
     },

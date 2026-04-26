@@ -38,7 +38,7 @@ export class UserService {
       relations: [],
       filterableColumns: {
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
-        fullname: [FilterOperator.ILIKE],
+        fullName: [FilterOperator.ILIKE],
         email: [FilterOperator.ILIKE],
         id: [FilterOperator.EQ],
       },
@@ -90,8 +90,8 @@ export class UserService {
   async update(id: ID, updateUserDto: UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
-    user.firstname = updateUserDto.firstname;
-    user.lastname = updateUserDto.lastname;
+    user.firstName = updateUserDto.firstName;
+    user.lastName = updateUserDto.lastName;
 
     await this.userRepository.save(user);
   }

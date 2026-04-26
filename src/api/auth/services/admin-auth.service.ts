@@ -134,8 +134,8 @@ export class AdminAuthService {
     }
 
     const user = this.adminUserRepository.create({
-      firstname: dto.first_name,
-      lastname: dto.last_name,
+      firstName: dto.first_name,
+      lastName: dto.last_name,
       email: dto.email,
       password: dto.password,
       roleId: dto.roleId,

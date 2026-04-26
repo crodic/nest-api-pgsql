@@ -12,11 +12,11 @@ import { Transform } from 'class-transformer';
 export class CreateAdminUserReqDto {
   @StringField()
   @Trim()
-  firstname: string;
+  firstName: string;
 
   @StringField()
   @Trim()
-  lastname: string;
+  lastName: string;
 
   @EmailField()
   email: string;

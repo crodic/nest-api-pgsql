@@ -64,8 +64,8 @@ export class AdminUserService {
       email,
       password,
       bio,
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       roleId,
       birthday,
       phone,
@@ -92,8 +92,8 @@ export class AdminUserService {
     }
 
     const newUser = new AdminUserEntity({
-      firstname,
-      lastname,
+      firstName,
+      lastName,
       email,
       password,
       bio,
@@ -117,7 +117,7 @@ export class AdminUserService {
       filterableColumns: {
         'role.id': [FilterOperator.IN],
         email: [FilterOperator.ILIKE],
-        fullname: [FilterOperator.ILIKE],
+        fullName: [FilterOperator.ILIKE],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
       },
       relations: ['role'],

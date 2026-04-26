@@ -53,8 +53,8 @@ describe('AdminUserController', () => {
         password: 'password',
         bio: 'bio',
         avatar: 'image',
-        firstname: 'John',
-        lastname: 'Doe',
+        firstName: 'John',
+        lastName: 'Doe',
         roleId: '1' as ID,
       } as CreateAdminUserReqDto;
 
@@ -93,8 +93,8 @@ describe('AdminUserController', () => {
           email: 'mail@example.com',
           password: 'password',
           avatar: 'image',
-          firstname: 'John',
-          lastname: 'Doe',
+          firstName: 'John',
+          lastName: 'Doe',
           bio: 'bio',
           roleId: '1' as ID,
         });

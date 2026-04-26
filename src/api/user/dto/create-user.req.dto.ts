@@ -8,11 +8,11 @@ import { Trim } from '@/decorators/transform.decorators';
 export class CreateUserReqDto {
   @StringField()
   @Trim()
-  firstname: string;
+  firstName: string;
 
   @StringField()
   @Trim()
-  lastname: string;
+  lastName: string;
 
   @EmailField()
   email: string;
