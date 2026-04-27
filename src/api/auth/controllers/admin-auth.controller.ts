@@ -5,7 +5,11 @@ import { ChangePasswordResDto } from '@/api/admin-user/dto/change-password.res.d
 import { UpdateMeReqDto } from '@/api/admin-user/dto/update-me.req.dto';
 import { AutoIncrementID } from '@/common/types/common.type';
 import { CurrentUser } from '@/decorators/current-user.decorator';
-import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
+import {
+  ApiAuth,
+  ApiAuthOptional,
+  ApiPublic,
+} from '@/decorators/http.decorators';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
 import {
   Body,
@@ -83,14 +87,17 @@ export class AdminAuthenticationController {
     return await this.adminAuthService.refreshToken(dto);
   }
 
-  @ApiAuth({
+  @ApiAuthOptional({
     summary: 'Logout for portal',
     errorResponses: [304, 500, 401, 403],
+    statusCode: 204,
   })
   @SkipThrottle()
   @Post('logout')
-  async logout(@CurrentUser() userToken: JwtPayloadType): Promise<void> {
-    await this.adminAuthService.logout(userToken);
+  async logout(@CurrentUser() userToken?: JwtPayloadType): Promise<void> {
+    if (userToken) {
+      await this.adminAuthService.logout(userToken);
+    }
   }
 
   @ApiPublic({

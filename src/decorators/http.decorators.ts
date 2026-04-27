@@ -11,6 +11,7 @@ import {
 } from '@nestjs/swagger';
 import { STATUS_CODES } from 'http';
 import { PaginateConfig, PaginatedSwaggerDocs } from 'nestjs-paginate';
+import { AuthOptional } from './auth-optional.decorator';
 import { Public } from './public.decorator';
 
 export interface ExternalDocumentationObject {
@@ -137,6 +138,49 @@ export const ApiAuth = <T extends Type<any>>(
   });
 
   return applyDecorators(
+    ApiOperation({
+      summary: options.summary,
+      description: options.description,
+      deprecated: options.deprecated ?? false,
+      operationId: options.operationId,
+      externalDocs: options.externalDocs,
+    }),
+    HttpCode(options.statusCode ?? HttpStatus.OK),
+    buildSuccessDecorator(options),
+    ...authDecorators,
+    ...buildErrorResponses(options.errorResponses || defaultErrorResponses),
+  );
+};
+
+/* ---------------------------------------------------
+   AUTH OPTIONAL DECORATOR (JWT / BASIC / API-KEY)
+--------------------------------------------------- */
+export const ApiAuthOptional = <T extends Type<any>>(
+  options: IApiAuthOptions<T> = {},
+): MethodDecorator => {
+  const defaultErrorResponses = [
+    HttpStatus.BAD_REQUEST,
+    HttpStatus.FORBIDDEN,
+    HttpStatus.NOT_FOUND,
+    HttpStatus.UNPROCESSABLE_ENTITY,
+    HttpStatus.INTERNAL_SERVER_ERROR,
+  ];
+
+  const auths = options.auths || ['jwt'];
+
+  const authDecorators = auths.map((auth) => {
+    switch (auth) {
+      case 'basic':
+        return ApiBasicAuth();
+      case 'api-key':
+        return ApiSecurity('Api-Key');
+      case 'jwt':
+        return ApiBearerAuth();
+    }
+  });
+
+  return applyDecorators(
+    AuthOptional(),
     ApiOperation({
       summary: options.summary,
       description: options.description,
