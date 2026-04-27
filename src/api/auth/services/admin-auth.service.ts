@@ -251,6 +251,7 @@ export class AdminAuthService {
       id: user.id,
       sessionId: session.id,
       hash: newHash,
+      role: user.role,
     });
   }
 
