@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import {
   BooleanField,
   ClassField,
@@ -11,7 +11,7 @@ import { Exclude, Expose, Transform } from 'class-transformer';
 export class UserResDto {
   @StringField()
   @Expose()
-  id: ID;
+  id: AutoIncrementID;
 
   @StringField()
   @Expose()

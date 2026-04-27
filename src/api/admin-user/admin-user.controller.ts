@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ApiAuth } from '@/decorators/http.decorators';
 import { CheckPolicies } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
@@ -89,7 +89,7 @@ export class AdminUserController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Admin),
   )
-  async findUser(@Param('id') id: ID): Promise<AdminUserResDto> {
+  async findUser(@Param('id') id: AutoIncrementID): Promise<AdminUserResDto> {
     return await this.adminUserService.findOne(id);
   }
 
@@ -101,7 +101,10 @@ export class AdminUserController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Update, AppSubjects.Admin),
   )
-  updateUser(@Param('id') id: ID, @Body() reqDto: UpdateAdminUserReqDto) {
+  updateUser(
+    @Param('id') id: AutoIncrementID,
+    @Body() reqDto: UpdateAdminUserReqDto,
+  ) {
     return this.adminUserService.update(id, reqDto);
   }
 
@@ -116,7 +119,7 @@ export class AdminUserController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Delete, AppSubjects.Admin),
   )
-  removeUser(@Param('id') id: ID) {
+  removeUser(@Param('id') id: AutoIncrementID) {
     return this.adminUserService.remove(id);
   }
 }

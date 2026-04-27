@@ -3,7 +3,7 @@ import { AdminUserResDto } from '@/api/admin-user/dto/admin-user.res.dto';
 import { ChangePasswordReqDto } from '@/api/admin-user/dto/change-password.req.dto';
 import { ChangePasswordResDto } from '@/api/admin-user/dto/change-password.res.dto';
 import { UpdateMeReqDto } from '@/api/admin-user/dto/update-me.req.dto';
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
@@ -142,7 +142,9 @@ export class AdminAuthenticationController {
   })
   @SkipThrottle()
   @Get('me')
-  async me(@CurrentUser('id') userId: ID): Promise<AdminUserResDto> {
+  async me(
+    @CurrentUser('id') userId: AutoIncrementID,
+  ): Promise<AdminUserResDto> {
     return await this.adminAuthService.me(userId);
   }
 
@@ -155,7 +157,7 @@ export class AdminAuthenticationController {
   @UseInterceptors(FileInterceptor('avatar', avatarUploadOption))
   @Put('me')
   async updateMe(
-    @CurrentUser('id') userId: ID,
+    @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: UpdateMeReqDto,
     @UploadedFile(
       new ParseFilePipe({
@@ -186,7 +188,7 @@ export class AdminAuthenticationController {
   @SkipThrottle()
   @Post('me/change-password')
   async changePassword(
-    @CurrentUser('id') userId: ID,
+    @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: ChangePasswordReqDto,
   ): Promise<ChangePasswordResDto> {
     return this.adminAuthService.changePassword(userId, reqDto);

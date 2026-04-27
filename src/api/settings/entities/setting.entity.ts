@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('settings')
@@ -7,7 +7,7 @@ export class SettingEntity {
     primaryKeyConstraintName: 'PK_setting_id',
     type: 'bigint',
   })
-  id!: ID;
+  id!: AutoIncrementID;
 
   @Column()
   @Index('UQ_setting_key', { unique: true })

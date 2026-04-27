@@ -1,8 +1,6 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ApiAuth } from '@/decorators/http.decorators';
-import {
-  CheckPolicies,
-} from '@/decorators/policies.decorator';
+import { CheckPolicies } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
 import { PoliciesGuard } from '@/guards/policies.guard';
 import { AppAbility } from '@/libs/casl/ability.factory';
@@ -83,7 +81,7 @@ export class RoleController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Role),
   )
-  findOne(@Param('id') id: ID) {
+  findOne(@Param('id') id: AutoIncrementID) {
     return this.roleService.findOne(id);
   }
 
@@ -93,7 +91,10 @@ export class RoleController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Update, AppSubjects.Role),
   )
-  update(@Param('id') id: ID, @Body() updateRoleDto: UpdateRoleReqDto) {
+  update(
+    @Param('id') id: AutoIncrementID,
+    @Body() updateRoleDto: UpdateRoleReqDto,
+  ) {
     return this.roleService.update(id, updateRoleDto);
   }
 
@@ -106,7 +107,7 @@ export class RoleController {
     ability.can(AppActions.Delete, AppSubjects.Role),
   )
   @ApiParam({ name: 'id', type: 'String' })
-  remove(@Param('id') id: ID) {
+  remove(@Param('id') id: AutoIncrementID) {
     return this.roleService.remove(id);
   }
 }

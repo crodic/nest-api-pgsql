@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import {
   EmailField,
   PasswordField,
@@ -14,7 +14,7 @@ export class AdminUserRegisterReqDto {
   password!: string;
 
   @StringField()
-  roleId!: ID;
+  roleId!: AutoIncrementID;
 
   @StringFieldOptional()
   username?: string;

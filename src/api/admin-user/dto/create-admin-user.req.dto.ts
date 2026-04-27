@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import {
   DateFieldOptional,
   EmailField,
@@ -28,7 +28,7 @@ export class CreateAdminUserReqDto {
   bio?: string;
 
   @StringField()
-  roleId!: ID;
+  roleId!: AutoIncrementID;
 
   @StringFieldOptional()
   phone?: string;

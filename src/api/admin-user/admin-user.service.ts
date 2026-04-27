@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { CacheKey } from '@/constants/cache.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
@@ -131,14 +131,14 @@ export class AdminUserService {
     } as Paginated<AdminUserResDto>;
   }
 
-  async findOne(id: ID): Promise<AdminUserResDto> {
+  async findOne(id: AutoIncrementID): Promise<AdminUserResDto> {
     assert(id, 'id is required');
     const user = await this.adminUserRepository.findOneByOrFail({ id });
 
     return user.toDto(AdminUserResDto);
   }
 
-  async update(id: ID, updateUserDto: UpdateAdminUserReqDto) {
+  async update(id: AutoIncrementID, updateUserDto: UpdateAdminUserReqDto) {
     const user = await this.adminUserRepository.findOneByOrFail({ id });
     const updatedRole = await this.roleRepository.findOneBy({
       id: updateUserDto.roleId,
@@ -152,7 +152,7 @@ export class AdminUserService {
     await this.adminUserRepository.save(user);
   }
 
-  async remove(id: ID) {
+  async remove(id: AutoIncrementID) {
     const admin = await this.adminUserRepository.findOneByOrFail({ id });
     await this.adminUserRepository.softRemove(admin);
   }

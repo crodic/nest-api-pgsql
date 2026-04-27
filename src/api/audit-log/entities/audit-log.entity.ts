@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import {
   Column,
   CreateDateColumn,
@@ -13,7 +13,7 @@ export class AuditLogEntity {
     primaryKeyConstraintName: 'PK_audit_log_id',
     type: 'bigint',
   })
-  id: ID;
+  id: AutoIncrementID;
 
   @Index('IDX_audit_logs_entity')
   @Column()
@@ -21,7 +21,7 @@ export class AuditLogEntity {
 
   @Index('IDX_audit_logs_entity_id')
   @Column({ nullable: true, name: 'entity_id', type: 'bigint' })
-  entityId: ID;
+  entityId: AutoIncrementID;
 
   @Column({ type: 'varchar' })
   action: 'INSERT' | 'UPDATE' | 'DELETE' | 'SOFT_DELETE' | 'RESTORE';

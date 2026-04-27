@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { CaslAbilityFactory } from '@/libs/casl/ability.factory';
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToInstance } from 'class-transformer';
@@ -48,7 +48,7 @@ describe('UserController', () => {
   describe('createUser', () => {
     it('should return a user', async () => {
       const createUserReqDto = {
-        id: '1' as ID,
+        id: '1' as AutoIncrementID,
         username: 'john',
         email: 'mail@example.com',
         password: 'password',
@@ -58,7 +58,7 @@ describe('UserController', () => {
       } as CreateUserReqDto;
 
       const userResDto = new UserResDto();
-      userResDto.id = '1' as ID;
+      userResDto.id = '1' as AutoIncrementID;
       userResDto.email = 'mail@example.com';
       userResDto.avatar = 'image';
       userResDto.createdAt = new Date();
@@ -142,14 +142,14 @@ describe('UserController', () => {
   describe('findUser', () => {
     it('should return a user', async () => {
       const userResDto = new UserResDto();
-      userResDto.id = '1' as ID;
+      userResDto.id = '1' as AutoIncrementID;
       userResDto.email = 'mail@example.com';
       userResDto.avatar = 'image';
       userResDto.createdAt = new Date();
       userResDto.updatedAt = new Date();
 
       userServiceValue.findOne.mockReturnValue(userResDto);
-      const user = await controller.findUser('1' as ID);
+      const user = await controller.findUser('1' as AutoIncrementID);
 
       expect(user).toBe(userResDto);
       expect(userServiceValue.findOne).toHaveBeenCalledWith('1');
@@ -158,7 +158,7 @@ describe('UserController', () => {
 
     it('should return null', async () => {
       userServiceValue.findOne.mockReturnValue(null);
-      const user = await controller.findUser('1' as ID);
+      const user = await controller.findUser('1' as AutoIncrementID);
 
       expect(user).toBeNull();
       expect(userServiceValue.findOne).toHaveBeenCalledWith('1');

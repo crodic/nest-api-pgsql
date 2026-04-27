@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { hashPassword as hashPass } from '@/utils/password.util';
 import {
@@ -22,7 +22,7 @@ export class UserEntity extends AbstractEntity {
     primaryKeyConstraintName: 'PK_user_id',
     type: 'bigint',
   })
-  id!: ID;
+  id!: AutoIncrementID;
 
   @Column({ length: 100, name: 'first_name', nullable: false })
   firstName!: string;

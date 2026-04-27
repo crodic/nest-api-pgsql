@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ApiAuth } from '@/decorators/http.decorators';
 import { CheckPolicies } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
@@ -55,7 +55,7 @@ export class AuditLogController {
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.Log),
   )
-  async findOne(@Param('id') id: ID): Promise<AuditLogResDto> {
+  async findOne(@Param('id') id: AutoIncrementID): Promise<AuditLogResDto> {
     return await this.auditLogService.findOne(id);
   }
 }

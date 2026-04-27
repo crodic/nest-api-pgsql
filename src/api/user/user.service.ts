@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
 import { Injectable, Logger } from '@nestjs/common';
@@ -80,14 +80,14 @@ export class UserService {
     return plainToInstance(UserResDto, savedUser);
   }
 
-  async findOne(id: ID): Promise<UserResDto> {
+  async findOne(id: AutoIncrementID): Promise<UserResDto> {
     assert(id, 'id is required');
     const user = await this.userRepository.findOneByOrFail({ id });
 
     return user.toDto(UserResDto);
   }
 
-  async update(id: ID, updateUserDto: UpdateUserReqDto) {
+  async update(id: AutoIncrementID, updateUserDto: UpdateUserReqDto) {
     const user = await this.userRepository.findOneByOrFail({ id });
 
     user.firstName = updateUserDto.firstName;
@@ -96,7 +96,7 @@ export class UserService {
     await this.userRepository.save(user);
   }
 
-  async remove(id: ID) {
+  async remove(id: AutoIncrementID) {
     const user = await this.userRepository.findOneByOrFail({ id });
     await this.userRepository.softRemove(user);
   }

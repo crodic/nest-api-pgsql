@@ -1,5 +1,5 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
   Column,
@@ -22,7 +22,7 @@ export class RoleEntity extends AbstractEntity {
     primaryKeyConstraintName: 'PK_role_id',
     type: 'bigint',
   })
-  id!: ID;
+  id!: AutoIncrementID;
 
   @Index('UQ_roles_name', { unique: true, where: '"deleted_at" IS NULL' })
   @Column()

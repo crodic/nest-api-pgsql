@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { CacheKey } from '@/constants/cache.constant';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
@@ -98,13 +98,13 @@ export class RoleService {
     });
   }
 
-  async findOne(id: ID): Promise<RoleResDto> {
+  async findOne(id: AutoIncrementID): Promise<RoleResDto> {
     assert(id, 'id is required');
     const role = await this.roleRepository.findOneByOrFail({ id });
     return role.toDto(RoleResDto);
   }
 
-  async update(id: ID, updateRoleDto: UpdateRoleReqDto) {
+  async update(id: AutoIncrementID, updateRoleDto: UpdateRoleReqDto) {
     const role = await this.roleRepository.findOneByOrFail({ id });
 
     role.name = updateRoleDto.name;
@@ -114,7 +114,7 @@ export class RoleService {
     await this.roleRepository.save(role);
   }
 
-  async remove(id: ID) {
+  async remove(id: AutoIncrementID) {
     const role = await this.roleRepository.findOneByOrFail({ id });
     await this.roleRepository.softRemove(role);
   }

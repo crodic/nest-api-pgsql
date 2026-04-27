@@ -1,7 +1,7 @@
 import { UserChangePasswordReqDto } from '@/api/user/dto/user-change-password.req.dto';
 import { UserChangePasswordResDto } from '@/api/user/dto/user-change-password.res.dto';
 import { UserResDto } from '@/api/user/dto/user.res.dto';
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { CurrentUser } from '@/decorators/current-user.decorator';
 import { ApiAuth, ApiPublic } from '@/decorators/http.decorators';
 import { GoogleOAuthGuard } from '@/guards/google-oauth.guard';
@@ -141,7 +141,7 @@ export class UserAuthenticationController {
   @SkipThrottle()
   @Post('me/change-password')
   async changePassword(
-    @CurrentUser('id') userId: ID,
+    @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: UserChangePasswordReqDto,
   ): Promise<UserChangePasswordResDto> {
     return this.userAuthService.changePassword(userId, reqDto);
@@ -153,7 +153,9 @@ export class UserAuthenticationController {
   })
   @SkipThrottle()
   @Get('me')
-  async getCurrentUser(@CurrentUser('id') userId: ID): Promise<UserResDto> {
+  async getCurrentUser(
+    @CurrentUser('id') userId: AutoIncrementID,
+  ): Promise<UserResDto> {
     return await this.userAuthService.me(userId);
   }
 
@@ -164,7 +166,7 @@ export class UserAuthenticationController {
   })
   @SkipThrottle()
   async updateMe(
-    @CurrentUser('id') userId: ID,
+    @CurrentUser('id') userId: AutoIncrementID,
     @Body() reqDto: UpdateAuthUserMeReqDto,
   ): Promise<{ message: string }> {
     return await this.userAuthService.updateMe(userId, reqDto);

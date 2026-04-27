@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import {
   Column,
   CreateDateColumn,
@@ -14,7 +14,7 @@ export class FileEntity {
     primaryKeyConstraintName: 'PK_file_id',
     type: 'bigint',
   })
-  id!: ID;
+  id!: AutoIncrementID;
 
   @Column()
   @Index('UQ_file_public_id', { unique: true })

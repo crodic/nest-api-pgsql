@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -19,9 +19,7 @@ export class AuditLogService {
   constructor(
     @InjectRepository(AuditLogEntity)
     private readonly auditLogRepository: Repository<AuditLogEntity>,
-  ) {
-
-  }
+  ) {}
 
   async findAll(query: PaginateQuery): Promise<Paginated<AuditLogResDto>> {
     const qb = this.auditLogRepository.createQueryBuilder('log');
@@ -46,7 +44,7 @@ export class AuditLogService {
     } as Paginated<AuditLogResDto>;
   }
 
-  async findOne(id: ID): Promise<AuditLogResDto> {
+  async findOne(id: AutoIncrementID): Promise<AuditLogResDto> {
     assert(id, 'id is required');
 
     const auditLog = await this.auditLogRepository.findOneBy({ id });

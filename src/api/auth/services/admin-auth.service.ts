@@ -11,7 +11,7 @@ import {
   IForgotPasswordEmailJob,
   IVerifyEmailJob,
 } from '@/common/interfaces/job.interface';
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { Branded } from '@/common/types/types';
 import { AllConfigType } from '@/config/config.type';
 import { CacheKey } from '@/constants/cache.constant';
@@ -106,7 +106,7 @@ export class AdminAuthService {
 
     const session = new SessionEntity({
       hash,
-      userId: user.id as ID,
+      userId: user.id as AutoIncrementID,
       userType: ESessionUserType.ADMIN,
     });
     await session.save();
@@ -325,7 +325,7 @@ export class AdminAuthService {
     });
   }
 
-  async me(id: ID): Promise<AdminUserResDto> {
+  async me(id: AutoIncrementID): Promise<AdminUserResDto> {
     assert(id, 'id is required');
     const user = await this.adminUserRepository.findOneBy({ id });
 
@@ -337,7 +337,7 @@ export class AdminAuthService {
   }
 
   async updateMe(
-    id: ID,
+    id: AutoIncrementID,
     dto: UpdateMeReqDto,
     file: Express.Multer.File,
   ): Promise<{ message: string }> {
@@ -367,7 +367,7 @@ export class AdminAuthService {
   }
 
   async changePassword(
-    id: ID,
+    id: AutoIncrementID,
     dto: ChangePasswordReqDto,
   ): Promise<ChangePasswordResDto> {
     const user = await this.adminUserRepository.findOneByOrFail({ id });

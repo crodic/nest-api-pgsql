@@ -1,7 +1,7 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 
 export type JwtRefreshPayloadType = {
-  sessionId: ID;
+  sessionId: AutoIncrementID;
   hash: string;
   iat: number;
   exp: number;

@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ApiAuth } from '@/decorators/http.decorators';
 import { CheckPolicies } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
@@ -99,7 +99,7 @@ Response includes paginated data, metadata, and navigation links.`,
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Read, AppSubjects.User),
   )
-  async findUser(@Param('id') id: ID): Promise<UserResDto> {
+  async findUser(@Param('id') id: AutoIncrementID): Promise<UserResDto> {
     return await this.userService.findOne(id);
   }
 
@@ -109,7 +109,10 @@ Response includes paginated data, metadata, and navigation links.`,
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Update, AppSubjects.User),
   )
-  updateUser(@Param('id') id: ID, @Body() reqDto: UpdateUserReqDto) {
+  updateUser(
+    @Param('id') id: AutoIncrementID,
+    @Body() reqDto: UpdateUserReqDto,
+  ) {
     return this.userService.update(id, reqDto);
   }
 
@@ -122,7 +125,7 @@ Response includes paginated data, metadata, and navigation links.`,
   @CheckPolicies((ability: AppAbility) =>
     ability.can(AppActions.Delete, AppSubjects.User),
   )
-  removeUser(@Param('id') id: ID) {
+  removeUser(@Param('id') id: AutoIncrementID) {
     return this.userService.remove(id);
   }
 }

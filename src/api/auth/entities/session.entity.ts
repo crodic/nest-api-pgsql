@@ -1,4 +1,4 @@
-import { ID } from '@/common/types/common.type';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { ESessionUserType } from '@/constants/entity.enum';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
@@ -14,7 +14,7 @@ export class SessionEntity extends AbstractEntity {
     type: 'bigint',
     primaryKeyConstraintName: 'PK_session_id',
   })
-  id!: ID;
+  id!: AutoIncrementID;
 
   @Column({
     name: 'hash',
@@ -28,7 +28,7 @@ export class SessionEntity extends AbstractEntity {
     name: 'user_id',
     type: 'bigint',
   })
-  userId: ID;
+  userId: AutoIncrementID;
 
   @Column({
     type: 'enum',
