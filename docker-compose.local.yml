@@ -8,7 +8,7 @@ services:
       dockerfile: Dockerfile
       target: development
     env_file:
-      - .env
+      - .env.docker
     ports:
       - "3000:3000"
     volumes:
@@ -24,7 +24,7 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: boilerplate
+      POSTGRES_DB: nestjs_boilerplate
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       TZ: "UTC"
@@ -43,18 +43,18 @@ services:
       - redis_data:/data
     healthcheck:
       test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
+    environment:
+      REDIS_ARGS: "--requirepass redispass"
     networks:
       - nestjs-boilerplate-network
 
-  mailpit:
-    image: axllent/mailpit:latest
-    container_name: mailpit
-    restart: always
+  maildev:
+    build:
+      context: .
+      dockerfile: maildev.Dockerfile
     ports:
-      - '${MAIL_CLIENT_PORT}:8025' # Web UI
-      - '${MAIL_PORT}:1025' # SMTP
-    environment:
-      MP_MAX_MESSAGES: 5000
+      - ${MAIL_CLIENT_PORT}:1080
+      - ${MAIL_PORT}:1025
     networks:
       - nestjs-boilerplate-network
 
