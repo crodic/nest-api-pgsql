@@ -53,7 +53,7 @@ USER node
 # BUILD FOR PRODUCTION
 ######################
 
-FROM node:20-alpine AS production
+FROM base AS production
 WORKDIR /app
 
 RUN mkdir -p src/generated && chown -R node:node src
