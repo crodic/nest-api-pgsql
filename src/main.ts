@@ -34,7 +34,7 @@ async function bootstrap() {
   const configService = app.get(ConfigService<AllConfigType>);
   const reflector = app.get('Reflector');
   const isDevelopment =
-    configService.getOrThrow('app.nodeEnv', { infer: true }) === 'development';
+    configService.getOrThrow('app.nodeEnv', { infer: true }) === 'development' || configService.getOrThrow('app.nodeEnv', { infer: true }) === 'staging';
   const corsOrigin = configService.getOrThrow('app.corsOrigin', {
     infer: true,
   });

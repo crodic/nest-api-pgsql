@@ -25,9 +25,9 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: nestjs_boilerplate
+      POSTGRES_DB: boilerplate
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: strong_password_here
+      POSTGRES_PASSWORD: postgres
       TZ: 'UTC'
     networks:
       - nestjs-boilerplate-network
@@ -43,7 +43,17 @@ services:
     healthcheck:
       test: ['CMD', 'redis-cli', '--raw', 'ping']
     environment:
-      REDIS_ARGS: '--requirepass strong_redis_password'
+      REDIS_ARGS: '--requirepass alice01422'
+    networks:
+      - nestjs-boilerplate-network
+
+  # Mailpit
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    ports:
+      - "1080:8025"
+      - "1025:1025"
     networks:
       - nestjs-boilerplate-network
 
