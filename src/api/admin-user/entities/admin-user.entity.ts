@@ -10,6 +10,8 @@ import {
   Entity,
   Index,
   JoinColumn,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   PrimaryGeneratedColumn,
   Relation,
@@ -81,6 +83,20 @@ export class AdminUserEntity extends AbstractEntity {
     foreignKeyConstraintName: 'FK_admin_user_role',
   })
   role: Relation<RoleEntity>;
+
+  @ManyToMany(() => RoleEntity, (role) => role.users)
+  @JoinTable({
+    name: 'admin_user_role',
+    joinColumn: {
+      name: 'admin_user_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+  })
+  roles: Relation<RoleEntity>[];
 
   @Column({ type: 'timestamptz', name: 'verified_at', nullable: true })
   verifiedAt?: Date;

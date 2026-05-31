@@ -6,6 +6,7 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  ManyToMany,
   OneToMany,
   PrimaryGeneratedColumn,
   Relation,
@@ -36,6 +37,9 @@ export class RoleEntity extends AbstractEntity {
 
   @OneToMany(() => AdminUserEntity, (user) => user.role)
   users: Relation<AdminUserEntity>[];
+
+  @ManyToMany(() => AdminUserEntity, (user) => user.roles)
+  admins: Relation<AdminUserEntity>[];
 
   @DeleteDateColumn({
     name: 'deleted_at',

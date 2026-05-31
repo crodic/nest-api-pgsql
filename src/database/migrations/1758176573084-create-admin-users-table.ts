@@ -17,7 +17,7 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
             VALUES ($1, $2, $3, $4, $5, $6)
         `,
       [
-        'boilerplate',
+        process.env.DATABASE_NAME!,
         'public',
         'admin_users',
         'GENERATED_COLUMN',
@@ -64,7 +64,13 @@ export class CreateAdminUsersTable1758176573084 implements MigrationInterface {
                 AND "schema" = $4
                 AND "table" = $5
         `,
-      ['GENERATED_COLUMN', 'full_name', 'boilerplate', 'public', 'admin_users'],
+      [
+        'GENERATED_COLUMN',
+        'full_name',
+        process.env.DATABASE_NAME!,
+        'public',
+        'admin_users',
+      ],
     );
   }
 }
