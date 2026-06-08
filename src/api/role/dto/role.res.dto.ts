@@ -1,10 +1,11 @@
 import {
   ArrayField,
+  BooleanField,
   ClassField,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorators';
-import { Exclude, Expose } from 'class-transformer';
+import { Exclude, Expose, Transform } from 'class-transformer';
 
 @Exclude()
 export class RoleResDto {
@@ -20,7 +21,17 @@ export class RoleResDto {
   @Expose()
   description?: string;
 
-  @ArrayField(String, { example: ['read:User', 'create:User'] })
+  @BooleanField()
+  @Expose()
+  isSystem: boolean;
+
+  @ArrayField(String, { example: ['1', '2'] })
+  @Transform(({ obj }) => obj.permissionEntities?.map((item) => item.id) ?? [])
+  @Expose()
+  permissionIds: string[];
+
+  @ArrayField(String, { example: ['read:USER', 'create:USER'] })
+  @Transform(({ obj }) => obj.permissionEntities?.map((item) => item.key) ?? [])
   @Expose()
   permissions: string[];
 

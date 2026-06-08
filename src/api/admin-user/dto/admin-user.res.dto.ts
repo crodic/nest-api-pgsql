@@ -1,6 +1,7 @@
 import { RoleResDto } from '@/api/role/dto/role.res.dto';
 import { WrapperType } from '@/common/types/types';
 import {
+  ArrayField,
   BooleanField,
   ClassField,
   ClassFieldOptional,
@@ -49,7 +50,12 @@ export class AdminUserResDto {
   @Expose()
   avatar?: string;
 
+  @ArrayField(RoleResDto)
+  @Expose()
+  roles?: WrapperType<RoleResDto>[];
+
   @ClassFieldOptional(() => RoleResDto)
+  @Transform(({ obj }) => obj.roles?.[0])
   @Expose()
   role?: WrapperType<RoleResDto>;
 

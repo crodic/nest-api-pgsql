@@ -44,7 +44,7 @@ import { plainToInstance } from 'class-transformer';
 import { assert } from 'console';
 import crypto from 'crypto';
 import ms, { StringValue } from 'ms';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { AdminUserLoginReqDto } from '../dto/admin-users/admin-user-login.req.dto';
 import { AdminUserLoginResDto } from '../dto/admin-users/admin-user-login.res.dto';
 import { AdminUserRegisterReqDto } from '../dto/admin-users/admin-user-register.req.dto';
@@ -114,7 +114,6 @@ export class AdminAuthService {
     const token = await this.createToken({
       id: user.id,
       sessionId: session.id,
-      role: user.role,
       hash,
     });
 
@@ -133,12 +132,20 @@ export class AdminAuthService {
       throw new ValidationException(ErrorCode.E003);
     }
 
+    const roles = await this.adminUserRepository.manager
+      .getRepository(RoleEntity)
+      .findBy({ id: In(dto.roleIds) });
+
+    if (roles.length !== dto.roleIds.length) {
+      throw new ValidationException(ErrorCode.E002);
+    }
+
     const user = this.adminUserRepository.create({
       firstName: dto.first_name,
       lastName: dto.last_name,
       email: dto.email,
       password: dto.password,
-      roleId: dto.roleId,
+      roles,
     });
 
     await this.adminUserRepository.save(user);
@@ -251,7 +258,6 @@ export class AdminAuthService {
       id: user.id,
       sessionId: session.id,
       hash: newHash,
-      role: user.role,
     });
   }
 
@@ -328,7 +334,10 @@ export class AdminAuthService {
 
   async me(id: AutoIncrementID): Promise<AdminUserResDto> {
     assert(id, 'id is required');
-    const user = await this.adminUserRepository.findOneBy({ id });
+    const user = await this.adminUserRepository.findOne({
+      where: { id },
+      relations: ['roles', 'roles.permissionEntities'],
+    });
 
     if (!user) {
       throw new ForbiddenException('Forbidden');
@@ -470,7 +479,6 @@ export class AdminAuthService {
     id: string;
     sessionId: string;
     hash: string;
-    role?: RoleEntity;
   }): Promise<Token> {
     const tokenExpiresIn = this.configService.getOrThrow('auth.expires', {
       infer: true,
@@ -481,7 +489,6 @@ export class AdminAuthService {
       await this.jwtService.signAsync(
         {
           id: data.id,
-          role: data.role, // TODO: add role
           sessionId: data.sessionId,
         },
         {

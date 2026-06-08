@@ -14,7 +14,7 @@ import {
   Paginated,
   PaginateQuery,
 } from 'nestjs-paginate';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { RoleEntity } from '../role/entities/role.entity';
 import { SettingsService } from '../settings/settings.service';
 import { AdminUserResDto } from './dto/admin-user.res.dto';
@@ -53,7 +53,17 @@ export class AdminUserService {
 
   async createWithManager(manager: EntityManager, data: CreateAdminUserReqDto) {
     const repo = manager.getRepository(AdminUserEntity);
-    const adminUser = await repo.save(repo.create(data));
+    const roleRepo = manager.getRepository(RoleEntity);
+    const roles = await roleRepo.findBy({ id: In(data.roleIds) });
+    if (roles.length !== data.roleIds.length) {
+      throw new ValidationException(ErrorCode.E002);
+    }
+    const adminUser = await repo.save(
+      repo.create({
+        ...data,
+        roles,
+      }),
+    );
     this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
 
     return adminUser;
@@ -66,7 +76,7 @@ export class AdminUserService {
       bio,
       firstName,
       lastName,
-      roleId,
+      roleIds,
       birthday,
       phone,
     } = dto;
@@ -81,13 +91,11 @@ export class AdminUserService {
       throw new ValidationException(ErrorCode.E001);
     }
 
-    const role = await this.roleRepository.findOne({
-      where: {
-        id: roleId,
-      },
+    const roles = await this.roleRepository.findBy({
+      id: In(roleIds),
     });
 
-    if (!role) {
+    if (roles.length !== roleIds.length) {
       throw new ValidationException(ErrorCode.E002);
     }
 
@@ -97,7 +105,7 @@ export class AdminUserService {
       email,
       password,
       bio,
-      roleId: role.id,
+      roles,
       birthday: birthday ? new Date(birthday) : null,
       phone,
     });
@@ -115,12 +123,12 @@ export class AdminUserService {
       searchableColumns: ['email'],
       defaultSortBy: [['id', 'DESC']],
       filterableColumns: {
-        'role.id': [FilterOperator.IN],
+        'roles.id': [FilterOperator.IN],
         email: [FilterOperator.ILIKE],
         fullName: [FilterOperator.ILIKE],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
       },
-      relations: ['role'],
+      relations: ['roles', 'roles.permissionEntities'],
     });
 
     return {
@@ -133,21 +141,36 @@ export class AdminUserService {
 
   async findOne(id: AutoIncrementID): Promise<AdminUserResDto> {
     assert(id, 'id is required');
-    const user = await this.adminUserRepository.findOneByOrFail({ id });
+    const user = await this.adminUserRepository.findOneOrFail({
+      where: { id },
+      relations: ['roles', 'roles.permissionEntities'],
+    });
 
     return user.toDto(AdminUserResDto);
   }
 
   async update(id: AutoIncrementID, updateUserDto: UpdateAdminUserReqDto) {
-    const user = await this.adminUserRepository.findOneByOrFail({ id });
-    const updatedRole = await this.roleRepository.findOneBy({
-      id: updateUserDto.roleId,
+    const user = await this.adminUserRepository.findOneOrFail({
+      where: { id },
+      relations: ['roles'],
     });
 
     Object.assign(user, updateUserDto);
 
     delete user.password;
-    user.roleId = updatedRole.id;
+    delete (user as AdminUserEntity & { roleIds?: AutoIncrementID[] }).roleIds;
+
+    if (updateUserDto.roleIds) {
+      const roles = await this.roleRepository.findBy({
+        id: In(updateUserDto.roleIds),
+      });
+
+      if (roles.length !== updateUserDto.roleIds.length) {
+        throw new ValidationException(ErrorCode.E002);
+      }
+
+      user.roles = roles;
+    }
 
     await this.adminUserRepository.save(user);
   }

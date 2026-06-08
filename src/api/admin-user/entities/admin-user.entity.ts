@@ -9,10 +9,8 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
-  JoinColumn,
   JoinTable,
   ManyToMany,
-  ManyToOne,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -70,21 +68,7 @@ export class AdminUserEntity extends AbstractEntity {
   })
   deletedAt: Date;
 
-  @Column({
-    name: 'role_id',
-    type: 'bigint',
-  })
-  roleId: AutoIncrementID;
-
-  @ManyToOne(() => RoleEntity, (role) => role.users, { eager: true })
-  @JoinColumn({
-    name: 'role_id',
-    referencedColumnName: 'id',
-    foreignKeyConstraintName: 'FK_admin_user_role',
-  })
-  role: Relation<RoleEntity>;
-
-  @ManyToMany(() => RoleEntity, (role) => role.users)
+  @ManyToMany(() => RoleEntity, (role) => role.admins, { eager: true })
   @JoinTable({
     name: 'admin_user_role',
     joinColumn: {

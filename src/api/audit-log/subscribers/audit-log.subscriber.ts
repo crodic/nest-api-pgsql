@@ -83,7 +83,7 @@ export class AuditLogSubscriber implements EntitySubscriberInterface {
       timestamp: new Date(),
       metadata: {
         actorId: userId ?? null,
-        role: currentUser?.role?.name ?? null,
+        roles: currentUser?.roles?.map((role) => role.name) ?? [],
         userType,
       },
       description: this.buildDescription(
