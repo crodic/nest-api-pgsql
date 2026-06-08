@@ -1,8 +1,8 @@
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { PermissionEntity } from '../permission/entities/permission.entity';
 import { RoleEntity } from './entities/role.entity';
+import { PermissionEntity } from './entities/permission.entity';
 import { RoleService } from './role.service';
 
 describe('RoleService', () => {

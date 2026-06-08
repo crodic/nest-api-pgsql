@@ -9,6 +9,7 @@ export class RefactorRbacTables1780191550000 implements MigrationInterface {
       CREATE TABLE "permissions" (
         "id" BIGSERIAL NOT NULL,
         "label" character varying NOT NULL,
+        "description" character varying,
         "key" character varying NOT NULL,
         "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
         "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
@@ -23,11 +24,11 @@ export class RefactorRbacTables1780191550000 implements MigrationInterface {
     for (const permission of ALL_PERMISSIONS) {
       await queryRunner.query(
         `
-          INSERT INTO "permissions" ("label", "key")
-          VALUES ($1, $2)
+          INSERT INTO "permissions" ("label", "description", "key")
+          VALUES ($1, $2, $3)
           ON CONFLICT ("key") DO NOTHING
         `,
-        [permission.label, permission.key],
+        [permission.label, null, permission.key],
       );
     }
 
