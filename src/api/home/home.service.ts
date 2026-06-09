@@ -1,4 +1,4 @@
-import { PermissionEntity } from '@/api/role/entities/permission.entity';
+import { PermissionEntity } from '@/api/permission/entities/permission.entity';
 import { SYSTEM_ROLE_NAME } from '@/constants/app.constant';
 import { ADMIN_FULL_ACCESS } from '@/utils/permissions.constant';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';

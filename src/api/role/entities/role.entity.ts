@@ -1,5 +1,5 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
-import { PermissionEntity } from '@/api/role/entities/permission.entity';
+import { PermissionEntity } from '@/api/permission/entities/permission.entity';
 import { AutoIncrementID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {

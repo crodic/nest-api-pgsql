@@ -14,8 +14,8 @@ import {
   PaginateQuery,
 } from 'nestjs-paginate';
 import { EntityManager, In, Repository } from 'typeorm';
+import { PermissionEntity } from '../permission/entities/permission.entity';
 import { CreateRoleReqDto } from './dto/create-role.req.dto';
-import { PermissionEntity } from './entities/permission.entity';
 import { RoleResDto } from './dto/role.res.dto';
 import { UpdateRoleReqDto } from './dto/update-role.req.dto';
 import { RoleEntity } from './entities/role.entity';

@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { PermissionEntity } from '../role/entities/permission.entity';
+import { PermissionEntity } from '../permission/entities/permission.entity';
 import { RoleEntity } from '../role/entities/role.entity';
 import { AuthModule } from './../auth/auth.module';
 import { AdminUserController } from './admin-user.controller';

@@ -26,9 +26,6 @@ export class PermissionEntity extends AbstractEntity {
   @Column()
   label: string;
 
-  @Column({ nullable: true })
-  description?: string;
-
   @Index('UQ_permissions_key', { unique: true })
   @Column()
   key: string;

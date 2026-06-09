@@ -15,7 +15,7 @@ export class AdminSeeder1758099274256 implements Seeder {
   public async run(dataSource: DataSource): Promise<void> {
     const { RoleEntity } = await import('@/api/role/entities/role.entity');
     const { PermissionEntity } =
-      await import('@/api/role/entities/permission.entity');
+      await import('@/api/permission/entities/permission.entity');
     const { AdminUserEntity } =
       await import('@/api/admin-user/entities/admin-user.entity');
 
@@ -26,7 +26,6 @@ export class AdminSeeder1758099274256 implements Seeder {
     await permissionRepo.upsert(
       ALL_PERMISSIONS.map((permission) => ({
         label: permission.label,
-        description: null,
         key: permission.key,
       })),
       ['key'],
