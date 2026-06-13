@@ -56,7 +56,7 @@ export class AdminUserService {
     const roleRepo = manager.getRepository(RoleEntity);
     const roles = await roleRepo.findBy({ id: In(data.roleIds) });
     if (roles.length !== data.roleIds.length) {
-      throw new ValidationException(ErrorCode.E002);
+      throw new ValidationException(ErrorCode.R001);
     }
     const adminUser = await repo.save(
       repo.create({
@@ -96,7 +96,7 @@ export class AdminUserService {
     });
 
     if (roles.length !== roleIds.length) {
-      throw new ValidationException(ErrorCode.E002);
+      throw new ValidationException(ErrorCode.R001);
     }
 
     const newUser = new AdminUserEntity({
@@ -166,7 +166,7 @@ export class AdminUserService {
       });
 
       if (roles.length !== updateUserDto.roleIds.length) {
-        throw new ValidationException(ErrorCode.E002);
+        throw new ValidationException(ErrorCode.R001);
       }
 
       user.roles = roles;

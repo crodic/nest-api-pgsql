@@ -82,7 +82,7 @@ export class RoleService {
       id: In(data.permissionIds),
     });
     if (permissionEntities.length !== data.permissionIds.length) {
-      throw new ValidationException(ErrorCode.E002);
+      throw new ValidationException(ErrorCode.P001);
     }
     const role = await repo.save(
       repo.create({
@@ -102,7 +102,7 @@ export class RoleService {
       id: In(dto.permissionIds),
     });
     if (permissionEntities.length !== dto.permissionIds.length) {
-      throw new ValidationException(ErrorCode.E002);
+      throw new ValidationException(ErrorCode.P001);
     }
     const newRole = new RoleEntity({
       name: dto.name,
@@ -156,7 +156,7 @@ export class RoleService {
       if (
         role.permissionEntities.length !== updateRoleDto.permissionIds.length
       ) {
-        throw new ValidationException(ErrorCode.E002);
+        throw new ValidationException(ErrorCode.P001);
       }
     }
 

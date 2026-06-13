@@ -137,7 +137,7 @@ export class AdminAuthService {
       .findBy({ id: In(dto.roleIds) });
 
     if (roles.length !== dto.roleIds.length) {
-      throw new ValidationException(ErrorCode.E002);
+      throw new ValidationException(ErrorCode.R001);
     }
 
     const user = this.adminUserRepository.create({

@@ -14,6 +14,16 @@ export type I18nTranslations = {
             "entity_not_found": string;
         };
     };
+    "permission": {
+        "error": {
+            "not_found": string;
+        };
+    };
+    "role": {
+        "error": {
+            "not_found": string;
+        };
+    };
     "user": {
         "unique": {
             "username": string;

@@ -12,4 +12,6 @@ export enum ErrorCode {
   E002 = 'user.error.not_found',
   E003 = 'user.error.email_exists',
   E004 = 'user.error.email_not_found',
+  R001 = 'role.error.not_found',
+  P001 = 'permission.error.not_found',
 }

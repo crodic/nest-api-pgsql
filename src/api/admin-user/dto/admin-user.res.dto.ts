@@ -54,11 +54,6 @@ export class AdminUserResDto {
   @Expose()
   roles?: WrapperType<RoleResDto>[];
 
-  @ClassFieldOptional(() => RoleResDto)
-  @Transform(({ obj }) => obj.roles?.[0])
-  @Expose()
-  role?: WrapperType<RoleResDto>;
-
   @BooleanField()
   @Transform(({ value }) => !!value)
   @Expose()
