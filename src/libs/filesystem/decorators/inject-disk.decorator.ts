@@ -9,10 +9,6 @@ import { Inject } from '@nestjs/common';
  * @InjectDisk('s3')
  * private readonly fileStorageService: FileStorageService,
  * private readonly fileStorageService: FileStorageService,
- * @InjectDisk('dropbox')
- * private readonly fileStorageService: FileStorageService,
- * @InjectDisk('gdrive')
- * private readonly fileStorageService: FileStorageService,
  * @returns The disk from the file storage service.
  */
 export function InjectDisk<T extends string>(diskName: T) {

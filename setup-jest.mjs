@@ -67,6 +67,11 @@ process.env.AUTH_PORTAL_RESET_PASSWORD_URL =
   'http://localhost:5173/reset-password';
 process.env.AUTH_CLIENT_RESET_PASSWORD_URL =
   'http://localhost:3000/reset-password';
+process.env.USER_AUTH_CLIENT_RESET_PASSWORD_URL =
+  'http://localhost:3000/reset-password';
+
+process.env.ADMIN_PANEL_USERNAME = 'admin';
+process.env.ADMIN_PANEL_PASSWORD = 'admin@2026';
 
 process.env.GOOGLE_CLIENT_ID = '';
 process.env.GOOGLE_CLIENT_SECRET = '';
@@ -78,7 +83,7 @@ process.env.SENTRY_ENVIRONMENT = 'local';
 process.env.SWAGGER_USERNAME = 'swagger';
 process.env.SWAGGER_PASSWORD = 'admin@2026';
 
-process.env.NEST_LENS_ENABLED = 'true';
+process.env.NEST_LENS_ENABLED = '';
 
 process.env.BULL_BOARD_PATH = '/queues';
 process.env.BULL_BOARD_USERNAME = 'bullboard';

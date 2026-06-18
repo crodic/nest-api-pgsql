@@ -1,10 +1,19 @@
 {
+  "displayName": "unit",
   "moduleFileExtensions": ["js", "json", "ts"],
   "rootDir": "src",
+  "roots": ["<rootDir>"],
   "testRegex": ".*\\.spec\\.ts$",
   "transform": {
-    "^.+\\.(t|j)s$": "ts-jest"
+    "^.+\\.ts$": [
+      "ts-jest",
+      {
+        "tsconfig": "<rootDir>/../tsconfig.spec.json",
+        "diagnostics": false
+      }
+    ]
   },
+  "testPathIgnorePatterns": ["/node_modules/", "/dist/"],
   "collectCoverageFrom": ["**/*.(t|j)s", "!**/*.spec.(t|j)s"],
   "coveragePathIgnorePatterns": [
     "/node_modules/",
@@ -34,9 +43,11 @@
     "^@/utils(.*)$": "<rootDir>/utils$1",
     "^@/storage(.*)$": "<rootDir>/storage$1",
     "^@/pipes(.*)$": "<rootDir>/pipes$1",
+    "^uuid$": "<rootDir>/../test/mocks/uuid.js",
     "^@/(.*)$": "<rootDir>/$1"
   },
   "setupFiles": ["../setup-jest.mjs"],
   "cacheDirectory": "../.jest-cache",
+  "clearMocks": true,
   "testTimeout": 120000
 }

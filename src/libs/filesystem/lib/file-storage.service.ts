@@ -1,15 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { BufferStorageDriver } from '../drivers/buffer.driver';
-import { DropboxStorageDriver } from '../drivers/dropbox.driver';
-import { GoogleDriveStorageDriver } from '../drivers/google-drive.driver';
 import { LocalStorageDriver } from '../drivers/local.driver';
 import { S3StorageDriver } from '../drivers/s3.driver';
 import { StorageConfig } from '../types/storage-config.type';
 import {
   BufferDiskConfig,
   DiskObjectValidation,
-  DropboxDiskConfig,
-  GoogleDriveDiskConfig,
   LocalDiskConfig,
   S3DiskConfig,
   StorageDisk,
@@ -55,16 +51,6 @@ export class FileStorageService<T = any> {
             break;
           case 's3':
             driverInstance = new S3StorageDriver(diskConfig as S3DiskConfig);
-            break;
-          case 'dropbox':
-            driverInstance = new DropboxStorageDriver(
-              diskConfig as DropboxDiskConfig,
-            );
-            break;
-          case 'gdrive':
-            driverInstance = new GoogleDriveStorageDriver(
-              diskConfig as GoogleDriveDiskConfig,
-            );
             break;
           default:
             throw new Error(

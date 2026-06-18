@@ -1,4 +1,3 @@
-import { StorageService } from '@/libs/storage';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { FileEntity } from './entities/file.entity';
@@ -30,14 +29,12 @@ describe('FileService', () => {
           useValue: { validateImage: jest.fn(), validateFile: jest.fn() },
         },
 
-        // Mock storage
         {
-          provide: StorageService,
+          provide: 'FILE_STORAGE_DISK_PUBLIC',
           useValue: {
-            getDisk: jest.fn().mockReturnValue({
-              put: jest.fn(),
-              delete: jest.fn(),
-            }),
+            getDiskRoot: jest.fn().mockReturnValue('storage/public'),
+            put: jest.fn(),
+            delete: jest.fn(),
           },
         },
       ],

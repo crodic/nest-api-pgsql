@@ -186,26 +186,6 @@ export interface S3DiskConfig {
   forcePathStyle?: boolean;
 }
 
-/**
- * Configuration for a Dropbox disk storage driver.
- */
-export interface DropboxDiskConfig {
-  driver: 'dropbox';
-  accessToken: string;
-  basePublicUrl?: string;
-}
-
-/**
- * Configuration for a Google Drive disk storage driver.
- */
-export interface GoogleDriveDiskConfig {
-  driver: 'gdrive';
-  client_email: string;
-  private_key: string;
-  folderId: string;
-  basePublicUrl?: string;
-}
-
 export interface BufferDiskConfig {
   driver: 'buffer';
 }
@@ -213,8 +193,6 @@ export interface BufferDiskConfig {
 export type StorageDiskConfig =
   | LocalDiskConfig
   | S3DiskConfig
-  | DropboxDiskConfig
-  | GoogleDriveDiskConfig
   | BufferDiskConfig;
 
 /**
