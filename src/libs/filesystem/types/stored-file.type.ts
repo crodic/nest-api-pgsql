@@ -1,10 +1,7 @@
-// import 'express';
-
 declare global {
+  // Express exposes request augmentation through this namespace.
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace Express {
-    /**
-     * Extension of Express.Request to include uploaded file(s) information.
-     */
     interface Request {
       uploadedFiles?: StoredFile[];
       uploadedFile?: StoredFile;

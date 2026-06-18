@@ -1,65 +1,219 @@
 # Crodic Framework
 
-A Nest application for framework.
+A NestJS backend using PostgreSQL, Redis, TypeORM, BullMQ, and Mailpit.
 
-## Technology Stack
+## Prerequisites
 
-### Backend
+- Docker and Docker Compose
+- Git
 
-- **Framework**: NestJS
-- **Database**: PostgreSQL/MySQL
-- **Queue**: Redis
-- **Testing**: Jest
-- **Authentication**: Jwt/Passport
-- **ORM**: TypeORM
-- **API Documentation**: Swagger
+Node.js, pnpm, PostgreSQL, Redis, Mailpit, and pgAdmin are provided by Docker for local development.
 
-### Required Containers
+## Local Docker Setup
 
-- PostgreSQL (Version 16) or MySQL (Version 8)
-- Redis (Version 7)
-- Mailpit or Maildev
-
-## Installation
-
-Follow these steps to set up the project locally:
-
-1. **Clone the repository**
+Copy the example environment file and adjust values as needed:
 
 ```bash
-  git clone https://github.com/crodic/crodic.git
+cp .env.example .env
 ```
 
-2. **Install Node dependencies**
+Start the full local stack:
 
 ```bash
-    pnpm install
+docker compose up -d
 ```
 
-3. **Configure environment**
+Follow the app logs:
 
 ```bash
-    cp .env.example .env
+docker compose logs -f app
 ```
 
-Then edit the `.env` file with your local configuration, especially database and queue settings.
-
-4. **Migrate database**
+Stop the stack:
 
 ```bash
-    pnpm run migration:up
+docker compose down
 ```
 
-5. **Seed data**
+Remove local database, Redis, and pgAdmin volumes when you need a clean reset:
 
 ```bash
-    pnpm run seed:run
+docker compose down -v
 ```
 
-The application will be available at `http://localhost:8000`.
+## Local Services
 
-## Additional Notes
+- API: http://localhost:3000
+- Swagger, in development: http://localhost:3000/api-docs
+- Bull Board: http://localhost:3000/api/queues
+- NestLens: http://localhost:3000/nestlens
+- Mailpit: http://localhost:8025
+- pgAdmin: http://localhost:5050
 
-- [API document](http://localhost:8000/api-docs)
-- [Monitoring Request](http://localhost:8000/nestlens)
-- [Monitoring Queue](http://localhost:8000/api/queues)
+pgAdmin login defaults come from `.env`:
+
+- Email: `PGADMIN_DEFAULT_EMAIL`
+- Password: `PGADMIN_DEFAULT_PASSWORD`
+
+To connect pgAdmin to the Docker database, use:
+
+- Host: `postgres`
+- Port: `5432`
+- Database: `DATABASE_NAME`
+- Username: `DATABASE_USERNAME`
+- Password: `DATABASE_PASSWORD`
+
+## Database Migrations
+
+Migrations are not run automatically when the app container starts. Run them explicitly after the database is healthy:
+
+```bash
+docker compose run --rm app pnpm migration:run:docker
+```
+
+To revert the latest migration locally:
+
+```bash
+docker compose run --rm app pnpm migration:revert:docker
+```
+
+To seed local relational data:
+
+```bash
+docker compose run --rm app pnpm seed:run:relational
+```
+
+## Tests
+
+Jest loads test environment values from `.env.testing` through `setup-jest.mjs`.
+
+Run tests inside Docker:
+
+```bash
+docker compose run --rm app pnpm test
+docker compose run --rm app pnpm test:e2e
+```
+
+Run linting inside Docker:
+
+```bash
+docker compose run --rm app pnpm exec eslint "{src,apps,libs,test}/**/*.ts"
+```
+
+## Docker Image
+
+Build the production image locally:
+
+```bash
+docker build --target production -t nestjs-boilerplate-api:local .
+```
+
+Run the production image against the local Compose dependencies for a smoke test:
+
+```bash
+docker compose up -d postgres redis mailpit
+docker run --rm --env-file .env --network web-server-pgsql_app-network -p 3000:3000 nestjs-boilerplate-api:local
+```
+
+## Production Compose
+
+`docker-compose.prod.yml` is intended for simple self-hosted production deployments. It runs only the API, PostgreSQL, and Redis. It does not include pgAdmin or Mailpit, and it does not expose PostgreSQL or Redis ports to the host.
+
+Prepare the server environment:
+
+```bash
+cp .env.production.example .env
+```
+
+Edit `.env` and set real values, especially:
+
+- `APP_IMAGE`
+- database credentials
+- Redis password
+- JWT and auth secrets
+- SMTP credentials
+- CORS and public URLs
+
+Pull and start the production stack:
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+docker compose -f docker-compose.prod.yml up -d
+```
+
+View production logs:
+
+```bash
+docker compose -f docker-compose.prod.yml logs -f app
+```
+
+Stop production containers without deleting data:
+
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+Run production migrations explicitly as a release step:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm app pnpm migration:run:prod
+```
+
+Do not bake production secrets into the image or commit them to the repository. For larger deployments, reuse the same `Dockerfile` production target with your orchestrator and provide environment variables through your platform or secret manager. The production migration command inside the built image is:
+
+```bash
+node node_modules/typeorm/cli.js --dataSource=dist/database/data-source.js migration:run
+```
+
+## Git Hooks and Commit Rules
+
+Husky is enabled through the `prepare` script. After installing dependencies, Git hooks are installed automatically:
+
+```bash
+pnpm install
+```
+
+Active hooks:
+
+- `pre-commit`: runs `lint-staged`
+- `commit-msg`: runs `commitlint`
+
+`lint-staged` runs ESLint and Prettier only on staged files.
+
+Commit messages must follow Conventional Commits:
+
+```text
+<type>(optional-scope): <description>
+```
+
+Allowed common types:
+
+- `feat`: new feature
+- `fix`: bug fix
+- `docs`: documentation-only change
+- `style`: formatting or code style only
+- `refactor`: code change without feature or bug fix
+- `perf`: performance improvement
+- `test`: tests
+- `build`: build system or dependency changes
+- `ci`: CI/CD changes
+- `chore`: maintenance
+- `revert`: revert a previous commit
+
+Examples:
+
+```text
+feat(auth): add refresh token rotation
+fix(docker): correct redis healthcheck
+docs: update local setup guide
+ci: publish docker image to ghcr
+```
+
+## CI/CD
+
+The GitHub Actions workflow is defined in `.github/workflows/ci-cd.yml`:
+
+- The `ci` job installs dependencies, lints, runs unit tests, runs e2e tests, builds the app, and validates the Docker build.
+- The `docker` job builds with Docker Buildx, caches Docker layers, and pushes to GitHub Container Registry after CI passes on pushes to `main` or version tags.
+
+The Docker job uses `GITHUB_TOKEN` for GitHub Container Registry. Add deployment credentials and production environment variables as GitHub secrets in the repository or environment settings when wiring an actual deploy job.

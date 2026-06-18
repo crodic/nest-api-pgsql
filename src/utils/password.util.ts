@@ -5,7 +5,7 @@ export const hashPassword = async (password: string): Promise<string> => {
     return await argon2.hash(password);
   } catch (err) {
     console.error(err);
-    throw new Error('Can not hash password.');
+    throw new Error('Can not hash password.', { cause: err });
   }
 };
 

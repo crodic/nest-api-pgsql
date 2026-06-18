@@ -1,70 +1,50 @@
-##################
-# BUILD BASE IMAGE
-##################
+# syntax=docker/dockerfile:1.7
 
-FROM node:20-alpine AS base
-
-# Install and use pnpm
-RUN npm install -g pnpm
-
-#############################
-# BUILD FOR LOCAL DEVELOPMENT
-#############################
-
-FROM base As development
+FROM node:20.19-alpine AS base
 WORKDIR /app
-RUN chown -R node:node /app
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 
-# Install all dependencies (including devDependencies)
-RUN pnpm install
+RUN apk add --no-cache libc6-compat dumb-init \
+  && corepack enable \
+  && corepack prepare pnpm@10.30.3 --activate
 
-# Bundle app source
-COPY --chown=node:node . .
+FROM base AS deps
+RUN apk add --no-cache python3 make g++
 
-# Use the node user from the image (instead of the root user)
+COPY package.json pnpm-lock.yaml ./
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+  pnpm install --frozen-lockfile
+
+FROM deps AS development
+ENV NODE_ENV=development
+
+COPY . .
 USER node
 
-#####################
-# BUILD BUILDER IMAGE
-#####################
+CMD ["pnpm", "start:dev"]
 
-FROM base AS builder
-WORKDIR /app
+FROM deps AS builder
+ENV NODE_ENV=production
 
-COPY --chown=node:node package*.json pnpm-lock.yaml ./
-COPY --chown=node:node --from=development /app/node_modules ./node_modules
-COPY --chown=node:node --from=development /app/src ./src
-COPY --chown=node:node --from=development /app/tsconfig.json ./tsconfig.json
-COPY --chown=node:node --from=development /app/tsconfig.build.json ./tsconfig.build.json
-COPY --chown=node:node --from=development /app/nest-cli.json ./nest-cli.json
-
+COPY . .
 RUN pnpm build
-
-# Removes unnecessary packages adn re-install only production dependencies
-ENV NODE_ENV production
 RUN pnpm prune --prod
-RUN pnpm install --prod
 
-USER node
+FROM base AS production
+ENV NODE_ENV=production
 
-######################
-# BUILD FOR PRODUCTION
-######################
+RUN mkdir -p /app/src/generated /app/storage/public /app/storage/private /app/storage/avatars \
+  && chown -R node:node /app
 
-FROM node:20-alpine AS production
-WORKDIR /app
-
-RUN mkdir -p src/generated && chown -R node:node src
-
-# Copy the bundled code from the build stage to the production image
-COPY --chown=node:node --from=builder /app/src/generated/i18n.generated.ts ./src/generated/i18n.generated.ts
+COPY --chown=node:node --from=builder /app/package.json ./package.json
 COPY --chown=node:node --from=builder /app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /app/dist ./dist
-COPY --chown=node:node --from=builder /app/package.json ./
+COPY --chown=node:node --from=builder /app/public ./public
 
 USER node
+EXPOSE 3000
 
-# Start the server using the production build
-CMD [ "node", "dist/main.js" ]
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/main.js"]
