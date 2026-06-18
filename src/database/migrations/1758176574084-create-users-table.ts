@@ -17,7 +17,7 @@ export class CreateUsersTable1758176574084 implements MigrationInterface {
             VALUES ($1, $2, $3, $4, $5, $6)
         `,
       [
-        'boilerplate',
+        process.env.DATABASE_NAME!,
         'public',
         'users',
         'GENERATED_COLUMN',
