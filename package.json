@@ -67,7 +67,6 @@
     "@nestjs/websockets": "^11.1.19",
     "@sentry/nestjs": "^10.48.0",
     "argon2": "^0.44.0",
-    "aws-sdk": "^2.1693.0",
     "axios": "^1.15.0",
     "bullmq": "^5.74.1",
     "cacheable": "^2.3.4",

@@ -7,6 +7,7 @@ import {
   HeadObjectCommand,
   ListObjectsV2Command,
   ListObjectsV2CommandOutput,
+  PutObjectAclCommand,
   PutObjectCommand,
   PutObjectTaggingCommand,
   S3Client,
@@ -42,7 +43,7 @@ export class S3StorageDriver implements StorageDriver {
       region: config.region || 'default',
       endpoint: config.endpoint,
       apiVersion: config.apiVersion,
-      forcePathStyle: true,
+      forcePathStyle: config.forcePathStyle ?? true,
     });
     this.bucket = config.bucket;
     this.cdnBaseUrl = config.cdnBaseUrl || '';
@@ -102,11 +103,10 @@ export class S3StorageDriver implements StorageDriver {
     visibility: 'public' | 'private',
   ): Promise<void> {
     await this.s3Client.send(
-      new PutObjectCommand({
+      new PutObjectAclCommand({
         Bucket: this.bucket,
         Key: path,
         ACL: visibility === 'public' ? 'public-read' : 'private',
-        Body: '', // S3 requires Body, but this will not overwrite content
       }),
     );
   }
@@ -147,7 +147,7 @@ export class S3StorageDriver implements StorageDriver {
         Key: path,
       }),
     );
-    const stream = response.Body as NodeJS.ReadableStream;
+    const stream = this.toReadable(response.Body);
     const chunks: Buffer[] = [];
     for await (const chunk of stream) {
       chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk));
@@ -392,7 +392,7 @@ export class S3StorageDriver implements StorageDriver {
         }),
       )
       .then((response) => {
-        const s3Stream = response.Body as Readable;
+        const s3Stream = this.toReadable(response.Body);
         s3Stream.pipe(pass);
       })
       .catch((err) => {
@@ -469,5 +469,29 @@ export class S3StorageDriver implements StorageDriver {
       ContinuationToken = listResp.NextContinuationToken;
     } while (ContinuationToken);
     return deleted;
+  }
+
+  private toReadable(body: unknown): Readable {
+    if (body instanceof Readable) {
+      return body;
+    }
+
+    if (
+      body &&
+      typeof (body as { transformToWebStream?: unknown })
+        .transformToWebStream === 'function'
+    ) {
+      return Readable.fromWeb(
+        (
+          body as { transformToWebStream: () => ReadableStream }
+        ).transformToWebStream(),
+      );
+    }
+
+    if (body && Symbol.asyncIterator in Object(body)) {
+      return Readable.from(body as AsyncIterable<Uint8Array>);
+    }
+
+    return Readable.from([]);
   }
 }

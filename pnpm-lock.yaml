@@ -94,9 +94,6 @@ importers:
       argon2:
         specifier: ^0.44.0
         version: 0.44.0
-      aws-sdk:
-        specifier: ^2.1693.0
-        version: 2.1693.0
       axios:
         specifier: ^1.15.0
         version: 1.15.0
@@ -5065,14 +5062,6 @@ packages:
         integrity: sha512-2t/sy01ArdHHE0vRH5Hsay+RtCZt3dLPji7W7/MMOCEgze5b7SNDC4j5H6FnVgPkI1MTNFGzHdHrVXDDl7QSSQ==,
       }
 
-  aws-sdk@2.1693.0:
-    resolution:
-      {
-        integrity: sha512-cJmb8xEnVLT+R6fBS5sn/EFJiX7tUnDaPtOPZ1vFbOJtd0fnZn/Ky2XGgsvvoeliWeH7mL3TWSX5zXXGSQV6gQ==,
-      }
-    engines: { node: '>= 10.0.0' }
-    deprecated: The AWS SDK for JavaScript (v2) has reached end-of-support, and no longer receives updates. Please migrate your code to use AWS SDK for JavaScript (v3). More info https://a.co/cUPnyil
-
   aws-ssl-profiles@1.1.2:
     resolution:
       {
@@ -5331,12 +5320,6 @@ packages:
     resolution:
       {
         integrity: sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==,
-      }
-
-  buffer@4.9.2:
-    resolution:
-      {
-        integrity: sha512-xq+q3SRMOxGivLhBNaUdC64hDTQwejJ+H0T/NB1XMtTVEwNTrfFF3gAxiyW0Bu/xWEGhjVKgUcMhCrUy2+uCWg==,
       }
 
   buffer@5.7.1:
@@ -6717,13 +6700,6 @@ packages:
         integrity: sha512-LUd5euvbMLpwOF8m6ivPCbhQeSiYVNb8Vs0fQ8QjXo0JTkEHpz8pxdQf0gStltaPpw0Cca8b39KxvK9cfKRiAw==,
       }
 
-  events@1.1.1:
-    resolution:
-      {
-        integrity: sha512-kEcvvCBByWXGnZy6JUlgAp2gBIUjfCAV6P6TgT1/aaQKcmuAEC4OZTV1I4EWQLz2gxZw76atuVyvHhTxvi0Flw==,
-      }
-    engines: { node: '>=0.4.x' }
-
   events@3.3.0:
     resolution:
       {
@@ -7147,13 +7123,6 @@ packages:
         integrity: sha512-eeB5GfMNeevm/GRYq20ShmsaGcmI81kIX2K9XQx5miC8KdHaC6Jm0qQ8ZNeGOi7wYB8OsdxKs+Y2oVuTFuVwKQ==,
       }
 
-  generator-function@2.0.1:
-    resolution:
-      {
-        integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==,
-      }
-    engines: { node: '>= 0.4' }
-
   generic-pool@3.9.0:
     resolution:
       {
@@ -7522,12 +7491,6 @@ packages:
       }
     engines: { node: '>=0.10.0' }
 
-  ieee754@1.1.13:
-    resolution:
-      {
-        integrity: sha512-4vf7I2LYV/HaWerSo3XmlMkp5eZ83i+/CDluXi/IGTs/O1sejBNhTtnxzmRZfvOUqj7lZjqHkeTvpgSFDlWZTg==,
-      }
-
   ieee754@1.2.1:
     resolution:
       {
@@ -7648,13 +7611,6 @@ packages:
       }
     engines: { node: '>= 10' }
 
-  is-arguments@1.2.0:
-    resolution:
-      {
-        integrity: sha512-7bVbi0huj/wrIAOzb8U1aszg9kdi3KN/CyU19CTI7tAoZYEZoL9yCDXpbXN+uPsuWnP02cyug1gleqq+TU+YCA==,
-      }
-    engines: { node: '>= 0.4' }
-
   is-arrayish@0.2.1:
     resolution:
       {
@@ -7723,13 +7679,6 @@ packages:
         integrity: sha512-cTIB4yPYL/Grw0EaSzASzg6bBy9gqCofvWN8okThAYIxKJZC+udlRAmGbM0XLeniEJSs8uEgHPGuHSe1XsOLSQ==,
       }
     engines: { node: '>=6' }
-
-  is-generator-function@1.1.2:
-    resolution:
-      {
-        integrity: sha512-upqt1SkGkODW9tsGNG5mtXTXtECizwtS2kA161M+gJPc1xdb/Ax629af6YrTwcOeQHbewrPNlE5Dx7kzvXTizA==,
-      }
-    engines: { node: '>= 0.4' }
 
   is-glob@4.0.3:
     resolution:
@@ -7852,12 +7801,6 @@ packages:
         integrity: sha512-fKzAra0rGJUUBwGBgNkHZuToZcn+TtXHpeCgmkMJMMYx1sQDYaCSyjJBSCa2nH1DGm7s3n1oBnohoVTBaN7Lww==,
       }
     engines: { node: '>=8' }
-
-  isarray@1.0.0:
-    resolution:
-      {
-        integrity: sha512-VLghIWNM6ELQzo7zwmcg0NmTVyWKYjvIeM83yjp0wRDTmUnrM678fQbcKBo6n2CJEF0szoG//ytg+TKla89ALQ==,
-      }
 
   isarray@2.0.5:
     resolution:
@@ -8142,13 +8085,6 @@ packages:
         integrity: sha512-ekilCSN1jwRvIbgeg/57YFh8qQDNbwDb9xT/qu2DAHbFFZUicIl4ygVaAvzveMhMVr3LnpSKTNnwt8PoOfmKhQ==,
       }
     hasBin: true
-
-  jmespath@0.16.0:
-    resolution:
-      {
-        integrity: sha512-9FzQjJ7MATs1tSpnco1K6ayiYE3figslrXA72G2HQ/n76RzvYlofyi5QM+iX4YRs/pu3yzxlVQSST23+dMDknw==,
-      }
-    engines: { node: '>= 0.6.0' }
 
   joycon@3.1.1:
     resolution:
@@ -10336,12 +10272,6 @@ packages:
       }
     engines: { node: '>=6' }
 
-  punycode@1.3.2:
-    resolution:
-      {
-        integrity: sha512-RofWgt/7fL5wP1Y7fxE7/EmTLzQVnB0ycyibJ0OOHIlJqTNzglYFxVwETOcIoJqJmpDXJ9xImDv+Fq34F/d4Dw==,
-      }
-
   punycode@2.3.1:
     resolution:
       {
@@ -10368,14 +10298,6 @@ packages:
         integrity: sha512-6YHEFRL9mfgcAvql/XhwTvf5jKcOiiupt2FiJxHkiX1z4j7WL8J/jRHYLluORvc1XxB5rV20KoeK00gVJamspg==,
       }
     engines: { node: '>=0.6' }
-
-  querystring@0.2.0:
-    resolution:
-      {
-        integrity: sha512-X/xY82scca2tau62i9mDyU9K+I+djTMUsvwf7xnUX5GLvVzgJybOJf4Y6o9Zx3oJK/LSXg5tTZBjwzqVPaPO2g==,
-      }
-    engines: { node: '>=0.4.x' }
-    deprecated: The querystring API is considered Legacy. new code should use the URLSearchParams API instead.
 
   quick-format-unescaped@4.0.4:
     resolution:
@@ -10619,13 +10541,6 @@ packages:
         integrity: sha512-rp3So07KcdmmKbGvgaNxQSJr7bGVSVk5S9Eq1F+ppbRo70+YeaDxkw5Dd8NPN+GD6bjnYm2VuPuCXmpuYvmCXQ==,
       }
 
-  safe-regex-test@1.1.0:
-    resolution:
-      {
-        integrity: sha512-x/+Cz4YrimQxQccJf5mKEbIa1NzeCRNI5Ecl/ekmlYaampdNLPalVyIcCZNNH3MvmqBugV5TMYZXv0ljslUlaw==,
-      }
-    engines: { node: '>= 0.4' }
-
   safe-regex2@5.1.0:
     resolution:
       {
@@ -10827,12 +10742,6 @@ packages:
       }
     engines: { node: '>=14.0.0' }
     hasBin: true
-
-  sax@1.2.1:
-    resolution:
-      {
-        integrity: sha512-8I2a3LovHTOpm7NV5yOyO8IHqgVsfK4+UuySrXU8YXkSRX7k6hCV9b3HrkKCr3nMpgj+0bmocaJJWpvp1oc7ZA==,
-      }
 
   sax@1.6.0:
     resolution:
@@ -11919,22 +11828,10 @@ packages:
         integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==,
       }
 
-  url@0.10.3:
-    resolution:
-      {
-        integrity: sha512-hzSUW2q06EqL1gKM/a+obYHLIO6ct2hwPuviqTTOcfFVc61UbfJ2Q32+uGL/HCPxKqrdGB5QUwIe7UqlDgwsOQ==,
-      }
-
   util-deprecate@1.0.2:
     resolution:
       {
         integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==,
-      }
-
-  util@0.12.5:
-    resolution:
-      {
-        integrity: sha512-kZf/K6hEIrWHI6XqOFUiiMa+79wE/D8Q+NCNAWclkyg3b4d2k7s0QGepNjiABc+aR3N1PAyHL7p6UcLY6LmrnA==,
       }
 
   utils-merge@1.0.1:
@@ -11956,14 +11853,6 @@ packages:
       {
         integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==,
       }
-    hasBin: true
-
-  uuid@8.0.0:
-    resolution:
-      {
-        integrity: sha512-jOXGuXZAWdsTH7eZLtyXMqUb9EcWMGZNbL9YcGBJl4MH4nrxHmZJhEHvyLFrkxo+28uLb/NYRcStH48fnD0Vzw==,
-      }
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
   uuid@9.0.1:
@@ -12192,20 +12081,6 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-
-  xml2js@0.6.2:
-    resolution:
-      {
-        integrity: sha512-T4rieHaC1EXcES0Kxxj4JWgaUQHDk+qwHcYOCFHfiwKz7tOVPLq7Hjq9dM1WCMhylqMEfP7hMcOIChvotiZegA==,
-      }
-    engines: { node: '>=4.0.0' }
-
-  xmlbuilder@11.0.1:
-    resolution:
-      {
-        integrity: sha512-fDlsI/kFEx7gLvbecc0/ohLG50fugQp8ryHzMTuW9vSa1GJ0XYWKnhsUx7oie3G98+r56aTQIUB4kht42R3JvA==,
-      }
-    engines: { node: '>=4.0' }
 
   xtend@4.0.2:
     resolution:
@@ -15830,19 +15705,6 @@ snapshots:
       '@fastify/error': 4.2.0
       fastq: 1.20.1
 
-  aws-sdk@2.1693.0:
-    dependencies:
-      buffer: 4.9.2
-      events: 1.1.1
-      ieee754: 1.1.13
-      jmespath: 0.16.0
-      querystring: 0.2.0
-      sax: 1.2.1
-      url: 0.10.3
-      util: 0.12.5
-      uuid: 8.0.0
-      xml2js: 0.6.2
-
   aws-ssl-profiles@1.1.2:
     optional: true
 
@@ -16029,12 +15891,6 @@ snapshots:
   buffer-equal-constant-time@1.0.1: {}
 
   buffer-from@1.1.2: {}
-
-  buffer@4.9.2:
-    dependencies:
-      base64-js: 1.5.1
-      ieee754: 1.1.13
-      isarray: 1.0.0
 
   buffer@5.7.1:
     dependencies:
@@ -16870,8 +16726,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
 
-  events@1.1.1: {}
-
   events@3.3.0: {}
 
   execa@5.1.1:
@@ -17201,8 +17055,6 @@ snapshots:
       is-property: 1.0.2
     optional: true
 
-  generator-function@2.0.1: {}
-
   generic-pool@3.9.0:
     optional: true
 
@@ -17435,8 +17287,6 @@ snapshots:
     dependencies:
       safer-buffer: 2.1.2
 
-  ieee754@1.1.13: {}
-
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
@@ -17507,11 +17357,6 @@ snapshots:
 
   ipaddr.js@2.3.0: {}
 
-  is-arguments@1.2.0:
-    dependencies:
-      call-bound: 1.0.4
-      has-tostringtag: 1.0.2
-
   is-arrayish@0.2.1: {}
 
   is-binary-path@2.1.0:
@@ -17544,14 +17389,6 @@ snapshots:
 
   is-generator-fn@2.1.0: {}
 
-  is-generator-function@1.1.2:
-    dependencies:
-      call-bound: 1.0.4
-      generator-function: 2.0.1
-      get-proto: 1.0.1
-      has-tostringtag: 1.0.2
-      safe-regex-test: 1.1.0
-
   is-glob@4.0.3:
     dependencies:
       is-extglob: 2.1.1
@@ -17583,6 +17420,7 @@ snapshots:
       gopd: 1.2.0
       has-tostringtag: 1.0.2
       hasown: 2.0.2
+    optional: true
 
   is-stream@2.0.1: {}
 
@@ -17602,8 +17440,6 @@ snapshots:
     dependencies:
       is-docker: 2.2.1
     optional: true
-
-  isarray@1.0.0: {}
 
   isarray@2.0.5: {}
 
@@ -17968,8 +17804,6 @@ snapshots:
       - ts-node
 
   jiti@2.6.1: {}
-
-  jmespath@0.16.0: {}
 
   joycon@3.1.1: {}
 
@@ -19689,8 +19523,6 @@ snapshots:
   punycode.js@2.3.1:
     optional: true
 
-  punycode@1.3.2: {}
-
   punycode@2.3.1: {}
 
   pure-rand@7.0.1: {}
@@ -19702,8 +19534,6 @@ snapshots:
   qs@6.15.1:
     dependencies:
       side-channel: 1.1.0
-
-  querystring@0.2.0: {}
 
   quick-format-unescaped@4.0.4: {}
 
@@ -19843,12 +19673,6 @@ snapshots:
 
   safe-buffer@5.2.1: {}
 
-  safe-regex-test@1.1.0:
-    dependencies:
-      call-bound: 1.0.4
-      es-errors: 1.3.0
-      is-regex: 1.2.1
-
   safe-regex2@5.1.0:
     dependencies:
       ret: 0.5.0
@@ -19952,8 +19776,6 @@ snapshots:
     optionalDependencies:
       '@parcel/watcher': 2.5.6
     optional: true
-
-  sax@1.2.1: {}
 
   sax@1.6.0:
     optional: true
@@ -20685,28 +20507,13 @@ snapshots:
     dependencies:
       punycode: 2.3.1
 
-  url@0.10.3:
-    dependencies:
-      punycode: 1.3.2
-      querystring: 0.2.0
-
   util-deprecate@1.0.2: {}
-
-  util@0.12.5:
-    dependencies:
-      inherits: 2.0.4
-      is-arguments: 1.2.0
-      is-generator-function: 1.1.2
-      is-typed-array: 1.1.15
-      which-typed-array: 1.1.20
 
   utils-merge@1.0.1: {}
 
   uuid@11.1.0: {}
 
   uuid@14.0.0: {}
-
-  uuid@8.0.0: {}
 
   uuid@9.0.1:
     optional: true
@@ -20861,13 +20668,6 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@8.18.3: {}
-
-  xml2js@0.6.2:
-    dependencies:
-      sax: 1.2.1
-      xmlbuilder: 11.0.1
-
-  xmlbuilder@11.0.1: {}
 
   xtend@4.0.2: {}
 
