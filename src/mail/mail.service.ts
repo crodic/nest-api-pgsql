@@ -13,33 +13,33 @@ export class MailService {
     private readonly mailerService: MailerService,
   ) {}
 
-  renderEmailVerification(email: string, token: string): string {
-    // Please replace the URL with your own frontend URL
-    const url = `${this.configService.get('app.url', { infer: true })}/api/v1/auth/verify/email?token=${token}`;
+  renderAdminEmailVerification(email: string, token: string): string {
+    const url = `${this.configService.get('app.url', { infer: true })}/api/v1/auth/verify?token=${token}`;
 
-    return this.renderTemplate('email-verification', {
+    return this.renderTemplate('admin-email-verification', {
       email,
       url,
     });
   }
 
-  async sendEmailVerification(
+  async sendAdminEmailVerification(
     email: string,
     token: string,
     renderedHtml?: string,
   ): Promise<string> {
-    const html = renderedHtml ?? this.renderEmailVerification(email, token);
+    const html =
+      renderedHtml ?? this.renderAdminEmailVerification(email, token);
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Email Verification',
+      subject: 'Verify your admin account',
       html,
     });
 
     return html;
   }
 
-  renderEmailForgotPassword(email: string, token: string): string {
+  renderAdminEmailForgotPassword(email: string, token: string): string {
     const portalResetPasswordUrl = this.configService.getOrThrow(
       'auth.portalResetPasswordUrl',
       {
@@ -48,22 +48,80 @@ export class MailService {
     );
     const url = `${portalResetPasswordUrl}?token=${token}`;
 
-    return this.renderTemplate('email-reset-password', {
+    return this.renderTemplate('admin-email-reset-password', {
       email,
       url,
     });
   }
 
-  async sendEmailForgotPassword(
+  async sendAdminEmailForgotPassword(
     email: string,
     token: string,
     renderedHtml?: string,
   ): Promise<string> {
-    const html = renderedHtml ?? this.renderEmailForgotPassword(email, token);
+    const html =
+      renderedHtml ?? this.renderAdminEmailForgotPassword(email, token);
 
     await this.mailerService.sendMail({
       to: email,
-      subject: 'Email Reset Password',
+      subject: 'Reset your admin password',
+      html,
+    });
+
+    return html;
+  }
+
+  renderUserEmailVerification(email: string, token: string): string {
+    const url = `${this.configService.get('app.url', { infer: true })}/api/v1/user/auth/verify/email?token=${token}`;
+
+    return this.renderTemplate('user-email-verification', {
+      email,
+      url,
+    });
+  }
+
+  async sendUserEmailVerification(
+    email: string,
+    token: string,
+    renderedHtml?: string,
+  ): Promise<string> {
+    const html = renderedHtml ?? this.renderUserEmailVerification(email, token);
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Verify your account',
+      html,
+    });
+
+    return html;
+  }
+
+  renderUserEmailForgotPassword(email: string, token: string): string {
+    const clientResetPasswordUrl = this.configService.getOrThrow(
+      'auth.clientResetPasswordUrl',
+      {
+        infer: true,
+      },
+    );
+    const url = `${clientResetPasswordUrl}?token=${token}`;
+
+    return this.renderTemplate('user-email-reset-password', {
+      email,
+      url,
+    });
+  }
+
+  async sendUserEmailForgotPassword(
+    email: string,
+    token: string,
+    renderedHtml?: string,
+  ): Promise<string> {
+    const html =
+      renderedHtml ?? this.renderUserEmailForgotPassword(email, token);
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Reset your password',
       html,
     });
 
@@ -105,7 +163,12 @@ export class MailService {
   }
 
   private renderTemplate(
-    templateName: 'email-verification' | 'email-reset-password' | 'admin-email',
+    templateName:
+      | 'admin-email-verification'
+      | 'admin-email-reset-password'
+      | 'user-email-verification'
+      | 'user-email-reset-password'
+      | 'admin-email',
     context: Record<string, unknown>,
   ): string {
     const templatePath = join(__dirname, 'templates', `${templateName}.hbs`);

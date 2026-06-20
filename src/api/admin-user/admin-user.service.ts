@@ -156,7 +156,7 @@ export class AdminUserService {
       ms(tokenExpiresIn as StringValue),
     );
     await this.emailQueue.add(
-      JobName.EMAIL_VERIFICATION,
+      JobName.ADMIN_EMAIL_VERIFICATION,
       {
         email: user.email,
         token,

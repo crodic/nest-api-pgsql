@@ -395,7 +395,7 @@ export class AdminAuthService {
       ms(tokenExpiresIn as StringValue),
     );
     await this.emailQueue.add(
-      JobName.EMAIL_VERIFICATION,
+      JobName.ADMIN_EMAIL_VERIFICATION,
       {
         email: dto.email,
         token,
@@ -452,7 +452,7 @@ export class AdminAuthService {
         ms(tokenExpiresIn as StringValue),
       );
       await this.emailQueue.add(
-        JobName.EMAIL_VERIFICATION,
+        JobName.ADMIN_EMAIL_VERIFICATION,
         {
           email: dto.email,
           token,
@@ -528,7 +528,7 @@ export class AdminAuthService {
     );
 
     await this.emailQueue.add(
-      JobName.EMAIL_FORGOT_PASSWORD,
+      JobName.ADMIN_EMAIL_FORGOT_PASSWORD,
       {
         email: dto.email,
         token,

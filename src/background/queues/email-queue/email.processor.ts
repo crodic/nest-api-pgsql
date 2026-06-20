@@ -37,12 +37,28 @@ export class EmailProcessor extends WorkerHost {
     );
 
     switch (job.name) {
+      case JobName.ADMIN_EMAIL_VERIFICATION:
+        return await this.emailQueueService.sendAdminEmailVerification(
+          job.data as unknown as IVerifyEmailJob,
+        );
+      case JobName.ADMIN_EMAIL_FORGOT_PASSWORD:
+        return await this.emailQueueService.sendAdminEmailForgotPassword(
+          job.data as unknown as IForgotPasswordEmailJob,
+        );
+      case JobName.USER_EMAIL_VERIFICATION:
+        return await this.emailQueueService.sendUserEmailVerification(
+          job.data as unknown as IVerifyEmailJob,
+        );
+      case JobName.USER_EMAIL_FORGOT_PASSWORD:
+        return await this.emailQueueService.sendUserEmailForgotPassword(
+          job.data as unknown as IForgotPasswordEmailJob,
+        );
       case JobName.EMAIL_VERIFICATION:
-        return await this.emailQueueService.sendEmailVerification(
+        return await this.emailQueueService.sendUserEmailVerification(
           job.data as unknown as IVerifyEmailJob,
         );
       case JobName.EMAIL_FORGOT_PASSWORD:
-        return await this.emailQueueService.sendEmailForgotPassword(
+        return await this.emailQueueService.sendUserEmailForgotPassword(
           job.data as unknown as IForgotPasswordEmailJob,
         );
       case JobName.ADMIN_SEND_EMAIL:

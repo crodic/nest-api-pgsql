@@ -137,7 +137,7 @@ describe('UserAuthService', () => {
         86400000,
       );
       expect(emailQueue.add).toHaveBeenCalledWith(
-        JobName.EMAIL_VERIFICATION,
+        JobName.USER_EMAIL_VERIFICATION,
         { email: dto.email, token: 'verify-token' },
         { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
       );
@@ -173,7 +173,7 @@ describe('UserAuthService', () => {
         900000,
       );
       expect(emailQueue.add).toHaveBeenCalledWith(
-        JobName.EMAIL_FORGOT_PASSWORD,
+        JobName.USER_EMAIL_FORGOT_PASSWORD,
         { email: user.email, token: 'forgot-token' },
         { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
       );

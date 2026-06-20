@@ -150,7 +150,7 @@ export class UserAuthenticationController {
   @ApiQuery({ name: 'token', type: 'string' })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Get('verify/email')
-  async verifyEmail(@Query() token: string) {
+  async verifyEmail(@Query('token') token: string) {
     return await this.userAuthService.verifyAccount(token);
   }
 

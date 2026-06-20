@@ -17,11 +17,15 @@ describe('EmailQueueService', () => {
 
   beforeAll(async () => {
     mailServiceValue = {
-      sendEmailVerification: jest.fn(),
-      sendEmailForgotPassword: jest.fn(),
+      sendAdminEmailVerification: jest.fn(),
+      sendAdminEmailForgotPassword: jest.fn(),
+      sendUserEmailVerification: jest.fn(),
+      sendUserEmailForgotPassword: jest.fn(),
       sendAdminEmail: jest.fn(),
-      renderEmailVerification: jest.fn(),
-      renderEmailForgotPassword: jest.fn(),
+      renderAdminEmailVerification: jest.fn(),
+      renderAdminEmailForgotPassword: jest.fn(),
+      renderUserEmailVerification: jest.fn(),
+      renderUserEmailForgotPassword: jest.fn(),
       renderAdminEmail: jest.fn(),
     };
     emailLogRepository = {
@@ -69,14 +73,14 @@ describe('EmailQueueService', () => {
   });
 
   it('logs the full rendered verification email body', async () => {
-    mailServiceValue.renderEmailVerification.mockReturnValue(
+    mailServiceValue.renderUserEmailVerification.mockReturnValue(
       '<html>Verify account</html>',
     );
-    mailServiceValue.sendEmailVerification.mockResolvedValue(
+    mailServiceValue.sendUserEmailVerification.mockResolvedValue(
       '<html>Verify account</html>',
     );
 
-    await service.sendEmailVerification({
+    await service.sendUserEmailVerification({
       email: 'admin@example.com',
       token: 'verify-token',
     });

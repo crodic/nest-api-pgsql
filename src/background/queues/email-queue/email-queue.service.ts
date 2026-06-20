@@ -24,23 +24,23 @@ export class EmailQueueService {
     private readonly emailLogRepository: Repository<EmailLogEntity>,
   ) {}
 
-  async sendEmailVerification(data: IVerifyEmailJob): Promise<void> {
-    this.logger.debug(`Sending email verification to ${data.email}`);
-    const renderedBody = this.mailService.renderEmailVerification(
+  async sendAdminEmailVerification(data: IVerifyEmailJob): Promise<void> {
+    this.logger.debug(`Sending admin email verification to ${data.email}`);
+    const renderedBody = this.mailService.renderAdminEmailVerification(
       data.email,
       data.token,
     );
     const log = await this.createSystemLog({
       to: [data.email],
-      subject: 'Email Verification',
-      jobName: JobName.EMAIL_VERIFICATION,
-      templateName: 'email-verification',
+      subject: 'Verify your admin account',
+      jobName: JobName.ADMIN_EMAIL_VERIFICATION,
+      templateName: 'admin-email-verification',
       body: renderedBody,
       renderedBody,
     });
 
     try {
-      await this.mailService.sendEmailVerification(
+      await this.mailService.sendAdminEmailVerification(
         data.email,
         data.token,
         renderedBody,
@@ -52,23 +52,83 @@ export class EmailQueueService {
     }
   }
 
-  async sendEmailForgotPassword(data: IForgotPasswordEmailJob): Promise<void> {
-    this.logger.debug(`Sending email forgot password to ${data.email}`);
-    const renderedBody = this.mailService.renderEmailForgotPassword(
+  async sendAdminEmailForgotPassword(
+    data: IForgotPasswordEmailJob,
+  ): Promise<void> {
+    this.logger.debug(`Sending admin forgot password to ${data.email}`);
+    const renderedBody = this.mailService.renderAdminEmailForgotPassword(
       data.email,
       data.token,
     );
     const log = await this.createSystemLog({
       to: [data.email],
-      subject: 'Email Reset Password',
-      jobName: JobName.EMAIL_FORGOT_PASSWORD,
-      templateName: 'email-reset-password',
+      subject: 'Reset your admin password',
+      jobName: JobName.ADMIN_EMAIL_FORGOT_PASSWORD,
+      templateName: 'admin-email-reset-password',
       body: renderedBody,
       renderedBody,
     });
 
     try {
-      await this.mailService.sendEmailForgotPassword(
+      await this.mailService.sendAdminEmailForgotPassword(
+        data.email,
+        data.token,
+        renderedBody,
+      );
+      await this.markSent(log, renderedBody);
+    } catch (error) {
+      await this.markFailed(log, error);
+      throw error;
+    }
+  }
+
+  async sendUserEmailVerification(data: IVerifyEmailJob): Promise<void> {
+    this.logger.debug(`Sending user email verification to ${data.email}`);
+    const renderedBody = this.mailService.renderUserEmailVerification(
+      data.email,
+      data.token,
+    );
+    const log = await this.createSystemLog({
+      to: [data.email],
+      subject: 'Verify your account',
+      jobName: JobName.USER_EMAIL_VERIFICATION,
+      templateName: 'user-email-verification',
+      body: renderedBody,
+      renderedBody,
+    });
+
+    try {
+      await this.mailService.sendUserEmailVerification(
+        data.email,
+        data.token,
+        renderedBody,
+      );
+      await this.markSent(log, renderedBody);
+    } catch (error) {
+      await this.markFailed(log, error);
+      throw error;
+    }
+  }
+
+  async sendUserEmailForgotPassword(
+    data: IForgotPasswordEmailJob,
+  ): Promise<void> {
+    this.logger.debug(`Sending user forgot password to ${data.email}`);
+    const renderedBody = this.mailService.renderUserEmailForgotPassword(
+      data.email,
+      data.token,
+    );
+    const log = await this.createSystemLog({
+      to: [data.email],
+      subject: 'Reset your password',
+      jobName: JobName.USER_EMAIL_FORGOT_PASSWORD,
+      templateName: 'user-email-reset-password',
+      body: renderedBody,
+      renderedBody,
+    });
+
+    try {
+      await this.mailService.sendUserEmailForgotPassword(
         data.email,
         data.token,
         renderedBody,

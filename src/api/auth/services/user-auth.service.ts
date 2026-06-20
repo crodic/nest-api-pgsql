@@ -164,7 +164,7 @@ export class UserAuthService {
       ms(tokenExpiresIn as StringValue),
     );
     await this.emailQueue.add(
-      JobName.EMAIL_VERIFICATION,
+      JobName.USER_EMAIL_VERIFICATION,
       {
         email: dto.email,
         token,
@@ -221,7 +221,7 @@ export class UserAuthService {
         ms(tokenExpiresIn as StringValue),
       );
       await this.emailQueue.add(
-        JobName.EMAIL_VERIFICATION,
+        JobName.USER_EMAIL_VERIFICATION,
         {
           email: dto.email,
           token,
@@ -307,7 +307,7 @@ export class UserAuthService {
     );
 
     await this.emailQueue.add(
-      JobName.EMAIL_FORGOT_PASSWORD,
+      JobName.USER_EMAIL_FORGOT_PASSWORD,
       {
         email: dto.email,
         token,

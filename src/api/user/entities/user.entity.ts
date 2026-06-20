@@ -2,6 +2,7 @@ import { AutoIncrementID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import { hashPassword as hashPass } from '@/utils/password.util';
 import {
+  AfterLoad,
   BeforeInsert,
   BeforeUpdate,
   Column,
@@ -13,6 +14,8 @@ import {
 
 @Entity('users')
 export class UserEntity extends AbstractEntity {
+  private previousPassword?: string;
+
   constructor(data?: Partial<UserEntity>) {
     super();
     Object.assign(this, data);
@@ -61,8 +64,13 @@ export class UserEntity extends AbstractEntity {
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword() {
-    if (this.password) {
+    if (this.password && this.password !== this.previousPassword) {
       this.password = await hashPass(this.password);
     }
+  }
+
+  @AfterLoad()
+  private loadPreviousPassword() {
+    this.previousPassword = this.password;
   }
 }

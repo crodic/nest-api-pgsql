@@ -188,7 +188,7 @@ describe('AdminUserService', () => {
         expect.any(Number),
       );
       expect(emailQueueMock.add).toHaveBeenCalledWith(
-        JobName.EMAIL_VERIFICATION,
+        JobName.ADMIN_EMAIL_VERIFICATION,
         {
           email: dto.email,
           token: 'verify-token',
