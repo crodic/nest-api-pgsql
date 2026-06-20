@@ -4,6 +4,8 @@ export enum AppSubjects {
   Log = 'LOG',
   Admin = 'ADMIN',
   ImpersonateLog = 'IMPERSONATE_LOG',
+  Email = 'EMAIL',
+  EmailLog = 'EMAIL_LOG',
 
   All = 'all',
 }
@@ -144,6 +146,43 @@ export const ALL_PERMISSIONS = [
     'Audit & Activity',
     'View impersonation logs',
     'Review admin impersonation sessions and actions.',
+  ),
+
+  // Email
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.Email,
+    'Email',
+    'View own emails',
+    'View emails sent or scheduled by the current admin.',
+  ),
+  permissionMeta(
+    AppActions.Create,
+    AppSubjects.Email,
+    'Email',
+    'Send emails',
+    'Send or schedule administrative emails.',
+  ),
+  permissionMeta(
+    AppActions.Update,
+    AppSubjects.Email,
+    'Email',
+    'Edit scheduled emails',
+    'Edit emails that have been scheduled but not sent yet.',
+  ),
+  permissionMeta(
+    AppActions.Delete,
+    AppSubjects.Email,
+    'Email',
+    'Cancel scheduled emails',
+    'Cancel emails that have been scheduled but not sent yet.',
+  ),
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.EmailLog,
+    'Email',
+    'View email logs',
+    'Review all email delivery logs and failures.',
   ),
 
   // SUPER

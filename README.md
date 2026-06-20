@@ -181,6 +181,40 @@ Required permissions:
 - `impersonate:USER` to impersonate a user.
 - `read:IMPERSONATE_LOG` to view impersonation logs.
 
+## Admin Emails and Email Logs
+
+Admins can send or schedule emails through the email queue. All admin-created emails use the configured system sender from `MAIL_DEFAULT_EMAIL`/`MAIL_DEFAULT_NAME`; the admin user's own email is never used as the `from` address.
+
+Email queue jobs are logged in the `email_logs` table with recipients, subject, body, status, schedule time, sent time, failure message, queue job id, and the admin who created the email when applicable. System emails such as verification and forgot-password emails are also logged on a best-effort basis without changing the existing send flow.
+
+Admin email endpoints:
+
+```text
+POST /api/v1/emails
+GET  /api/v1/emails/my
+GET  /api/v1/emails/:id
+PATCH /api/v1/emails/:id
+POST /api/v1/emails/:id/cancel
+GET  /api/v1/emails/recipients
+```
+
+Email log endpoints:
+
+```text
+GET /api/v1/email-logs
+GET /api/v1/email-logs/:id
+```
+
+Required permissions:
+
+- `create:EMAIL` to send or schedule an email.
+- `read:EMAIL` to view emails created by the current admin.
+- `update:EMAIL` to edit scheduled emails.
+- `delete:EMAIL` to cancel scheduled emails.
+- `read:EMAIL_LOG` to view the global email log audit pages.
+
+After adding or changing email permissions in `src/utils/permissions.constant.ts`, run the permission sync command from the RBAC section. Scheduled emails require Redis and the BullMQ email worker to be running.
+
 ## Tests
 
 Jest loads test environment values from `.env.testing` through `setup-jest.mjs`.

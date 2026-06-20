@@ -1,12 +1,15 @@
+import { EmailLogEntity } from '@/api/email/entities/email-log.entity';
 import { QueueName, QueuePrefix } from '@/constants/job.constant';
 import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { TypeOrmModule } from '@nestjs/typeorm';
 import { EmailQueueEvents } from './email-queue.events';
 import { EmailQueueService } from './email-queue.service';
 import { EmailProcessor } from './email.processor';
 
 @Module({
   imports: [
+    TypeOrmModule.forFeature([EmailLogEntity]),
     BullModule.registerQueue({
       name: QueueName.EMAIL,
       prefix: QueuePrefix.AUTH,

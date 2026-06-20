@@ -1,4 +1,5 @@
 import {
+  IAdminSendEmailJob,
   IEmailJob,
   IForgotPasswordEmailJob,
   IVerifyEmailJob,
@@ -43,6 +44,10 @@ export class EmailProcessor extends WorkerHost {
       case JobName.EMAIL_FORGOT_PASSWORD:
         return await this.emailQueueService.sendEmailForgotPassword(
           job.data as unknown as IForgotPasswordEmailJob,
+        );
+      case JobName.ADMIN_SEND_EMAIL:
+        return await this.emailQueueService.sendAdminEmail(
+          job.data as unknown as IAdminSendEmailJob,
         );
       default:
         throw new Error(`Unknown job name: ${job.name}`);

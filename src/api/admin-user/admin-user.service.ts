@@ -1,12 +1,21 @@
+import { IVerifyEmailJob } from '@/common/interfaces/job.interface';
 import { AutoIncrementID } from '@/common/types/common.type';
+import { AllConfigType } from '@/config/config.type';
 import { CacheKey } from '@/constants/cache.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
+import { JobName, QueueName } from '@/constants/job.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
+import { createCacheKey } from '@/utils/cache.util';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
+import { Queue } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
+import ms, { StringValue } from 'ms';
 import { ClsService } from 'nestjs-cls';
 import {
   FilterOperator,
@@ -35,6 +44,10 @@ export class AdminUserService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
     private readonly settingsService: SettingsService,
+    private readonly configService: ConfigService<AllConfigType>,
+    private readonly jwtService: JwtService,
+    @InjectQueue(QueueName.EMAIL)
+    private readonly emailQueue: Queue<IVerifyEmailJob, any, string>,
   ) {}
 
   async hasAdmin(): Promise<boolean> {
@@ -111,8 +124,45 @@ export class AdminUserService {
     });
 
     const savedUser = await this.adminUserRepository.save(newUser);
+    await this.sendVerificationEmail(savedUser);
 
     return plainToInstance(AdminUserResDto, savedUser);
+  }
+
+  private async sendVerificationEmail(user: AdminUserEntity): Promise<void> {
+    const token = await this.jwtService.signAsync(
+      {
+        id: user.id,
+      },
+      {
+        secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
+          infer: true,
+        }),
+        expiresIn: this.configService.getOrThrow('auth.confirmEmailExpires', {
+          infer: true,
+        }),
+      },
+    );
+    const tokenExpiresIn = this.configService.getOrThrow(
+      'auth.confirmEmailExpires',
+      {
+        infer: true,
+      },
+    );
+
+    await this.cacheManager.set(
+      createCacheKey(CacheKey.EMAIL_VERIFICATION, user.id),
+      token,
+      ms(tokenExpiresIn as StringValue),
+    );
+    await this.emailQueue.add(
+      JobName.EMAIL_VERIFICATION,
+      {
+        email: user.email,
+        token,
+      },
+      { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
+    );
   }
 
   async findAllUser(query: PaginateQuery): Promise<Paginated<AdminUserResDto>> {

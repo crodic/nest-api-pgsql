@@ -1,4 +1,7 @@
+import { QueueName, QueuePrefix } from '@/constants/job.constant';
+import { BullModule } from '@nestjs/bullmq';
 import { Module } from '@nestjs/common';
+import { JwtModule } from '@nestjs/jwt';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PermissionEntity } from '../permission/entities/permission.entity';
 import { RoleEntity } from '../role/entities/role.entity';
@@ -11,6 +14,16 @@ import { AdminUserEntity } from './entities/admin-user.entity';
   imports: [
     AuthModule,
     TypeOrmModule.forFeature([RoleEntity, PermissionEntity, AdminUserEntity]),
+    JwtModule.register({}),
+    BullModule.registerQueue({
+      name: QueueName.EMAIL,
+      prefix: QueuePrefix.AUTH,
+      streams: {
+        events: {
+          maxLen: 1000,
+        },
+      },
+    }),
   ],
   controllers: [AdminUserController],
   providers: [AdminUserService],
