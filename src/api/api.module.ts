@@ -7,6 +7,7 @@ import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
 import { ImpersonateLogModule } from './impersonate-log/impersonate-log.module';
 import { PermissionModule } from './permission/permission.module';
+import { PresenceModule } from './presence/presence.module';
 import { RoleModule } from './role/role.module';
 import { SettingsModule } from './settings/settings.module';
 import { UserModule } from './user/user.module';
@@ -19,6 +20,7 @@ import { UserModule } from './user/user.module';
     HomeModule,
     AuditLogModule,
     ImpersonateLogModule,
+    PresenceModule,
     PermissionModule,
     RoleModule,
     AdminUserModule,
