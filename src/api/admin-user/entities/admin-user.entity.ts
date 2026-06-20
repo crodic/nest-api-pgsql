@@ -61,6 +61,15 @@ export class AdminUserEntity extends AbstractEntity {
   @Column({ nullable: true, length: 20 })
   phone?: string;
 
+  @Column({ name: 'two_factor_enabled', default: false })
+  twoFactorEnabled!: boolean;
+
+  @Column({ name: 'two_factor_secret', type: 'varchar', nullable: true })
+  twoFactorSecret?: string | null;
+
+  @Column({ name: 'two_factor_backup_codes', type: 'jsonb', nullable: true })
+  twoFactorBackupCodes?: string[] | null;
+
   @DeleteDateColumn({
     name: 'deleted_at',
     type: 'timestamptz',

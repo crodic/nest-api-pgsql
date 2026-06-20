@@ -40,6 +40,15 @@ import { AdminUserLoginResDto } from '../dto/admin-users/admin-user-login.res.dt
 import { AdminUserRegisterReqDto } from '../dto/admin-users/admin-user-register.req.dto';
 import { ImpersonateUserReqDto } from '../dto/admin-users/impersonate-user.req.dto';
 import { ImpersonateUserResDto } from '../dto/admin-users/impersonate-user.res.dto';
+import { DisableTwoFactorReqDto } from '../dto/admin-users/two-factor/disable-two-factor.req.dto';
+import { DisableTwoFactorResDto } from '../dto/admin-users/two-factor/disable-two-factor.res.dto';
+import { EnableTwoFactorReqDto } from '../dto/admin-users/two-factor/enable-two-factor.req.dto';
+import { EnableTwoFactorResDto } from '../dto/admin-users/two-factor/enable-two-factor.res.dto';
+import { GenerateBackupCodesResDto } from '../dto/admin-users/two-factor/generate-backup-codes.res.dto';
+import { TwoFactorStatusResDto } from '../dto/admin-users/two-factor/two-factor-status.res.dto';
+import { VerifyTwoFactorLoginReqDto } from '../dto/admin-users/two-factor/verify-two-factor-login.req.dto';
+import { VerifyTwoFactorSetupReqDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.req.dto';
+import { VerifyTwoFactorSetupResDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.res.dto';
 import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
 import { ForgotPasswordResDto } from '../dto/forgot-password.res.dto';
 import { RefreshReqDto } from '../dto/refresh.req.dto';
@@ -73,6 +82,18 @@ export class AdminAuthenticationController {
     @Body() adminUserLogin: AdminUserLoginReqDto,
   ): Promise<AdminUserLoginResDto> {
     return await this.adminAuthService.login(adminUserLogin);
+  }
+
+  @ApiPublic({
+    type: AdminUserLoginResDto,
+    summary: 'Verify admin login two-factor code',
+  })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('2fa/verify-login')
+  async verifyTwoFactorLogin(
+    @Body() dto: VerifyTwoFactorLoginReqDto,
+  ): Promise<AdminUserLoginResDto> {
+    return this.adminAuthService.verifyTwoFactorLogin(dto);
   }
 
   @ApiPublic({
@@ -210,6 +231,70 @@ export class AdminAuthenticationController {
     @CurrentUser('id') userId: AutoIncrementID,
   ): Promise<AdminUserResDto> {
     return await this.adminAuthService.me(userId);
+  }
+
+  @ApiAuth({
+    type: TwoFactorStatusResDto,
+    summary: 'Get current admin two-factor status',
+  })
+  @SkipThrottle()
+  @Get('me/2fa')
+  async twoFactorStatus(
+    @CurrentUser() userToken: JwtPayloadType,
+  ): Promise<TwoFactorStatusResDto> {
+    return this.adminAuthService.twoFactorStatus(userToken);
+  }
+
+  @ApiAuth({
+    type: EnableTwoFactorResDto,
+    summary: 'Start current admin two-factor setup',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/enable')
+  async enableTwoFactor(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: EnableTwoFactorReqDto,
+  ): Promise<EnableTwoFactorResDto> {
+    return this.adminAuthService.enableTwoFactor(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: VerifyTwoFactorSetupResDto,
+    summary: 'Verify and enable current admin two-factor setup',
+  })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('me/2fa/verify')
+  async verifyTwoFactorSetup(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: VerifyTwoFactorSetupReqDto,
+  ): Promise<VerifyTwoFactorSetupResDto> {
+    return this.adminAuthService.verifyTwoFactorSetup(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: DisableTwoFactorResDto,
+    summary: 'Disable current admin two-factor authentication',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/disable')
+  async disableTwoFactor(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: DisableTwoFactorReqDto,
+  ): Promise<DisableTwoFactorResDto> {
+    return this.adminAuthService.disableTwoFactor(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: GenerateBackupCodesResDto,
+    summary: 'Generate new current admin two-factor backup codes',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/backup-codes')
+  async generateTwoFactorBackupCodes(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: EnableTwoFactorReqDto,
+  ): Promise<GenerateBackupCodesResDto> {
+    return this.adminAuthService.generateTwoFactorBackupCodes(userToken, dto);
   }
 
   @ApiConsumes('multipart/form-data')

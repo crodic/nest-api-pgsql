@@ -45,12 +45,22 @@ import { plainToInstance } from 'class-transformer';
 import { assert } from 'console';
 import crypto from 'crypto';
 import ms, { StringValue } from 'ms';
+import { generateSecret, generateURI, verify as verifyTotp } from 'otplib';
 import { In, IsNull, Repository } from 'typeorm';
 import { AdminUserLoginReqDto } from '../dto/admin-users/admin-user-login.req.dto';
 import { AdminUserLoginResDto } from '../dto/admin-users/admin-user-login.res.dto';
 import { AdminUserRegisterReqDto } from '../dto/admin-users/admin-user-register.req.dto';
 import { ImpersonateUserReqDto } from '../dto/admin-users/impersonate-user.req.dto';
 import { ImpersonateUserResDto } from '../dto/admin-users/impersonate-user.res.dto';
+import { DisableTwoFactorReqDto } from '../dto/admin-users/two-factor/disable-two-factor.req.dto';
+import { DisableTwoFactorResDto } from '../dto/admin-users/two-factor/disable-two-factor.res.dto';
+import { EnableTwoFactorReqDto } from '../dto/admin-users/two-factor/enable-two-factor.req.dto';
+import { EnableTwoFactorResDto } from '../dto/admin-users/two-factor/enable-two-factor.res.dto';
+import { GenerateBackupCodesResDto } from '../dto/admin-users/two-factor/generate-backup-codes.res.dto';
+import { TwoFactorStatusResDto } from '../dto/admin-users/two-factor/two-factor-status.res.dto';
+import { VerifyTwoFactorLoginReqDto } from '../dto/admin-users/two-factor/verify-two-factor-login.req.dto';
+import { VerifyTwoFactorSetupReqDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.req.dto';
+import { VerifyTwoFactorSetupResDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.res.dto';
 import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
 import { ForgotPasswordResDto } from '../dto/forgot-password.res.dto';
 import { RefreshReqDto } from '../dto/refresh.req.dto';
@@ -74,6 +84,20 @@ type Token = Branded<
   },
   'token'
 >;
+
+type TwoFactorSetupPayload = {
+  secret: string;
+  backupCodeHashes: string[];
+};
+
+type TwoFactorLoginPayload = {
+  id: string;
+  purpose: 'admin-2fa-login';
+};
+
+const TWO_FACTOR_ISSUER = 'Crodic Portal';
+const TWO_FACTOR_SETUP_TTL = '10m' as StringValue;
+const TWO_FACTOR_LOGIN_TTL = '5m' as StringValue;
 
 @Injectable()
 export class AdminAuthService {
@@ -105,6 +129,192 @@ export class AdminAuthService {
 
     if (!isPasswordValid) {
       throw new BadRequestException({ message: 'Invalid credentials' });
+    }
+
+    if (user.twoFactorEnabled) {
+      const twoFactorToken = await this.createTwoFactorLoginToken({
+        id: user.id,
+        purpose: 'admin-2fa-login',
+      });
+
+      return plainToInstance(AdminUserLoginResDto, {
+        userId: user.id,
+        twoFactorRequired: true,
+        twoFactorToken,
+        twoFactorMethods: ['totp', 'backup_code'],
+      });
+    }
+
+    const hash = crypto
+      .createHash('sha256')
+      .update(randomStringGenerator())
+      .digest('hex');
+
+    const session = new SessionEntity({
+      hash,
+      userId: user.id as AutoIncrementID,
+      userType: ESessionUserType.ADMIN,
+    });
+    await this.sessionRepository.save(session);
+    await this.clearSessionBlacklist(session.id);
+
+    const token = await this.createToken({
+      id: user.id,
+      sessionId: session.id,
+      hash,
+    });
+
+    return plainToInstance(AdminUserLoginResDto, {
+      userId: user.id,
+      ...token,
+    });
+  }
+
+  async twoFactorStatus(
+    userToken: JwtPayloadType,
+  ): Promise<TwoFactorStatusResDto> {
+    const user = await this.adminUserRepository.findOneByOrFail({
+      id: userToken.id as AutoIncrementID,
+    });
+
+    return plainToInstance(TwoFactorStatusResDto, {
+      enabled: user.twoFactorEnabled,
+    });
+  }
+
+  async enableTwoFactor(
+    userToken: JwtPayloadType,
+    dto: EnableTwoFactorReqDto,
+  ): Promise<EnableTwoFactorResDto> {
+    const user = await this.adminUserRepository.findOneByOrFail({
+      id: userToken.id as AutoIncrementID,
+    });
+    await this.assertPassword(user, dto.password);
+
+    const secret = generateSecret();
+    const backupCodes = this.generateBackupCodes();
+    const backupCodeHashes = backupCodes.map((code) =>
+      this.hashBackupCode(code),
+    );
+
+    await this.cacheManager.set<TwoFactorSetupPayload>(
+      createCacheKey(CacheKey.ADMIN_TWO_FACTOR_SETUP, user.id),
+      { secret, backupCodeHashes },
+      ms(TWO_FACTOR_SETUP_TTL),
+    );
+
+    return plainToInstance(EnableTwoFactorResDto, {
+      totpUri: generateURI({
+        issuer: TWO_FACTOR_ISSUER,
+        label: user.email,
+        secret,
+      }),
+      backupCodes,
+    });
+  }
+
+  async verifyTwoFactorSetup(
+    userToken: JwtPayloadType,
+    dto: VerifyTwoFactorSetupReqDto,
+  ): Promise<VerifyTwoFactorSetupResDto> {
+    const user = await this.adminUserRepository.findOneByOrFail({
+      id: userToken.id as AutoIncrementID,
+    });
+    const cacheKey = createCacheKey(CacheKey.ADMIN_TWO_FACTOR_SETUP, user.id);
+    const setup = await this.cacheManager.get<TwoFactorSetupPayload>(cacheKey);
+
+    if (!setup) {
+      throw new BadRequestException('Two-factor setup has expired');
+    }
+
+    const isValid = await this.verifyTotpCode(dto.code, setup.secret);
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid two-factor code');
+    }
+
+    await this.adminUserRepository.update(user.id, {
+      twoFactorEnabled: true,
+      twoFactorSecret: this.encryptTwoFactorSecret(setup.secret),
+      twoFactorBackupCodes: setup.backupCodeHashes,
+    });
+    await this.cacheManager.del(cacheKey);
+
+    return plainToInstance(VerifyTwoFactorSetupResDto, {
+      enabled: true,
+      message: 'Two-factor authentication enabled successfully',
+    });
+  }
+
+  async disableTwoFactor(
+    userToken: JwtPayloadType,
+    dto: DisableTwoFactorReqDto,
+  ): Promise<DisableTwoFactorResDto> {
+    const user = await this.adminUserRepository.findOneByOrFail({
+      id: userToken.id as AutoIncrementID,
+    });
+    await this.assertPassword(user, dto.password);
+
+    await this.adminUserRepository.update(user.id, {
+      twoFactorEnabled: false,
+      twoFactorSecret: null,
+      twoFactorBackupCodes: null,
+    });
+    await this.cacheManager.del(
+      createCacheKey(CacheKey.ADMIN_TWO_FACTOR_SETUP, user.id),
+    );
+
+    return plainToInstance(DisableTwoFactorResDto, {
+      enabled: false,
+      message: 'Two-factor authentication disabled successfully',
+    });
+  }
+
+  async generateTwoFactorBackupCodes(
+    userToken: JwtPayloadType,
+    dto: EnableTwoFactorReqDto,
+  ): Promise<GenerateBackupCodesResDto> {
+    const user = await this.adminUserRepository.findOneByOrFail({
+      id: userToken.id as AutoIncrementID,
+    });
+    await this.assertPassword(user, dto.password);
+
+    if (!user.twoFactorEnabled) {
+      throw new BadRequestException('Two-factor authentication is not enabled');
+    }
+
+    const backupCodes = this.generateBackupCodes();
+    await this.adminUserRepository.update(user.id, {
+      twoFactorBackupCodes: backupCodes.map((code) =>
+        this.hashBackupCode(code),
+      ),
+    });
+
+    return plainToInstance(GenerateBackupCodesResDto, {
+      backupCodes,
+    });
+  }
+
+  async verifyTwoFactorLogin(
+    dto: VerifyTwoFactorLoginReqDto,
+  ): Promise<AdminUserLoginResDto> {
+    const payload = this.verifyTwoFactorLoginToken(dto.twoFactorToken);
+    const user = await this.adminUserRepository.findOneBy({
+      id: payload.id as AutoIncrementID,
+    });
+
+    if (!user || !user.twoFactorEnabled || !user.twoFactorSecret) {
+      throw new UnauthorizedException();
+    }
+
+    const isValid =
+      (await this.verifyTotpCode(
+        dto.code,
+        this.decryptTwoFactorSecret(user.twoFactorSecret),
+      )) || (await this.consumeBackupCode(user, dto.code));
+
+    if (!isValid) {
+      throw new BadRequestException('Invalid two-factor code');
     }
 
     const hash = crypto
@@ -640,6 +850,143 @@ export class AdminAuthService {
     } catch {
       throw new UnauthorizedException();
     }
+  }
+
+  private async assertPassword(
+    user: AdminUserEntity,
+    password: string,
+  ): Promise<void> {
+    const isPasswordValid = await verifyPassword(password, user.password);
+
+    if (!isPasswordValid) {
+      throw new ValidationException(ErrorCode.V003);
+    }
+  }
+
+  private async createTwoFactorLoginToken(
+    data: TwoFactorLoginPayload,
+  ): Promise<string> {
+    return this.jwtService.signAsync(data, {
+      secret: this.getTwoFactorSigningSecret(),
+      expiresIn: TWO_FACTOR_LOGIN_TTL,
+    });
+  }
+
+  private verifyTwoFactorLoginToken(token: string): TwoFactorLoginPayload {
+    try {
+      const payload = this.jwtService.verify<TwoFactorLoginPayload>(token, {
+        secret: this.getTwoFactorSigningSecret(),
+      });
+
+      if (payload.purpose !== 'admin-2fa-login') {
+        throw new UnauthorizedException();
+      }
+
+      return payload;
+    } catch {
+      throw new UnauthorizedException('Two-factor verification expired');
+    }
+  }
+
+  private getTwoFactorSigningSecret(): string {
+    return crypto
+      .createHash('sha256')
+      .update(
+        `${this.configService.getOrThrow('auth.secret', { infer: true })}:admin-2fa`,
+      )
+      .digest('hex');
+  }
+
+  private getTwoFactorEncryptionKey(): Buffer {
+    return crypto
+      .createHash('sha256')
+      .update(
+        `${this.configService.getOrThrow('auth.secret', { infer: true })}:admin-2fa-secret`,
+      )
+      .digest();
+  }
+
+  private encryptTwoFactorSecret(secret: string): string {
+    const iv = crypto.randomBytes(12);
+    const cipher = crypto.createCipheriv(
+      'aes-256-gcm',
+      this.getTwoFactorEncryptionKey(),
+      iv,
+    );
+    const encrypted = Buffer.concat([
+      cipher.update(secret, 'utf8'),
+      cipher.final(),
+    ]);
+    const tag = cipher.getAuthTag();
+
+    return [
+      iv.toString('base64url'),
+      tag.toString('base64url'),
+      encrypted.toString('base64url'),
+    ].join('.');
+  }
+
+  private decryptTwoFactorSecret(value: string): string {
+    const [ivValue, tagValue, encryptedValue] = value.split('.');
+
+    if (!ivValue || !tagValue || !encryptedValue) {
+      throw new UnauthorizedException('Invalid two-factor secret');
+    }
+
+    const decipher = crypto.createDecipheriv(
+      'aes-256-gcm',
+      this.getTwoFactorEncryptionKey(),
+      Buffer.from(ivValue, 'base64url'),
+    );
+    decipher.setAuthTag(Buffer.from(tagValue, 'base64url'));
+
+    return Buffer.concat([
+      decipher.update(Buffer.from(encryptedValue, 'base64url')),
+      decipher.final(),
+    ]).toString('utf8');
+  }
+
+  private async verifyTotpCode(code: string, secret: string): Promise<boolean> {
+    const result = await verifyTotp({
+      token: code.trim().replace(/\s+/g, ''),
+      secret,
+      epochTolerance: 1,
+    });
+
+    return result.valid === true;
+  }
+
+  private generateBackupCodes(): string[] {
+    return Array.from({ length: 10 }, () =>
+      crypto.randomBytes(5).toString('hex').toUpperCase(),
+    );
+  }
+
+  private hashBackupCode(code: string): string {
+    return crypto
+      .createHash('sha256')
+      .update(code.trim().replace(/\s+/g, '').toUpperCase())
+      .digest('hex');
+  }
+
+  private async consumeBackupCode(
+    user: AdminUserEntity,
+    code: string,
+  ): Promise<boolean> {
+    const codeHash = this.hashBackupCode(code);
+    const backupCodeHashes = user.twoFactorBackupCodes ?? [];
+
+    if (!backupCodeHashes.includes(codeHash)) {
+      return false;
+    }
+
+    await this.adminUserRepository.update(user.id, {
+      twoFactorBackupCodes: backupCodeHashes.filter(
+        (hash) => hash !== codeHash,
+      ),
+    });
+
+    return true;
   }
 
   private async createVerificationToken(data: { id: string }): Promise<string> {

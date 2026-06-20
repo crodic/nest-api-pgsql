@@ -197,6 +197,16 @@ export function TokenField(
   return applyDecorators(...decorators);
 }
 
+export function TokenFieldOptional(
+  options: Omit<ApiPropertyOptions, 'type' | 'required'> &
+    ITokenFieldOptions = {},
+): PropertyDecorator {
+  return applyDecorators(
+    IsOptional({ each: options.each }),
+    TokenField({ required: false, ...options }),
+  );
+}
+
 export function StringFieldOptional(
   options: Omit<ApiPropertyOptions, 'type' | 'required'> &
     IStringFieldOptions = {},

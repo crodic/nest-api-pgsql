@@ -58,6 +58,10 @@ export class AdminUserResDto {
   @Expose()
   verifiedAt?: boolean;
 
+  @BooleanField()
+  @Expose()
+  twoFactorEnabled: boolean;
+
   @ClassField(() => Date)
   @Expose()
   createdAt: Date;
