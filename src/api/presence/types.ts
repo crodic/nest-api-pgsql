@@ -9,13 +9,14 @@ export type PresencePrincipal = {
   id: AutoIncrementID;
   type: PresenceUserType;
   sessionId?: AutoIncrementID | string;
+  tokenHash?: string;
   email: string;
   fullName?: string;
   avatar?: string;
   impersonatedBy?: AutoIncrementID;
 };
 
-export type OnlinePresence = PresencePrincipal & {
+export type OnlinePresence = Omit<PresencePrincipal, 'tokenHash'> & {
   socketCount: number;
   connectedAt: Date;
   lastSeenAt: Date;

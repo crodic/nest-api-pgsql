@@ -85,6 +85,11 @@ type Token = Branded<
   'token'
 >;
 
+type SessionRequestInfo = {
+  ipAddress?: string;
+  userAgent?: string | string[];
+};
+
 type TwoFactorSetupPayload = {
   secret: string;
   backupCodeHashes: string[];
@@ -118,7 +123,10 @@ export class AdminAuthService {
     private readonly cacheManager: Cache,
   ) {}
 
-  async login(dto: AdminUserLoginReqDto): Promise<AdminUserLoginResDto> {
+  async login(
+    dto: AdminUserLoginReqDto,
+    requestInfo?: SessionRequestInfo,
+  ): Promise<AdminUserLoginResDto> {
     const { email, password } = dto;
     const user = await this.adminUserRepository.findOne({
       where: { email },
@@ -154,6 +162,8 @@ export class AdminAuthService {
       hash,
       userId: user.id as AutoIncrementID,
       userType: ESessionUserType.ADMIN,
+      ipAddress: requestInfo?.ipAddress,
+      userAgent: normalizeUserAgent(requestInfo?.userAgent),
     });
     await this.sessionRepository.save(session);
     await this.clearSessionBlacklist(session.id);
@@ -297,6 +307,7 @@ export class AdminAuthService {
 
   async verifyTwoFactorLogin(
     dto: VerifyTwoFactorLoginReqDto,
+    requestInfo?: SessionRequestInfo,
   ): Promise<AdminUserLoginResDto> {
     const payload = this.verifyTwoFactorLoginToken(dto.twoFactorToken);
     const user = await this.adminUserRepository.findOneBy({
@@ -326,6 +337,8 @@ export class AdminAuthService {
       hash,
       userId: user.id as AutoIncrementID,
       userType: ESessionUserType.ADMIN,
+      ipAddress: requestInfo?.ipAddress,
+      userAgent: normalizeUserAgent(requestInfo?.userAgent),
     });
     await this.sessionRepository.save(session);
     await this.clearSessionBlacklist(session.id);
@@ -709,7 +722,7 @@ export class AdminAuthService {
   async impersonateUser(
     adminToken: JwtPayloadType,
     dto: ImpersonateUserReqDto,
-    requestInfo?: { ipAddress?: string; userAgent?: string },
+    requestInfo?: SessionRequestInfo,
   ): Promise<ImpersonateUserResDto> {
     const user = await this.userRepository.findOneBy({ id: dto.userId as any });
 
@@ -730,7 +743,7 @@ export class AdminAuthService {
         userType: ESessionUserType.USER,
         impersonatedBy: adminToken.id as AutoIncrementID,
         ipAddress: requestInfo?.ipAddress,
-        userAgent: requestInfo?.userAgent,
+        userAgent: normalizeUserAgent(requestInfo?.userAgent),
         expiresAt,
       }),
     );
@@ -745,6 +758,7 @@ export class AdminAuthService {
         {
           id: user.id,
           sessionId: session.id,
+          hash,
         },
         {
           secret: this.configService.getOrThrow('auth.userSecret', {
@@ -800,6 +814,22 @@ export class AdminAuthService {
     );
 
     if (isSessionBlacklisted) {
+      throw new UnauthorizedException();
+    }
+
+    const session = await this.sessionRepository.findOneBy({
+      id: payload.sessionId as AutoIncrementID,
+      userId: payload.id as AutoIncrementID,
+      userType: ESessionUserType.ADMIN,
+    });
+
+    if (
+      !session ||
+      !payload.hash ||
+      session.hash !== payload.hash ||
+      session.revokedAt ||
+      (session.expiresAt && session.expiresAt <= new Date())
+    ) {
       throw new UnauthorizedException();
     }
 
@@ -1036,6 +1066,7 @@ export class AdminAuthService {
         {
           id: data.id,
           sessionId: data.sessionId,
+          hash: data.hash,
         },
         {
           secret: this.configService.getOrThrow('auth.secret', { infer: true }),
@@ -1087,4 +1118,8 @@ export class AdminAuthService {
       throw new HttpException('URL không còn khả dụng', HttpStatus.GONE);
     }
   }
+}
+
+function normalizeUserAgent(userAgent?: string | string[]) {
+  return Array.isArray(userAgent) ? userAgent.join(', ') : userAgent;
 }

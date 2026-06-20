@@ -1,4 +1,5 @@
 import { SessionEntity } from '@/api/auth/entities/session.entity';
+import { UserEntity } from '@/api/user/entities/user.entity';
 import { AutoIncrementID } from '@/common/types/common.type';
 import { AllConfigType } from '@/config/config.type';
 import { CacheKey } from '@/constants/cache.constant';
@@ -20,6 +21,8 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, 'user-jwt') {
     private readonly cache: Cache,
     @InjectRepository(SessionEntity)
     private readonly sessionRepository: Repository<SessionEntity>,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -50,9 +53,20 @@ export class UserJwtStrategy extends PassportStrategy(Strategy, 'user-jwt') {
       : null;
 
     if (
-      session?.revokedAt ||
-      (session?.expiresAt && session.expiresAt <= new Date())
+      !session ||
+      !payload.hash ||
+      session.hash !== payload.hash ||
+      session.revokedAt ||
+      (session.expiresAt && session.expiresAt <= new Date())
     ) {
+      throw new UnauthorizedException();
+    }
+
+    const user = await this.userRepository.findOneBy({
+      id: payload.id as AutoIncrementID,
+    });
+
+    if (!user) {
       throw new UnauthorizedException();
     }
 

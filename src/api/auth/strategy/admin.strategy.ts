@@ -53,8 +53,11 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
       : null;
 
     if (
-      session?.revokedAt ||
-      (session?.expiresAt && session.expiresAt <= new Date())
+      !session ||
+      !payload.hash ||
+      session.hash !== payload.hash ||
+      session.revokedAt ||
+      (session.expiresAt && session.expiresAt <= new Date())
     ) {
       throw new UnauthorizedException();
     }

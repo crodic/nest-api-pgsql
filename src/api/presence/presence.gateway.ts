@@ -70,7 +70,7 @@ export class PresenceGateway
 
     const snapshot = this.presenceService.add(client.id, principal);
 
-    client.emit('presence:me', principal);
+    client.emit('presence:me', this.toPublicPrincipal(principal));
     client.emit('presence:counts', snapshot.counts);
 
     if (principal.type === PresenceUserType.ADMIN) {
@@ -166,5 +166,11 @@ export class PresenceGateway
     return namespaceOrServer.sockets instanceof Map
       ? namespaceOrServer.sockets
       : namespaceOrServer.sockets.sockets;
+  }
+
+  private toPublicPrincipal(principal: PresencePrincipal) {
+    const { tokenHash, ...publicPrincipal } = principal;
+
+    return publicPrincipal;
   }
 }

@@ -53,8 +53,14 @@ export class UserAuthenticationController {
   })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
-  async signIn(@Body() userLoginDto: LoginReqDto): Promise<LoginResDto> {
-    return await this.userAuthService.signIn(userLoginDto);
+  async signIn(
+    @Body() userLoginDto: LoginReqDto,
+    @Request() req,
+  ): Promise<LoginResDto> {
+    return await this.userAuthService.signIn(userLoginDto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({

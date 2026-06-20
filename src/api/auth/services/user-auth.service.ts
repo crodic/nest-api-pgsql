@@ -69,6 +69,11 @@ type Token = Branded<
   'token'
 >;
 
+type SessionRequestInfo = {
+  ipAddress?: string;
+  userAgent?: string | string[];
+};
+
 @Injectable()
 export class UserAuthService {
   private readonly logger = new Logger(UserAuthService.name);
@@ -86,7 +91,10 @@ export class UserAuthService {
     private readonly cacheManager: Cache,
   ) {}
 
-  async signIn(dto: LoginReqDto): Promise<LoginResDto> {
+  async signIn(
+    dto: LoginReqDto,
+    requestInfo?: SessionRequestInfo,
+  ): Promise<LoginResDto> {
     const { email, password } = dto;
 
     const user = await this.userRepository.findOne({
@@ -109,6 +117,8 @@ export class UserAuthService {
       hash,
       userId: user.id,
       userType: ESessionUserType.USER,
+      ipAddress: requestInfo?.ipAddress,
+      userAgent: normalizeUserAgent(requestInfo?.userAgent),
     });
     await this.sessionRepository.save(session);
     await this.clearSessionBlacklist(session.id);
@@ -118,8 +128,6 @@ export class UserAuthService {
       sessionId: session.id,
       hash,
     });
-
-    console.log(token);
 
     return plainToInstance(LoginResDto, {
       userId: user.id,
@@ -368,6 +376,22 @@ export class UserAuthService {
       throw new UnauthorizedException();
     }
 
+    const session = await this.sessionRepository.findOneBy({
+      id: payload.sessionId as AutoIncrementID,
+      userId: payload.id as AutoIncrementID,
+      userType: ESessionUserType.USER,
+    });
+
+    if (
+      !session ||
+      !payload.hash ||
+      session.hash !== payload.hash ||
+      session.revokedAt ||
+      (session.expiresAt && session.expiresAt <= new Date())
+    ) {
+      throw new UnauthorizedException();
+    }
+
     return payload;
   }
 
@@ -573,6 +597,7 @@ export class UserAuthService {
         {
           id: data.id,
           sessionId: data.sessionId,
+          hash: data.hash,
         },
         {
           secret: this.configService.getOrThrow('auth.userSecret', {
@@ -691,4 +716,8 @@ export class UserAuthService {
       message: 'success',
     };
   }
+}
+
+function normalizeUserAgent(userAgent?: string | string[]) {
+  return Array.isArray(userAgent) ? userAgent.join(', ') : userAgent;
 }

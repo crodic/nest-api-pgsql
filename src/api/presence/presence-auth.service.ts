@@ -50,11 +50,7 @@ export class PresenceAuthService {
         ? ESessionUserType.ADMIN
         : ESessionUserType.USER;
 
-    await this.validateSessionByFields(
-      principal.sessionId,
-      principal.id,
-      userType,
-    );
+    await this.validateSessionByFields(principal, userType);
   }
 
   private async authenticateAdmin(token: string): Promise<PresencePrincipal> {
@@ -74,6 +70,7 @@ export class PresenceAuthService {
       id: admin.id,
       type: PresenceUserType.ADMIN,
       sessionId: session.id,
+      tokenHash: payload.hash,
       email: admin.email,
       fullName: admin.fullName,
       avatar: admin.avatar,
@@ -97,6 +94,7 @@ export class PresenceAuthService {
       id: user.id,
       type: PresenceUserType.USER,
       sessionId: session.id,
+      tokenHash: payload.hash,
       email: user.email,
       fullName: user.fullName,
       avatar: user.avatar,
@@ -121,24 +119,23 @@ export class PresenceAuthService {
     payload: JwtPayloadType,
     userType: ESessionUserType,
   ): Promise<SessionEntity> {
-    return this.validateSessionByFields(
-      payload.sessionId,
-      payload.id,
-      userType,
-    );
+    return this.validateSessionByFields(payload, userType);
   }
 
   private async validateSessionByFields(
-    sessionId: AutoIncrementID | string | undefined,
-    userId: AutoIncrementID | string,
+    payload: Pick<JwtPayloadType, 'id'> & {
+      sessionId?: string | AutoIncrementID;
+      hash?: string;
+      tokenHash?: string;
+    },
     userType: ESessionUserType,
   ): Promise<SessionEntity> {
-    if (!sessionId) {
+    if (!payload.sessionId) {
       throw new UnauthorizedException('Missing socket auth session');
     }
 
     const isSessionBlacklisted = await this.cacheManager.get<boolean>(
-      createCacheKey(CacheKey.SESSION_BLACKLIST, String(sessionId)),
+      createCacheKey(CacheKey.SESSION_BLACKLIST, String(payload.sessionId)),
     );
 
     if (isSessionBlacklisted) {
@@ -146,13 +143,16 @@ export class PresenceAuthService {
     }
 
     const session = await this.sessionRepository.findOneBy({
-      id: sessionId as AutoIncrementID,
-      userId: userId as AutoIncrementID,
+      id: payload.sessionId as AutoIncrementID,
+      userId: payload.id as AutoIncrementID,
       userType,
     });
+    const tokenHash = payload.hash ?? payload.tokenHash;
 
     if (
       !session ||
+      !tokenHash ||
+      session.hash !== tokenHash ||
       session.revokedAt ||
       (session.expiresAt && session.expiresAt <= new Date())
     ) {

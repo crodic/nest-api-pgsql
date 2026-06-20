@@ -80,8 +80,12 @@ export class AdminAuthenticationController {
   @Post('login')
   async login(
     @Body() adminUserLogin: AdminUserLoginReqDto,
+    @Req() req: any,
   ): Promise<AdminUserLoginResDto> {
-    return await this.adminAuthService.login(adminUserLogin);
+    return await this.adminAuthService.login(adminUserLogin, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({
@@ -92,8 +96,12 @@ export class AdminAuthenticationController {
   @Post('2fa/verify-login')
   async verifyTwoFactorLogin(
     @Body() dto: VerifyTwoFactorLoginReqDto,
+    @Req() req: any,
   ): Promise<AdminUserLoginResDto> {
-    return this.adminAuthService.verifyTwoFactorLogin(dto);
+    return this.adminAuthService.verifyTwoFactorLogin(dto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({

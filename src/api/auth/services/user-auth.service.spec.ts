@@ -188,12 +188,21 @@ describe('UserAuthService', () => {
       const payload = {
         id: '10',
         sessionId: '20',
+        hash: 'session-hash',
         iat: 9999999000,
         exp: 9999999999,
       };
 
       jwtService.verify.mockReturnValue(payload);
       cacheManager.get.mockResolvedValue(false);
+      sessionRepository.findOneBy.mockResolvedValue(
+        new SessionEntity({
+          id: '20' as any,
+          userId: '10' as any,
+          userType: ESessionUserType.USER,
+          hash: 'session-hash',
+        }),
+      );
 
       await expect(service.verifyAccessToken('access-token')).resolves.toEqual(
         payload,
@@ -214,10 +223,50 @@ describe('UserAuthService', () => {
       jwtService.verify.mockReturnValue({
         id: '10',
         sessionId: '20',
+        hash: 'session-hash',
         iat: 9999999000,
         exp: 9999999999,
       });
       cacheManager.get.mockResolvedValue(true);
+
+      await expect(service.verifyAccessToken('access-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('throws unauthorized when the session no longer exists', async () => {
+      jwtService.verify.mockReturnValue({
+        id: '10',
+        sessionId: '20',
+        hash: 'session-hash',
+        iat: 9999999000,
+        exp: 9999999999,
+      });
+      cacheManager.get.mockResolvedValue(false);
+      sessionRepository.findOneBy.mockResolvedValue(null);
+
+      await expect(service.verifyAccessToken('access-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
+    });
+
+    it('throws unauthorized when the token hash does not match the session', async () => {
+      jwtService.verify.mockReturnValue({
+        id: '10',
+        sessionId: '20',
+        hash: 'old-session-hash',
+        iat: 9999999000,
+        exp: 9999999999,
+      });
+      cacheManager.get.mockResolvedValue(false);
+      sessionRepository.findOneBy.mockResolvedValue(
+        new SessionEntity({
+          id: '20' as any,
+          userId: '10' as any,
+          userType: ESessionUserType.USER,
+          hash: 'new-session-hash',
+        }),
+      );
 
       await expect(service.verifyAccessToken('access-token')).rejects.toThrow(
         UnauthorizedException,
