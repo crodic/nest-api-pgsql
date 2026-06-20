@@ -5,12 +5,14 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 
 const appSetting = {
-  key: SettingKeys.APP_SETTINGS,
+  key: SettingKeys.WEBSITE,
   value: {
-    site_logo: 'https://i.ibb.co/7YQgZrG/Logo.png',
-    site_favicon: 'https://i.ibb.co/7YQgZrG/Logo.png',
-    site_title: 'Nest Boilerplate',
-    site_tagline: 'Nest Boilerplate',
+    site_brand: 'Crodic Framework',
+    site_logo: null,
+    site_dark_logo: null,
+    site_favicon: null,
+    site_title: 'Crodic Framework',
+    site_tagline: 'Production-ready portal boilerplate',
   },
 };
 
