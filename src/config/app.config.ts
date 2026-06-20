@@ -75,6 +75,11 @@ class EnvironmentVariablesValidator {
   @IsString()
   @IsOptional()
   BULL_BOARD_PATH: string;
+
+  @IsInt()
+  @Min(0)
+  @IsOptional()
+  NOTIFICATION_RETENTION_DAYS: number;
 }
 
 export default registerAs<AppConfig>('app', () => {
@@ -101,6 +106,9 @@ export default registerAs<AppConfig>('app', () => {
     secureHeaderOrigin:
       process.env.APP_SECURE_HEADER_ORIGIN || `http://localhost:${port}`,
     bullBoardPath: process.env.BULL_BOARD_PATH || '/queues',
+    notificationRetentionDays: process.env.NOTIFICATION_RETENTION_DAYS
+      ? parseInt(process.env.NOTIFICATION_RETENTION_DAYS, 10)
+      : 90,
   };
 });
 

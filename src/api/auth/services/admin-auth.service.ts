@@ -5,6 +5,10 @@ import { ChangePasswordResDto } from '@/api/admin-user/dto/change-password.res.d
 import { UpdateMeReqDto } from '@/api/admin-user/dto/update-me.req.dto';
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
 import { SessionEntity } from '@/api/auth/entities/session.entity';
+import {
+  AdminNotificationType,
+  NotificationService,
+} from '@/api/notification/notification.service';
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import {
@@ -121,6 +125,7 @@ export class AdminAuthService {
     private readonly emailQueue: Queue<IEmailJob, any, string>,
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async login(
@@ -173,6 +178,13 @@ export class AdminAuthService {
       sessionId: session.id,
       hash,
     });
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.NewSession,
+      'New sign-in detected',
+      'A new admin session was created for your account.',
+      this.buildSessionNotificationData(session),
+    );
 
     return plainToInstance(AdminUserLoginResDto, {
       userId: user.id,
@@ -249,6 +261,12 @@ export class AdminAuthService {
       twoFactorBackupCodes: setup.backupCodeHashes,
     });
     await this.cacheManager.del(cacheKey);
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.TwoFactorEnabled,
+      'Two-factor authentication enabled',
+      'Two-factor authentication was enabled for your admin account.',
+    );
 
     return plainToInstance(VerifyTwoFactorSetupResDto, {
       enabled: true,
@@ -272,6 +290,12 @@ export class AdminAuthService {
     });
     await this.cacheManager.del(
       createCacheKey(CacheKey.ADMIN_TWO_FACTOR_SETUP, user.id),
+    );
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.TwoFactorDisabled,
+      'Two-factor authentication disabled',
+      'Two-factor authentication was disabled for your admin account.',
     );
 
     return plainToInstance(DisableTwoFactorResDto, {
@@ -348,6 +372,13 @@ export class AdminAuthService {
       sessionId: session.id,
       hash,
     });
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.NewSession,
+      'New sign-in detected',
+      'A new admin session was created for your account.',
+      this.buildSessionNotificationData(session),
+    );
 
     return plainToInstance(AdminUserLoginResDto, {
       userId: user.id,
@@ -569,6 +600,12 @@ export class AdminAuthService {
     user.password = dto.password;
 
     await user.save();
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.PasswordReset,
+      'Password reset completed',
+      'Your admin account password was reset successfully.',
+    );
 
     return plainToInstance(ResetPasswordResDto, {
       success: true,
@@ -582,8 +619,6 @@ export class AdminAuthService {
       where: { id },
       relations: ['roles', 'roles.permissionEntities'],
     });
-
-    console.log(user.roles[0].permissionEntities);
 
     if (!user) {
       throw new ForbiddenException('Forbidden');
@@ -639,6 +674,12 @@ export class AdminAuthService {
     user.password = dto.newPassword;
 
     await this.adminUserRepository.save(user);
+    await this.notifyAdmin(
+      user.id,
+      AdminNotificationType.PasswordChanged,
+      'Password changed',
+      'Your admin account password was changed successfully.',
+    );
 
     return plainToInstance(ChangePasswordResDto, {
       message: 'Change password successfully',
@@ -684,6 +725,13 @@ export class AdminAuthService {
     }
 
     await this.blacklistSession(sessionId);
+    await this.notifyAdmin(
+      userToken.id,
+      AdminNotificationType.SessionRevoked,
+      'Session revoked',
+      'One of your admin sessions was revoked.',
+      { sessionId },
+    );
 
     return { message: 'Session revoked successfully' };
   }
@@ -713,6 +761,13 @@ export class AdminAuthService {
 
       await Promise.all(
         sessions.map((session) => this.blacklistSession(session.id)),
+      );
+      await this.notifyAdmin(
+        userToken.id,
+        AdminNotificationType.SessionsRevokedAll,
+        'All sessions revoked',
+        'All active admin sessions on your account were revoked.',
+        { sessionIds: sessions.map((session) => session.id) },
       );
     }
 
@@ -868,6 +923,34 @@ export class AdminAuthService {
     await this.cacheManager.del(
       createCacheKey(CacheKey.SESSION_BLACKLIST, sessionId),
     );
+  }
+
+  private buildSessionNotificationData(session: SessionEntity) {
+    return {
+      sessionId: session.id,
+      ipAddress: session.ipAddress,
+      userAgent: session.userAgent,
+    };
+  }
+
+  private async notifyAdmin(
+    adminId: AutoIncrementID | string,
+    type: AdminNotificationType,
+    title: string,
+    message: string,
+    data?: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await this.notificationService.createForAdmin({
+        adminId,
+        type,
+        title,
+        message,
+        data,
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to create admin notification: ${error}`);
+    }
   }
 
   private verifyRefreshToken(token: string): JwtRefreshPayloadType {

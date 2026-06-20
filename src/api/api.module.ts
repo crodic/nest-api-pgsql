@@ -7,6 +7,7 @@ import { FileModule } from './file/file.module';
 import { HealthModule } from './health/health.module';
 import { HomeModule } from './home/home.module';
 import { ImpersonateLogModule } from './impersonate-log/impersonate-log.module';
+import { NotificationModule } from './notification/notification.module';
 import { PermissionModule } from './permission/permission.module';
 import { PresenceModule } from './presence/presence.module';
 import { RoleModule } from './role/role.module';
@@ -30,6 +31,7 @@ import { UserModule } from './user/user.module';
     EmailModule,
     FileModule,
     SentryMonitoringModule,
+    NotificationModule,
   ],
 })
 export class ApiModule {}

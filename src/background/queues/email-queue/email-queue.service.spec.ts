@@ -1,4 +1,5 @@
 import { EmailLogEntity } from '@/api/email/entities/email-log.entity';
+import { NotificationService } from '@/api/notification/notification.service';
 import { MailService } from '@/mail/mail.service';
 import { getQueueToken } from '@nestjs/bullmq';
 import { ConfigService } from '@nestjs/config';
@@ -55,6 +56,12 @@ describe('EmailQueueService', () => {
         {
           provide: getRepositoryToken(EmailLogEntity),
           useValue: emailLogRepository,
+        },
+        {
+          provide: NotificationService,
+          useValue: {
+            createForAdmin: jest.fn(),
+          },
         },
         {
           provide: getQueueToken('email'),

@@ -1,5 +1,9 @@
 import { EmailLogEntity } from '@/api/email/entities/email-log.entity';
 import {
+  AdminNotificationType,
+  NotificationService,
+} from '@/api/notification/notification.service';
+import {
   IAdminSendEmailJob,
   IForgotPasswordEmailJob,
   IVerifyEmailJob,
@@ -22,6 +26,7 @@ export class EmailQueueService {
     private readonly configService: ConfigService<AllConfigType>,
     @InjectRepository(EmailLogEntity)
     private readonly emailLogRepository: Repository<EmailLogEntity>,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async sendAdminEmailVerification(data: IVerifyEmailJob): Promise<void> {
@@ -165,8 +170,20 @@ export class EmailQueueService {
         renderedHtml: renderedBody,
       });
       await this.markSent(emailLog, renderedBody);
+      await this.notifyEmailStatus(
+        emailLog,
+        AdminNotificationType.EmailSent,
+        'Email sent',
+        `Your email "${emailLog.subject}" was sent successfully.`,
+      );
     } catch (error) {
       await this.markFailed(emailLog, error);
+      await this.notifyEmailStatus(
+        emailLog,
+        AdminNotificationType.EmailFailed,
+        'Email failed',
+        `Your email "${emailLog.subject}" failed to send.`,
+      );
       throw error;
     }
   }
@@ -247,5 +264,32 @@ export class EmailQueueService {
     const email = this.configService.get('mail.defaultEmail', { infer: true });
 
     return name ? `"${name}" <${email}>` : email;
+  }
+
+  private async notifyEmailStatus(
+    emailLog: EmailLogEntity,
+    type: AdminNotificationType,
+    title: string,
+    message: string,
+  ): Promise<void> {
+    if (!emailLog.createdByAdminId) {
+      return;
+    }
+
+    try {
+      await this.notificationService.createForAdmin({
+        adminId: emailLog.createdByAdminId,
+        type,
+        title,
+        message,
+        data: {
+          emailLogId: emailLog.id,
+          subject: emailLog.subject,
+          status: emailLog.status,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to create email notification: ${error}`);
+    }
   }
 }

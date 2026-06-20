@@ -1,4 +1,8 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
+import {
+  AdminNotificationType,
+  NotificationService,
+} from '@/api/notification/notification.service';
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { AutoIncrementID } from '@/common/types/common.type';
 import { AllConfigType } from '@/config/config.type';
@@ -12,6 +16,7 @@ import {
   HttpException,
   HttpStatus,
   Injectable,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -38,6 +43,8 @@ const MAX_RECIPIENTS_PER_EMAIL = 50;
 
 @Injectable()
 export class EmailService {
+  private readonly logger = new Logger(EmailService.name);
+
   constructor(
     @InjectRepository(EmailLogEntity)
     private readonly emailLogRepository: Repository<EmailLogEntity>,
@@ -49,6 +56,7 @@ export class EmailService {
     private readonly emailQueue: Queue,
     private readonly configService: ConfigService<AllConfigType>,
     private readonly mailService: MailService,
+    private readonly notificationService: NotificationService,
   ) {}
 
   async create(
@@ -188,6 +196,12 @@ export class EmailService {
     emailLog.cancelledAt = new Date();
     emailLog.queueJobId = null;
     await this.emailLogRepository.save(emailLog);
+    await this.notifyEmailStatus(
+      emailLog,
+      AdminNotificationType.EmailCancelled,
+      'Scheduled email cancelled',
+      `Your scheduled email "${emailLog.subject}" was cancelled.`,
+    );
 
     return this.findMineOne(id, adminId);
   }
@@ -440,5 +454,32 @@ export class EmailService {
     const email = this.configService.get('mail.defaultEmail', { infer: true });
 
     return name ? `"${name}" <${email}>` : email;
+  }
+
+  private async notifyEmailStatus(
+    emailLog: EmailLogEntity,
+    type: AdminNotificationType,
+    title: string,
+    message: string,
+  ): Promise<void> {
+    if (!emailLog.createdByAdminId) {
+      return;
+    }
+
+    try {
+      await this.notificationService.createForAdmin({
+        adminId: emailLog.createdByAdminId,
+        type,
+        title,
+        message,
+        data: {
+          emailLogId: emailLog.id,
+          subject: emailLog.subject,
+          status: emailLog.status,
+        },
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to create email notification: ${error}`);
+    }
   }
 }
