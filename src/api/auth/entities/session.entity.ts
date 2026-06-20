@@ -38,4 +38,39 @@ export class SessionEntity extends AbstractEntity {
     name: 'user_type',
   })
   userType: ESessionUserType;
+
+  @Column({
+    name: 'impersonated_by',
+    type: 'bigint',
+    nullable: true,
+  })
+  impersonatedBy?: AutoIncrementID;
+
+  @Column({
+    name: 'ip_address',
+    type: 'varchar',
+    nullable: true,
+  })
+  ipAddress?: string;
+
+  @Column({
+    name: 'user_agent',
+    type: 'varchar',
+    nullable: true,
+  })
+  userAgent?: string;
+
+  @Column({
+    name: 'expires_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  expiresAt?: Date;
+
+  @Column({
+    name: 'revoked_at',
+    type: 'timestamptz',
+    nullable: true,
+  })
+  revokedAt?: Date;
 }

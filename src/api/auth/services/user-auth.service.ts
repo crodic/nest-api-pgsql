@@ -40,7 +40,7 @@ import { plainToInstance } from 'class-transformer';
 import { assert } from 'console';
 import crypto from 'crypto';
 import ms, { StringValue } from 'ms';
-import { Repository } from 'typeorm';
+import { In, IsNull, Repository } from 'typeorm';
 import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
 import { ForgotPasswordResDto } from '../dto/forgot-password.res.dto';
 import { RefreshReqDto } from '../dto/refresh.req.dto';
@@ -50,6 +50,7 @@ import { ResendEmailVerifyReqDto } from '../dto/resend-email-verify.req.dto';
 import { ResendEmailVerifyResDto } from '../dto/resend-email-verify.res.dto';
 import { ResetPasswordReqDto } from '../dto/reset-password.req.dto';
 import { ResetPasswordResDto } from '../dto/reset-password.res.dto';
+import { SessionResDto } from '../dto/session.res.dto';
 import { LoginReqDto } from '../dto/users/login.req.dto';
 import { LoginResDto } from '../dto/users/login.res.dto';
 import { RegisterReqDto } from '../dto/users/register.req.dto';
@@ -77,6 +78,8 @@ export class UserAuthService {
     private readonly jwtService: JwtService,
     @InjectRepository(UserEntity)
     private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(SessionEntity)
+    private readonly sessionRepository: Repository<SessionEntity>,
     @InjectQueue(QueueName.EMAIL)
     private readonly emailQueue: Queue<IEmailJob, any, string>,
     @Inject(CACHE_MANAGER)
@@ -107,7 +110,8 @@ export class UserAuthService {
       userId: user.id,
       userType: ESessionUserType.USER,
     });
-    await session.save();
+    await this.sessionRepository.save(session);
+    await this.clearSessionBlacklist(session.id);
 
     const token = await this.createToken({
       id: user.id,
@@ -225,9 +229,20 @@ export class UserAuthService {
 
   async refreshToken(dto: RefreshReqDto): Promise<RefreshResDto> {
     const { sessionId, hash } = this.verifyRefreshToken(dto.refreshToken);
-    const session = await SessionEntity.findOneBy({ id: sessionId });
+    const session = await this.sessionRepository.findOneBy({
+      id: sessionId,
+      userType: ESessionUserType.USER,
+      revokedAt: IsNull(),
+    });
 
     if (!session || session.hash !== hash) {
+      throw new UnauthorizedException();
+    }
+
+    if (session.expiresAt && session.expiresAt <= new Date()) {
+      await this.sessionRepository.update(session.id, {
+        revokedAt: new Date(),
+      });
       throw new UnauthorizedException();
     }
 
@@ -241,7 +256,15 @@ export class UserAuthService {
       .update(randomStringGenerator())
       .digest('hex');
 
-    SessionEntity.update(session.id, { hash: newHash });
+    await this.sessionRepository.update(
+      {
+        id: session.id,
+        hash,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      { hash: newHash },
+    );
 
     return await this.createToken({
       id: user.id,
@@ -349,12 +372,143 @@ export class UserAuthService {
   }
 
   async logout(userToken: JwtPayloadType): Promise<void> {
-    await this.cacheManager.set<boolean>(
-      createCacheKey(CacheKey.SESSION_BLACKLIST, userToken.sessionId),
-      true,
-      userToken.exp * 1000 - Date.now(),
+    await this.revokeCurrentSession(userToken);
+  }
+
+  async listSessions(userToken: JwtPayloadType): Promise<SessionResDto[]> {
+    const sessions = await this.sessionRepository.find({
+      where: {
+        userId: userToken.id as AutoIncrementID,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      order: { createdAt: 'DESC' },
+    });
+
+    return plainToInstance(SessionResDto, sessions, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  async revokeSession(
+    userToken: JwtPayloadType,
+    sessionId: AutoIncrementID,
+  ): Promise<{ message: string }> {
+    const result = await this.sessionRepository.update(
+      {
+        id: sessionId,
+        userId: userToken.id as AutoIncrementID,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      { revokedAt: new Date() },
     );
-    await SessionEntity.delete(userToken.sessionId);
+
+    if (result.affected === 0) {
+      throw new NotFoundException('Session not found');
+    }
+
+    await this.blacklistSession(sessionId);
+
+    return { message: 'Session revoked successfully' };
+  }
+
+  async revokeAllSessions(
+    userToken: JwtPayloadType,
+  ): Promise<{ message: string }> {
+    const sessions = await this.sessionRepository.find({
+      where: {
+        userId: userToken.id as AutoIncrementID,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      select: ['id'],
+    });
+
+    if (sessions.length > 0) {
+      await this.sessionRepository.update(
+        {
+          id: In(sessions.map((session) => session.id)),
+          userId: userToken.id as AutoIncrementID,
+          userType: ESessionUserType.USER,
+          revokedAt: IsNull(),
+        },
+        { revokedAt: new Date() },
+      );
+
+      await Promise.all(
+        sessions.map((session) => this.blacklistSession(session.id)),
+      );
+    }
+
+    return { message: 'Sessions revoked successfully' };
+  }
+
+  async stopImpersonating(
+    userToken: JwtPayloadType,
+  ): Promise<{ message: string }> {
+    const session = await this.sessionRepository.findOneBy({
+      id: userToken.sessionId as AutoIncrementID,
+      userId: userToken.id as AutoIncrementID,
+      userType: ESessionUserType.USER,
+      revokedAt: IsNull(),
+    });
+
+    if (!session?.impersonatedBy) {
+      throw new BadRequestException('Current session is not impersonated');
+    }
+
+    const result = await this.sessionRepository.update(
+      {
+        id: userToken.sessionId as AutoIncrementID,
+        userId: userToken.id as AutoIncrementID,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      { revokedAt: new Date() },
+    );
+
+    if (result.affected === 0) {
+      throw new BadRequestException('Current session is not impersonated');
+    }
+
+    await this.blacklistSession(userToken.sessionId);
+
+    return { message: 'Stopped impersonating successfully' };
+  }
+
+  private async revokeCurrentSession(userToken: JwtPayloadType) {
+    await this.blacklistSession(userToken.sessionId as AutoIncrementID);
+    await this.sessionRepository.update(
+      {
+        id: userToken.sessionId as AutoIncrementID,
+        userId: userToken.id as AutoIncrementID,
+        userType: ESessionUserType.USER,
+        revokedAt: IsNull(),
+      },
+      { revokedAt: new Date() },
+    );
+  }
+
+  private async blacklistSession(sessionId: AutoIncrementID | string) {
+    const refreshExpires = this.configService.getOrThrow(
+      'auth.userRefreshExpires',
+      {
+        infer: true,
+      },
+    );
+
+    await this.cacheManager.set<boolean>(
+      createCacheKey(CacheKey.SESSION_BLACKLIST, sessionId),
+      true,
+      ms(refreshExpires as StringValue),
+    );
+  }
+
+  private async clearSessionBlacklist(sessionId: AutoIncrementID | string) {
+    await this.cacheManager.del(
+      createCacheKey(CacheKey.SESSION_BLACKLIST, sessionId),
+    );
   }
 
   private verifyRefreshToken(token: string): JwtRefreshPayloadType {

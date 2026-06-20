@@ -10,17 +10,24 @@ import {
   ApiAuthOptional,
   ApiPublic,
 } from '@/decorators/http.decorators';
+import { CheckPolicies } from '@/decorators/policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
+import { PoliciesGuard } from '@/guards/policies.guard';
+import { AppAbility } from '@/libs/casl/ability.factory';
+import { AppActions, AppSubjects } from '@/utils/permissions.constant';
 import {
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
   Put,
   Query,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -31,6 +38,8 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AdminUserLoginReqDto } from '../dto/admin-users/admin-user-login.req.dto';
 import { AdminUserLoginResDto } from '../dto/admin-users/admin-user-login.res.dto';
 import { AdminUserRegisterReqDto } from '../dto/admin-users/admin-user-register.req.dto';
+import { ImpersonateUserReqDto } from '../dto/admin-users/impersonate-user.req.dto';
+import { ImpersonateUserResDto } from '../dto/admin-users/impersonate-user.res.dto';
 import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
 import { ForgotPasswordResDto } from '../dto/forgot-password.res.dto';
 import { RefreshReqDto } from '../dto/refresh.req.dto';
@@ -40,6 +49,7 @@ import { ResendEmailVerifyReqDto } from '../dto/resend-email-verify.req.dto';
 import { ResendEmailVerifyResDto } from '../dto/resend-email-verify.res.dto';
 import { ResetPasswordReqDto } from '../dto/reset-password.req.dto';
 import { ResetPasswordResDto } from '../dto/reset-password.res.dto';
+import { SessionResDto } from '../dto/session.res.dto';
 import { ProdOnlyThrottleGuard } from '../guards/ProdOnlyThrottle.guard';
 import { AdminAuthService } from '../services/admin-auth.service';
 import { JwtPayloadType } from '../types/jwt-payload.type';
@@ -49,7 +59,7 @@ import { JwtPayloadType } from '../types/jwt-payload.type';
   path: 'auth',
   version: '1',
 })
-@UseGuards(AdminAuthGuard, ProdOnlyThrottleGuard)
+@UseGuards(AdminAuthGuard, PoliciesGuard, ProdOnlyThrottleGuard)
 export class AdminAuthenticationController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 
@@ -98,6 +108,53 @@ export class AdminAuthenticationController {
     if (userToken) {
       await this.adminAuthService.logout(userToken);
     }
+  }
+
+  @ApiAuth({
+    type: SessionResDto,
+    summary: 'List current admin sessions',
+  })
+  @SkipThrottle()
+  @Get('sessions')
+  async sessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.adminAuthService.listSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke all current admin sessions' })
+  @SkipThrottle()
+  @Delete('sessions')
+  async revokeAllSessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.adminAuthService.revokeAllSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke one current admin session' })
+  @SkipThrottle()
+  @Delete('sessions/:id')
+  async revokeSession(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Param('id') sessionId: AutoIncrementID,
+  ) {
+    return this.adminAuthService.revokeSession(userToken, sessionId);
+  }
+
+  @ApiAuth({
+    type: ImpersonateUserResDto,
+    summary: 'Impersonate user',
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Impersonate, AppSubjects.User),
+  )
+  @SkipThrottle()
+  @Post('impersonate-user')
+  async impersonateUser(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: ImpersonateUserReqDto,
+    @Req() req: any,
+  ): Promise<ImpersonateUserResDto> {
+    return this.adminAuthService.impersonateUser(userToken, dto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({

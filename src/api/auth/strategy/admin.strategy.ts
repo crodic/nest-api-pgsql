@@ -1,5 +1,10 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
+import { SessionEntity } from '@/api/auth/entities/session.entity';
+import { AutoIncrementID } from '@/common/types/common.type';
 import { AllConfigType } from '@/config/config.type';
+import { CacheKey } from '@/constants/cache.constant';
+import { ESessionUserType } from '@/constants/entity.enum';
+import { createCacheKey } from '@/utils/cache.util';
 import { CACHE_MANAGER, Cache } from '@nestjs/cache-manager';
 import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
@@ -16,6 +21,8 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
     private readonly cache: Cache,
     @InjectRepository(AdminUserEntity)
     private readonly adminUserRepository: Repository<AdminUserEntity>,
+    @InjectRepository(SessionEntity)
+    private readonly sessionRepository: Repository<SessionEntity>,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -27,11 +34,28 @@ export class AdminJwtStrategy extends PassportStrategy(Strategy, 'admin-jwt') {
   }
 
   async validate(payload: any) {
-    const isSessionBlacklisted = await this.cache.get<boolean>(
-      `session_blacklist:${payload.sessionId}`,
-    );
+    const isSessionBlacklisted = payload.sessionId
+      ? await this.cache.get<boolean>(
+          createCacheKey(CacheKey.SESSION_BLACKLIST, payload.sessionId),
+        )
+      : false;
 
     if (isSessionBlacklisted) {
+      throw new UnauthorizedException();
+    }
+
+    const session = payload.sessionId
+      ? await this.sessionRepository.findOneBy({
+          id: payload.sessionId as AutoIncrementID,
+          userId: payload.id as AutoIncrementID,
+          userType: ESessionUserType.ADMIN,
+        })
+      : null;
+
+    if (
+      session?.revokedAt ||
+      (session?.expiresAt && session.expiresAt <= new Date())
+    ) {
       throw new UnauthorizedException();
     }
 

@@ -129,6 +129,58 @@ docker compose -f docker-compose.prod.yml run --rm app pnpm migration:run:prod
 docker compose -f docker-compose.prod.yml run --rm app pnpm permissions:sync:prod
 ```
 
+## Sessions, Revocation, and Impersonation
+
+Authenticated admin and user logins create rows in the `sessions` table. Protected requests validate both the JWT and the backing session row, so revoking a session blocks the access token immediately even when the token has not expired yet.
+
+Admin session endpoints:
+
+```text
+GET    /api/v1/auth/sessions
+DELETE /api/v1/auth/sessions/:id
+DELETE /api/v1/auth/sessions
+```
+
+User session endpoints:
+
+```text
+GET    /api/v1/user/auth/sessions
+DELETE /api/v1/user/auth/sessions/:id
+DELETE /api/v1/user/auth/sessions
+```
+
+Admin impersonation uses a dedicated user session with `impersonatedBy` set to the admin id. The impersonation token is short lived, can be revoked through normal session revocation, and can be stopped by the user-auth endpoint:
+
+```text
+POST /api/v1/auth/impersonate-user
+POST /api/v1/user/auth/stop-impersonating
+```
+
+`POST /api/v1/auth/impersonate-user` accepts:
+
+```json
+{
+  "userId": "1",
+  "callbackUrl": "https://app.example.com"
+}
+```
+
+The response includes `accessToken`, `refreshToken`, `tokenExpires`, `expiresAt`, `session`, `callbackUrl`, and `redirectUrl`. The portal can open `redirectUrl` in a new tab after receiving the response.
+
+While an impersonated user session performs mutating actions, successful database changes are written to `impersonate_logs` by the audit subscriber with before/after data and changed fields. Failed mutating requests are written by the request interceptor with `status=failed`. Sensitive request fields such as passwords, secrets, API keys, and tokens are masked before being stored.
+
+Impersonation log endpoints:
+
+```text
+GET /api/v1/impersonate-logs
+GET /api/v1/impersonate-logs/:id
+```
+
+Required permissions:
+
+- `impersonate:USER` to impersonate a user.
+- `read:IMPERSONATE_LOG` to view impersonation logs.
+
 ## Tests
 
 Jest loads test environment values from `.env.testing` through `setup-jest.mjs`.

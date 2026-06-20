@@ -1,5 +1,6 @@
 import { UserEntity } from '@/api/user/entities/user.entity';
 import { CacheKey } from '@/constants/cache.constant';
+import { ESessionUserType } from '@/constants/entity.enum';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { JobName, QueueName } from '@/constants/job.constant';
 import { createCacheKey } from '@/utils/cache.util';
@@ -11,7 +12,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { IsNull, Repository } from 'typeorm';
 import { SessionEntity } from '../entities/session.entity';
 import { UserAuthService } from './user-auth.service';
 
@@ -22,6 +23,9 @@ jest.mock('@/utils/password.util', () => ({
 describe('UserAuthService', () => {
   let service: UserAuthService;
   let userRepository: Partial<Record<keyof Repository<UserEntity>, jest.Mock>>;
+  let sessionRepository: Partial<
+    Record<keyof Repository<SessionEntity>, jest.Mock>
+  >;
   let jwtService: { signAsync: jest.Mock; verify: jest.Mock };
   let cacheManager: { get: jest.Mock; set: jest.Mock; del: jest.Mock };
   let emailQueue: { add: jest.Mock };
@@ -45,6 +49,13 @@ describe('UserAuthService', () => {
       findOneByOrFail: jest.fn(),
       findOneOrFail: jest.fn(),
       save: jest.fn(),
+    };
+    sessionRepository = {
+      create: jest.fn((data) => new SessionEntity(data)),
+      find: jest.fn(),
+      findOneBy: jest.fn(),
+      save: jest.fn(),
+      update: jest.fn(),
     };
     jwtService = {
       signAsync: jest.fn(),
@@ -75,6 +86,10 @@ describe('UserAuthService', () => {
         {
           provide: getRepositoryToken(UserEntity),
           useValue: userRepository,
+        },
+        {
+          provide: getRepositoryToken(SessionEntity),
+          useValue: sessionRepository,
         },
         {
           provide: getQueueToken(QueueName.EMAIL),
@@ -211,14 +226,7 @@ describe('UserAuthService', () => {
   });
 
   describe('logout', () => {
-    it('blacklists the session until token expiry and deletes the session', async () => {
-      jest
-        .spyOn(Date, 'now')
-        .mockReturnValue(new Date('2026-06-19T00:00:00.000Z').getTime());
-      const deleteSpy = jest
-        .spyOn(SessionEntity, 'delete')
-        .mockResolvedValue({ raw: [], affected: 1 } as any);
-
+    it('blacklists and revokes the current session', async () => {
       await service.logout({
         id: '10',
         sessionId: '20',
@@ -229,9 +237,17 @@ describe('UserAuthService', () => {
       expect(cacheManager.set).toHaveBeenCalledWith(
         createCacheKey(CacheKey.SESSION_BLACKLIST, '20'),
         true,
-        600000,
+        31536000000,
       );
-      expect(deleteSpy).toHaveBeenCalledWith('20');
+      expect(sessionRepository.update).toHaveBeenCalledWith(
+        {
+          id: '20',
+          userId: '10',
+          userType: ESessionUserType.USER,
+          revokedAt: IsNull(),
+        },
+        { revokedAt: expect.any(Date) },
+      );
     });
   });
 

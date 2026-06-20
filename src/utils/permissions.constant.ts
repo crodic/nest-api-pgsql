@@ -3,6 +3,7 @@ export enum AppSubjects {
   Role = 'ROLE',
   Log = 'LOG',
   Admin = 'ADMIN',
+  ImpersonateLog = 'IMPERSONATE_LOG',
 
   All = 'all',
 }
@@ -12,6 +13,7 @@ export enum AppActions {
   Read = 'read',
   Update = 'update',
   Delete = 'delete',
+  Impersonate = 'impersonate',
 
   // ⚡ SUPER
   Manage = 'manage',
@@ -90,6 +92,13 @@ export const ALL_PERMISSIONS = [
     'Delete users',
     'Remove customer or member user accounts.',
   ),
+  permissionMeta(
+    AppActions.Impersonate,
+    AppSubjects.User,
+    'User Management',
+    'Impersonate users',
+    'Start a temporary user session for support and troubleshooting.',
+  ),
 
   // Role
   permissionMeta(
@@ -128,6 +137,13 @@ export const ALL_PERMISSIONS = [
     'Audit & Activity',
     'View activity logs',
     'Review audit trails and activity history.',
+  ),
+  permissionMeta(
+    AppActions.Read,
+    AppSubjects.ImpersonateLog,
+    'Audit & Activity',
+    'View impersonation logs',
+    'Review admin impersonation sessions and actions.',
   ),
 
   // SUPER
