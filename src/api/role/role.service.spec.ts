@@ -298,7 +298,7 @@ describe('RoleService', () => {
 
   describe('remove', () => {
     it('does not remove system roles', async () => {
-      roleRepository.findOneByOrFail.mockResolvedValue(
+      roleRepository.findOneOrFail.mockResolvedValue(
         new RoleEntity({ id: '1' as any, name: 'System', isSystem: true }),
       );
 
@@ -312,7 +312,7 @@ describe('RoleService', () => {
     });
 
     it('does not remove the SUPER ADMIN role by name', async () => {
-      roleRepository.findOneByOrFail.mockResolvedValue(
+      roleRepository.findOneOrFail.mockResolvedValue(
         new RoleEntity({
           id: '1' as any,
           name: 'SUPER ADMIN',
@@ -329,16 +329,40 @@ describe('RoleService', () => {
       expect(roleRepository.softRemove).not.toHaveBeenCalled();
     });
 
+    it('does not remove roles assigned to admins', async () => {
+      roleRepository.findOneOrFail.mockResolvedValue(
+        new RoleEntity({
+          id: '1' as any,
+          name: 'Manager',
+          isSystem: false,
+          admins: [{ id: '10' as any }] as any,
+        }),
+      );
+
+      await expect(service.remove('1' as any)).rejects.toMatchObject({
+        response: {
+          errorCode: ErrorCode.V000,
+          message: 'Role cannot be deleted while assigned to admins',
+        },
+      });
+      expect(roleRepository.softRemove).not.toHaveBeenCalled();
+    });
+
     it('soft removes non-system roles', async () => {
       const role = new RoleEntity({
         id: '1' as any,
         name: 'Manager',
         isSystem: false,
+        admins: [],
       });
-      roleRepository.findOneByOrFail.mockResolvedValue(role);
+      roleRepository.findOneOrFail.mockResolvedValue(role);
 
       await service.remove('1' as any);
 
+      expect(roleRepository.findOneOrFail).toHaveBeenCalledWith({
+        where: { id: '1' },
+        relations: ['admins'],
+      });
       expect(roleRepository.softRemove).toHaveBeenCalledWith(role);
     });
   });

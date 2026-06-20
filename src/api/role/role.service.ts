@@ -227,8 +227,18 @@ export class RoleService {
   }
 
   async remove(id: AutoIncrementID) {
-    const role = await this.roleRepository.findOneByOrFail({ id });
+    const role = await this.roleRepository.findOneOrFail({
+      where: { id },
+      relations: ['admins'],
+    });
     this.assertMutableRole(role);
+    if (role.admins?.length > 0) {
+      throw new ValidationException(
+        ErrorCode.V000,
+        'Role cannot be deleted while assigned to admins',
+      );
+    }
+
     await this.roleRepository.softRemove(role);
   }
 }
