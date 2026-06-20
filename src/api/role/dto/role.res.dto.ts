@@ -26,14 +26,46 @@ export class RoleResDto {
   isSystem: boolean;
 
   @ArrayField(String, { example: ['1', '2'] })
-  @Transform(({ obj }) => obj.permissionEntities?.map((item) => item.id) ?? [])
+  @Transform(
+    ({ obj }) => obj.permissionEntities?.map((item) => item.id) ?? [],
+    {
+      toClassOnly: true,
+    },
+  )
   @Expose()
   permissionIds: string[];
 
   @ArrayField(String, { example: ['read:USER', 'create:USER'] })
-  @Transform(({ obj }) => obj.permissionEntities?.map((item) => item.key) ?? [])
+  @Transform(
+    ({ obj }) => obj.permissionEntities?.map((item) => item.key) ?? [],
+    {
+      toClassOnly: true,
+    },
+  )
   @Expose()
   permissions: string[];
+
+  @Expose()
+  @Transform(
+    ({ obj }) =>
+      obj.permissionEntities?.map((item) => ({
+        id: item.id,
+        key: item.key,
+        name: item.name,
+        group: item.group,
+        description: item.description,
+      })) ?? [],
+    {
+      toClassOnly: true,
+    },
+  )
+  permissionDetails: {
+    id: string;
+    key: string;
+    name: string;
+    group: string;
+    description?: string;
+  }[];
 
   @ClassField(() => Date)
   @Expose()

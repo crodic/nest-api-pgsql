@@ -1,14 +1,12 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
 import { PermissionEntity } from '@/api/permission/entities/permission.entity';
+import { syncPermissions } from '@/api/permission/permission-sync';
 import { RoleEntity } from '@/api/role/entities/role.entity';
 import {
   SUPER_ADMIN_ACCOUNT,
   SYSTEM_ROLE_NAME,
 } from '@/constants/app.constant';
-import {
-  ADMIN_FULL_ACCESS,
-  ALL_PERMISSIONS,
-} from '@/utils/permissions.constant';
+import { ADMIN_FULL_ACCESS } from '@/utils/permissions.constant';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Repository } from 'typeorm';
@@ -25,13 +23,7 @@ export class AdminSeedService {
   ) {}
 
   async run(): Promise<void> {
-    await this.permissionRepository.upsert(
-      ALL_PERMISSIONS.map((permission) => ({
-        label: permission.label,
-        key: permission.key,
-      })),
-      ['key'],
-    );
+    await syncPermissions(this.permissionRepository);
 
     const permissions = await this.permissionRepository.findBy({
       key: In([`${ADMIN_FULL_ACCESS.action}:${ADMIN_FULL_ACCESS.subject}`]),

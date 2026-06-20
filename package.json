@@ -32,9 +32,11 @@
     "db:create": "env-cmd -- ts-node -r tsconfig-paths/register ./src/database/create-database.ts",
     "db:create:docker": "ts-node -r tsconfig-paths/register ./src/database/create-database.ts",
     "seed:run:relational": "ts-node -r tsconfig-paths/register ./src/database/seeds/relational/run-seed.ts",
+    "permissions:sync": "ts-node -r tsconfig-paths/register ./src/database/sync-permissions.ts",
     "migration:run:prod": "typeorm --dataSource=dist/database/data-source.js migration:run",
     "migration:revert:prod": "typeorm --dataSource=dist/database/data-source.js migration:revert",
     "seed:run:relational:prod": "node dist/database/seeds/relational/run-seed.js",
+    "permissions:sync:prod": "node dist/database/sync-permissions.js",
     "prepare": "husky || true"
   },
   "dependencies": {

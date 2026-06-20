@@ -1,7 +1,9 @@
 import { AutoIncrementID } from '@/common/types/common.type';
+import { SYSTEM_ROLE_NAME } from '@/constants/app.constant';
 import { CacheKey } from '@/constants/cache.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
+import { ADMIN_FULL_ACCESS } from '@/utils/permissions.constant';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -23,6 +25,7 @@ import { RoleEntity } from './entities/role.entity';
 @Injectable()
 export class RoleService {
   private readonly logger = new Logger(RoleService.name);
+  private readonly fullAccessPermissionKey = `${ADMIN_FULL_ACCESS.action}:${ADMIN_FULL_ACCESS.subject}`;
 
   constructor(
     @InjectRepository(RoleEntity)
@@ -32,6 +35,47 @@ export class RoleService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
   ) {}
+
+  private toRoleDto(role: RoleEntity): RoleResDto {
+    return plainToInstance(RoleResDto, role, {
+      excludeExtraneousValues: true,
+    });
+  }
+
+  private assertAssignablePermissions(permissionEntities: PermissionEntity[]) {
+    if (
+      permissionEntities.some(
+        (permission) => permission.key === this.fullAccessPermissionKey,
+      )
+    ) {
+      throw new ValidationException(
+        ErrorCode.V000,
+        'manage:all cannot be assigned to roles',
+      );
+    }
+  }
+
+  private isProtectedRole(role: Pick<RoleEntity, 'isSystem' | 'name'>) {
+    return role.isSystem || role.name === SYSTEM_ROLE_NAME;
+  }
+
+  private assertMutableRole(role: Pick<RoleEntity, 'isSystem' | 'name'>) {
+    if (this.isProtectedRole(role)) {
+      throw new ValidationException(
+        ErrorCode.V000,
+        'System roles cannot be updated or deleted',
+      );
+    }
+  }
+
+  private assertNotReservedRoleName(name?: string) {
+    if (name === SYSTEM_ROLE_NAME) {
+      throw new ValidationException(
+        ErrorCode.V000,
+        `${SYSTEM_ROLE_NAME} is a reserved role name`,
+      );
+    }
+  }
 
   async findAll(query: PaginateQuery): Promise<Paginated<RoleResDto>> {
     const queryBuilder = this.roleRepository
@@ -98,12 +142,16 @@ export class RoleService {
   }
 
   async create(dto: CreateRoleReqDto): Promise<RoleResDto> {
+    this.assertNotReservedRoleName(dto.name);
+
     const permissionEntities = await this.permissionRepository.findBy({
       id: In(dto.permissionIds),
     });
     if (permissionEntities.length !== dto.permissionIds.length) {
       throw new ValidationException(ErrorCode.E002);
     }
+    this.assertAssignablePermissions(permissionEntities);
+
     const newRole = new RoleEntity({
       name: dto.name,
       description: dto.description,
@@ -115,7 +163,7 @@ export class RoleService {
 
     // this.logger.debug(savedRole);
 
-    return plainToInstance(RoleResDto, savedRole);
+    return this.toRoleDto(savedRole);
   }
 
   async formOptions(): Promise<RoleResDto[]> {
@@ -132,12 +180,24 @@ export class RoleService {
 
   async findOne(id: AutoIncrementID): Promise<RoleResDto> {
     assert(id, 'id is required');
-    const role = await this.roleRepository.findOneOrFail({ where: { id } });
-    return role.toDto(RoleResDto);
+    const role = await this.roleRepository.findOneOrFail({
+      where: { id },
+      relations: ['permissionEntities'],
+    });
+    return this.toRoleDto(role);
   }
 
-  async update(id: AutoIncrementID, updateRoleDto: UpdateRoleReqDto) {
-    const role = await this.roleRepository.findOneByOrFail({ id });
+  async update(
+    id: AutoIncrementID,
+    updateRoleDto: UpdateRoleReqDto,
+  ): Promise<RoleResDto> {
+    const role = await this.roleRepository.findOneOrFail({
+      where: { id },
+      relations: ['permissionEntities'],
+    });
+
+    this.assertMutableRole(role);
+    this.assertNotReservedRoleName(updateRoleDto.name);
 
     Object.assign(role, {
       ...(updateRoleDto.name !== undefined && { name: updateRoleDto.name }),
@@ -158,16 +218,17 @@ export class RoleService {
       ) {
         throw new ValidationException(ErrorCode.E002);
       }
+      this.assertAssignablePermissions(role.permissionEntities);
     }
 
-    await this.roleRepository.save(role);
+    const savedRole = await this.roleRepository.save(role);
+
+    return this.toRoleDto(savedRole);
   }
 
   async remove(id: AutoIncrementID) {
     const role = await this.roleRepository.findOneByOrFail({ id });
-    if (role.isSystem) {
-      throw new ValidationException(ErrorCode.V003);
-    }
+    this.assertMutableRole(role);
     await this.roleRepository.softRemove(role);
   }
 }

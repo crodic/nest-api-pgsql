@@ -83,6 +83,52 @@ To seed local relational data:
 docker compose run --rm app pnpm seed:run:relational
 ```
 
+## RBAC Permissions
+
+Permissions are source-controlled in:
+
+```text
+src/utils/permissions.constant.ts
+```
+
+Each permission has:
+
+- `key`: machine-readable permission key, for example `read:ADMIN`
+- `group`: UI grouping, for example `Admin Management`
+- `name`: end-user display name
+- `description`: end-user help text
+
+The database `permissions` table is synced from this catalog. Do not edit permission rows manually unless you also update `permissions.constant.ts`.
+
+The reserved permission `manage:all` is for the system role only. It is intentionally hidden from role create/edit options and rejected by the Role create/update APIs.
+
+After changing `permissions.constant.ts`, run the permission sync:
+
+```bash
+pnpm permissions:sync
+```
+
+Inside local Docker:
+
+```bash
+docker compose run --rm app pnpm permissions:sync
+```
+
+For production, build the app first, run migrations, then sync permissions from the compiled `dist` files:
+
+```bash
+pnpm build
+pnpm migration:run:prod
+pnpm permissions:sync:prod
+```
+
+If using production Docker Compose:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm app pnpm migration:run:prod
+docker compose -f docker-compose.prod.yml run --rm app pnpm permissions:sync:prod
+```
+
 ## Tests
 
 Jest loads test environment values from `.env.testing` through `setup-jest.mjs`.
@@ -157,6 +203,12 @@ Run production migrations explicitly as a release step:
 
 ```bash
 docker compose -f docker-compose.prod.yml run --rm app pnpm migration:run:prod
+```
+
+Sync the permission catalog after migrations whenever `src/utils/permissions.constant.ts` changes:
+
+```bash
+docker compose -f docker-compose.prod.yml run --rm app pnpm permissions:sync:prod
 ```
 
 Do not bake production secrets into the image or commit them to the repository. For larger deployments, reuse the same `Dockerfile` production target with your orchestrator and provide environment variables through your platform or secret manager. The production migration command inside the built image is:

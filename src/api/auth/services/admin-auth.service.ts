@@ -339,6 +339,8 @@ export class AdminAuthService {
       relations: ['roles', 'roles.permissionEntities'],
     });
 
+    console.log(user.roles[0].permissionEntities);
+
     if (!user) {
       throw new ForbiddenException('Forbidden');
     }

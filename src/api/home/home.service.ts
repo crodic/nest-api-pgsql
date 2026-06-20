@@ -1,4 +1,5 @@
 import { PermissionEntity } from '@/api/permission/entities/permission.entity';
+import { permissionCatalogRows } from '@/api/permission/permission-sync';
 import { SYSTEM_ROLE_NAME } from '@/constants/app.constant';
 import { ADMIN_FULL_ACCESS } from '@/utils/permissions.constant';
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
@@ -54,9 +55,14 @@ export class HomeService {
       });
 
       if (!permission) {
+        const permissionMeta = permissionCatalogRows().find(
+          (item) => item.key === permissionKey,
+        );
         permission = await permissionRepo.save(
           permissionRepo.create({
-            label: permissionKey,
+            name: permissionMeta?.name ?? permissionKey,
+            group: permissionMeta?.group ?? 'System',
+            description: permissionMeta?.description,
             key: permissionKey,
           }),
         );

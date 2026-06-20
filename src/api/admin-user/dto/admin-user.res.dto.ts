@@ -4,7 +4,6 @@ import {
   ArrayField,
   BooleanField,
   ClassField,
-  ClassFieldOptional,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorators';
@@ -53,11 +52,6 @@ export class AdminUserResDto {
   @ArrayField(RoleResDto)
   @Expose()
   roles?: WrapperType<RoleResDto>[];
-
-  @ClassFieldOptional(() => RoleResDto)
-  @Transform(({ obj }) => obj.roles?.[0])
-  @Expose()
-  role?: WrapperType<RoleResDto>;
 
   @BooleanField()
   @Transform(({ value }) => !!value)

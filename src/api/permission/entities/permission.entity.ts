@@ -24,7 +24,13 @@ export class PermissionEntity extends AbstractEntity {
   id!: AutoIncrementID;
 
   @Column()
-  label: string;
+  name: string;
+
+  @Column()
+  group: string;
+
+  @Column({ nullable: true })
+  description?: string;
 
   @Index('UQ_permissions_key', { unique: true })
   @Column()
