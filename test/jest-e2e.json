@@ -14,8 +14,8 @@
     ]
   },
   "transformIgnorePatterns": [
-    "<rootDir>/../node_modules/.pnpm/(?!(otplib|@otplib\\+plugin-base32-scure|@scure\\+base)@)",
-    "node_modules/(?!.pnpm|otplib|@otplib/plugin-base32-scure|@scure/base)"
+    "/node_modules/(?!\\.pnpm|otplib|@otplib/plugin-base32-scure|@scure/base)",
+    "/node_modules/.pnpm/(?!(otplib|@otplib\\+plugin-base32-scure|@scure\\+base)@)"
   ],
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/../src/$1",
