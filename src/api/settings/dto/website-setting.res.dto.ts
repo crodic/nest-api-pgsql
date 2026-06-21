@@ -29,4 +29,8 @@ export class WebsiteSettingResDto {
   @ToFullUrl()
   @Expose()
   site_favicon?: string;
+
+  @StringFieldOptional()
+  @Expose()
+  backend_version?: string;
 }

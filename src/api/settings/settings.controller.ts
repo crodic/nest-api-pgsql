@@ -18,6 +18,7 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { ApiBody, ApiConsumes, ApiTags } from '@nestjs/swagger';
 import { plainToInstance } from 'class-transformer';
 import { join } from 'path';
+import PackageJson from '../../../package.json';
 import {
   WEBSITE_MAX_FILE_SIZE,
   websiteUploadOptions,
@@ -48,9 +49,7 @@ export class SettingsController {
       {},
     );
 
-    return plainToInstance(WebsiteSettingResDto, setting, {
-      excludeExtraneousValues: true,
-    });
+    return this.toWebsiteSettingDto(setting);
   }
 
   @Post(':key')
@@ -159,9 +158,22 @@ export class SettingsController {
     await this.cleanupUnusedWebsiteAssets(setting, newSetting);
     await this.settingsService.set(key, newSetting);
 
-    return plainToInstance(WebsiteSettingResDto, newSetting, {
-      excludeExtraneousValues: true,
-    });
+    return this.toWebsiteSettingDto(newSetting);
+  }
+
+  private toWebsiteSettingDto(
+    setting: WebsiteSettingResDto,
+  ): WebsiteSettingResDto {
+    return plainToInstance(
+      WebsiteSettingResDto,
+      {
+        ...setting,
+        backend_version: PackageJson.version,
+      },
+      {
+        excludeExtraneousValues: true,
+      },
+    );
   }
 
   private getPublicUploadPath(file?: Express.Multer.File): string | undefined {
