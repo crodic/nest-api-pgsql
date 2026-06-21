@@ -13,6 +13,11 @@ export class CreateSessionsTable1758176745032 implements MigrationInterface {
                 "hash" character varying(255) NOT NULL,
                 "user_id" bigint NOT NULL,
                 "user_type" "public"."sessions_user_enum" NOT NULL,
+                "impersonated_by" bigint,
+                "ip_address" character varying,
+                "user_agent" character varying,
+                "expires_at" TIMESTAMP WITH TIME ZONE,
+                "revoked_at" TIMESTAMP WITH TIME ZONE,
                 "created_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 "updated_at" TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
                 CONSTRAINT "PK_session_id" PRIMARY KEY ("id")
@@ -21,9 +26,21 @@ export class CreateSessionsTable1758176745032 implements MigrationInterface {
     await queryRunner.query(`
             CREATE INDEX "IDX_sessions_user_id" ON "sessions" ("user_id")
         `);
+    await queryRunner.query(`
+            CREATE INDEX "IDX_sessions_revoked_at" ON "sessions" ("revoked_at")
+        `);
+    await queryRunner.query(`
+            CREATE INDEX "IDX_sessions_impersonated_by" ON "sessions" ("impersonated_by")
+        `);
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
+    await queryRunner.query(`
+            DROP INDEX "public"."IDX_sessions_impersonated_by"
+        `);
+    await queryRunner.query(`
+            DROP INDEX "public"."IDX_sessions_revoked_at"
+        `);
     await queryRunner.query(`
             DROP INDEX "public"."IDX_sessions_user_id"
         `);

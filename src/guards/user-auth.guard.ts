@@ -40,6 +40,16 @@ export class UserAuthGuard extends AuthGuard('user-jwt') {
 
     this.cls.set('user', user);
     this.cls.set('userType', UserEntity.name);
+    this.cls.set(
+      'impersonation',
+      user.impersonatedBy
+        ? {
+            sessionId: user.sessionId,
+            adminId: user.impersonatedBy,
+            targetUserId: user.id,
+          }
+        : undefined,
+    );
 
     return user;
   }

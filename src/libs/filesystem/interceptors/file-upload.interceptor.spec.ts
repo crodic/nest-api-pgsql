@@ -1,4 +1,7 @@
-import { BadRequestException, CallHandler } from '@nestjs/common';
+import { CallHandler } from '@nestjs/common';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import 'reflect-metadata';
 import {
   FileUploadInterceptor,
@@ -9,7 +12,7 @@ const mockStorage = {
   disk: jest.fn().mockReturnThis(),
   put: jest.fn(),
   exists: jest.fn(),
-  config: {},
+  config: { disks: { local: {} } },
 };
 
 const mockContext = (fileOrFiles: any) => ({
@@ -21,12 +24,34 @@ const mockContext = (fileOrFiles: any) => ({
 
 const next: CallHandler = { handle: jest.fn(() => 'next') } as any;
 
+const uploadedFile = (originalname: string, content: string) => {
+  const path = join(mkdtempSync(join(tmpdir(), 'upload-')), originalname);
+  const buffer = Buffer.from(content);
+  writeFileSync(path, buffer);
+
+  return {
+    originalname,
+    buffer,
+    path,
+    mimetype: 'text/plain',
+    fieldname: 'file',
+    encoding: '7bit',
+    size: buffer.length,
+  };
+};
+
 describe('FileUploadInterceptor', () => {
   let interceptor: FileUploadInterceptor;
   let storage: any;
 
   beforeEach(() => {
-    storage = { ...mockStorage };
+    storage = {
+      ...mockStorage,
+      config: { disks: { local: {} } },
+      disk: jest.fn().mockReturnThis(),
+      put: jest.fn(),
+      exists: jest.fn().mockResolvedValue(false),
+    };
     jest.clearAllMocks();
   });
 
@@ -38,7 +63,7 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'a.txt', buffer: Buffer.from('a') };
+        req.file = uploadedFile('a.txt', 'a');
         cb();
       },
     };
@@ -46,7 +71,11 @@ describe('FileUploadInterceptor', () => {
     const ctx = mockContext(req) as any;
     await interceptor.intercept(ctx, next);
     expect(storage.disk).toHaveBeenCalledWith('local');
-    expect(storage.put).toHaveBeenCalledWith('a.txt', Buffer.from('a'));
+    expect(storage.put).toHaveBeenCalledWith(
+      'a.txt',
+      Buffer.from('a'),
+      expect.any(Object),
+    );
     expect(req.uploadedFile).toBeDefined();
   });
 
@@ -59,14 +88,18 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'b.txt', buffer: Buffer.from('b') };
+        req.file = uploadedFile('b.txt', 'b');
         cb();
       },
     };
     const req: any = {};
     const ctx = mockContext(req) as any;
     await interceptor.intercept(ctx, next);
-    expect(storage.put).toHaveBeenCalledWith('avatars/b.txt', Buffer.from('b'));
+    expect(storage.put).toHaveBeenCalledWith(
+      'avatars/b.txt',
+      Buffer.from('b'),
+      expect.any(Object),
+    );
   });
 
   it('should upload a file to a dynamic uploadPath (function)', async () => {
@@ -78,7 +111,7 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'c.txt', buffer: Buffer.from('c') };
+        req.file = uploadedFile('c.txt', 'c');
         cb();
       },
     };
@@ -89,6 +122,7 @@ describe('FileUploadInterceptor', () => {
     expect(storage.put).toHaveBeenCalledWith(
       'users/42/c.txt',
       Buffer.from('c'),
+      expect.any(Object),
     );
   });
 
@@ -102,7 +136,7 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'd.txt', buffer: Buffer.from('d') };
+        req.file = uploadedFile('d.txt', 'd');
         cb();
       },
     };
@@ -112,6 +146,7 @@ describe('FileUploadInterceptor', () => {
     expect(storage.put).toHaveBeenCalledWith(
       'base/avatars/d.txt',
       Buffer.from('d'),
+      expect.any(Object),
     );
   });
 
@@ -124,7 +159,7 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'e.txt', buffer: Buffer.from('e') };
+        req.file = uploadedFile('e.txt', 'e');
         cb();
       },
     };
@@ -132,12 +167,19 @@ describe('FileUploadInterceptor', () => {
     const ctx = mockContext(req) as any;
     await interceptor.intercept(ctx, next);
     expect(options.filenameGenerator).toHaveBeenCalled();
-    expect(storage.put).toHaveBeenCalledWith('custom.txt', Buffer.from('e'));
+    expect(storage.put).toHaveBeenCalledWith(
+      'custom.txt',
+      Buffer.from('e'),
+      expect.any(Object),
+    );
   });
 
   it('should use global filenameGenerator if per-upload is not provided', async () => {
     const globalFilenameGenerator = jest.fn().mockResolvedValue('global.txt');
-    storage.config = { filenameGenerator: globalFilenameGenerator };
+    storage.config = {
+      disks: { local: {} },
+      filenameGenerator: globalFilenameGenerator,
+    };
     const options: FileUploadInterceptorOptions = {
       fieldName: 'file',
       disk: 'local',
@@ -145,7 +187,7 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'f.txt', buffer: Buffer.from('f') };
+        req.file = uploadedFile('f.txt', 'f');
         cb();
       },
     };
@@ -153,7 +195,11 @@ describe('FileUploadInterceptor', () => {
     const ctx = mockContext(req) as any;
     await interceptor.intercept(ctx, next);
     expect(globalFilenameGenerator).toHaveBeenCalled();
-    expect(storage.put).toHaveBeenCalledWith('global.txt', Buffer.from('f'));
+    expect(storage.put).toHaveBeenCalledWith(
+      'global.txt',
+      Buffer.from('f'),
+      expect.any(Object),
+    );
   });
 
   it('should use default logic if no filenameGenerator is provided', async () => {
@@ -164,15 +210,18 @@ describe('FileUploadInterceptor', () => {
     interceptor = new FileUploadInterceptor(storage, options);
     (interceptor as any).upload = {
       single: () => (req: any, _res: any, cb: any) => {
-        req.file = { originalname: 'g.txt', buffer: Buffer.from('g') };
+        req.file = uploadedFile('g.txt', 'g');
         cb();
       },
     };
-    storage.exists = jest.fn().mockResolvedValueOnce(false);
     const req: any = {};
     const ctx = mockContext(req) as any;
     await interceptor.intercept(ctx, next);
-    expect(storage.put).toHaveBeenCalledWith('g.txt', Buffer.from('g'));
+    expect(storage.put).toHaveBeenCalledWith(
+      'g.txt',
+      Buffer.from('g'),
+      expect.any(Object),
+    );
   });
 
   it('should upload multiple files', async () => {
@@ -185,8 +234,8 @@ describe('FileUploadInterceptor', () => {
     (interceptor as any).upload = {
       array: () => (req: any, _res: any, cb: any) => {
         req.files = [
-          { originalname: 'h.txt', buffer: Buffer.from('h') },
-          { originalname: 'i.txt', buffer: Buffer.from('i') },
+          uploadedFile('h.txt', 'h'),
+          uploadedFile('i.txt', 'i'),
         ];
         cb();
       },
@@ -198,7 +247,7 @@ describe('FileUploadInterceptor', () => {
     expect(req.uploadedFiles.length).toBe(2);
   });
 
-  it('should throw if no file uploaded', async () => {
+  it('should continue if no file uploaded', async () => {
     const options: FileUploadInterceptorOptions = {
       fieldName: 'file',
       disk: 'local',
@@ -211,8 +260,6 @@ describe('FileUploadInterceptor', () => {
     };
     const req: any = {};
     const ctx = mockContext(req) as any;
-    await expect(interceptor.intercept(ctx, next)).rejects.toThrow(
-      BadRequestException,
-    );
+    await expect(interceptor.intercept(ctx, next)).resolves.toBe('next');
   });
 });

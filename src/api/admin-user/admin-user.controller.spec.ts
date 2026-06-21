@@ -55,7 +55,7 @@ describe('AdminUserController', () => {
         avatar: 'image',
         firstName: 'John',
         lastName: 'Doe',
-        roleId: '1' as AutoIncrementID,
+        roleIds: ['1' as AutoIncrementID],
       } as CreateAdminUserReqDto;
 
       const userResDto = new AdminUserResDto();
@@ -96,7 +96,7 @@ describe('AdminUserController', () => {
           firstName: 'John',
           lastName: 'Doe',
           bio: 'bio',
-          roleId: '1' as AutoIncrementID,
+          roleIds: ['1' as AutoIncrementID],
         });
       });
 

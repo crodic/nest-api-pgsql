@@ -1,8 +1,12 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
-import { IS_PUBLIC } from '@/constants/app.constant';
 import {
-  CHECK_POLICIES_KEY,
+  IS_AUTH_OPTIONAL,
+  IS_PUBLIC,
+  SKIP_POLICIES,
+} from '@/constants/app.constant';
+import {
   CHECK_ANY_POLICIES_KEY,
+  CHECK_POLICIES_KEY,
   PolicyHandler,
 } from '@/decorators/policies.decorator';
 import { CaslAbilityFactory } from '@/libs/casl/ability.factory';
@@ -28,13 +32,23 @@ export class PoliciesGuard implements CanActivate {
       context.getClass(),
     ]);
 
-    if (isPublic) return true;
+    const isAuthOptional = this.reflector.getAllAndOverride<boolean>(
+      IS_AUTH_OPTIONAL,
+      [context.getHandler(), context.getClass()],
+    );
+
+    const isSkipPolicies = this.reflector.getAllAndOverride<boolean>(
+      SKIP_POLICIES,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (isPublic || isAuthOptional || isSkipPolicies) return true;
 
     const policies =
-      this.reflector.getAllAndOverride<PolicyHandler[]>(
-        CHECK_POLICIES_KEY,
-        [context.getHandler(), context.getClass()],
-      ) || [];
+      this.reflector.getAllAndOverride<PolicyHandler[]>(CHECK_POLICIES_KEY, [
+        context.getHandler(),
+        context.getClass(),
+      ]) || [];
 
     const anyPolicies =
       this.reflector.getAllAndOverride<PolicyHandler[]>(
@@ -42,8 +56,9 @@ export class PoliciesGuard implements CanActivate {
         [context.getHandler(), context.getClass()],
       ) || [];
 
-    const decoratorsUsed = [policies.length > 0, anyPolicies.length > 0]
-      .filter(Boolean).length;
+    const decoratorsUsed = [policies.length > 0, anyPolicies.length > 0].filter(
+      Boolean,
+    ).length;
 
     if (decoratorsUsed > 1) {
       throw new InternalServerErrorException(

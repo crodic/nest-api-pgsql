@@ -4,7 +4,7 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 import { CreateAdminUserReqDto } from './create-admin-user.req.dto';
 
 export class UpdateMeReqDto extends PartialType(
-  OmitType(CreateAdminUserReqDto, ['password', 'roleId', 'email'] as const),
+  OmitType(CreateAdminUserReqDto, ['password', 'roleIds', 'email'] as const),
 ) {
   @ApiPropertyOptional({
     type: 'string',

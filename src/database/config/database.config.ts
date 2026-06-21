@@ -1,15 +1,14 @@
-import validateConfig from '@/utils/validate-config';
 import { registerAs } from '@nestjs/config';
 import {
   IsBoolean,
   IsInt,
   IsOptional,
-  IsPositive,
   IsString,
   Max,
   Min,
   ValidateIf,
 } from 'class-validator';
+import validateConfig from '../../utils/validate-config';
 import { DatabaseConfig } from './database-config.type';
 
 class EnvironmentVariablesValidator {
@@ -45,14 +44,10 @@ class EnvironmentVariablesValidator {
 
   @IsBoolean()
   @IsOptional()
-  DATABASE_LOGGING: boolean;
-
-  @IsBoolean()
-  @IsOptional()
   DATABASE_SYNCHRONIZE: boolean;
 
   @IsInt()
-  @IsPositive()
+  @Min(1)
   @IsOptional()
   DATABASE_MAX_CONNECTIONS: number;
 
@@ -82,6 +77,8 @@ export default registerAs<DatabaseConfig>('database', () => {
   validateConfig(process.env, EnvironmentVariablesValidator);
 
   return {
+    isDocumentDatabase: ['mongodb'].includes(process.env.DATABASE_TYPE ?? ''),
+    url: process.env.DATABASE_URL,
     type: process.env.DATABASE_TYPE,
     host: process.env.DATABASE_HOST,
     port: process.env.DATABASE_PORT
@@ -90,7 +87,6 @@ export default registerAs<DatabaseConfig>('database', () => {
     password: process.env.DATABASE_PASSWORD,
     name: process.env.DATABASE_NAME,
     username: process.env.DATABASE_USERNAME,
-    logging: process.env.DATABASE_LOGGING === 'true',
     synchronize: process.env.DATABASE_SYNCHRONIZE === 'true',
     maxConnections: process.env.DATABASE_MAX_CONNECTIONS
       ? parseInt(process.env.DATABASE_MAX_CONNECTIONS, 10)

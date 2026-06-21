@@ -1,3 +1,4 @@
 export default {
-  '*.ts': ['pnpm lint', 'pnpm format'],
+  '*.{ts,tsx}': ['eslint --fix', 'prettier --write'],
+  '*.{js,mjs,cjs,json,md,yml,yaml}': ['prettier --write'],
 };

@@ -1,4 +1,5 @@
 import { AdminUserEntity } from '@/api/admin-user/entities/admin-user.entity';
+import { PermissionEntity } from '@/api/permission/entities/permission.entity';
 import { AutoIncrementID } from '@/common/types/common.type';
 import { AbstractEntity } from '@/database/entities/abstract.entity';
 import {
@@ -6,8 +7,8 @@ import {
   DeleteDateColumn,
   Entity,
   Index,
+  JoinTable,
   ManyToMany,
-  OneToMany,
   PrimaryGeneratedColumn,
   Relation,
 } from 'typeorm';
@@ -32,11 +33,24 @@ export class RoleEntity extends AbstractEntity {
   @Column({ nullable: true })
   description?: string;
 
-  @Column({ type: 'jsonb', default: [] })
-  permissions: string[];
+  @Column({ name: 'is_system', type: 'boolean', default: false })
+  isSystem: boolean;
 
-  @OneToMany(() => AdminUserEntity, (user) => user.role)
-  users: Relation<AdminUserEntity>[];
+  @ManyToMany(() => PermissionEntity, (permission) => permission.roles, {
+    eager: true,
+  })
+  @JoinTable({
+    name: 'role_permission',
+    joinColumn: {
+      name: 'role_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'permission_id',
+      referencedColumnName: 'id',
+    },
+  })
+  permissionEntities: Relation<PermissionEntity>[];
 
   @ManyToMany(() => AdminUserEntity, (user) => user.roles)
   admins: Relation<AdminUserEntity>[];

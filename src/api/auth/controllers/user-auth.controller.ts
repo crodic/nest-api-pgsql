@@ -9,7 +9,9 @@ import { UserAuthGuard } from '@/guards/user-auth.guard';
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   Post,
   Put,
   Query,
@@ -27,6 +29,7 @@ import { ResendEmailVerifyReqDto } from '../dto/resend-email-verify.req.dto';
 import { ResendEmailVerifyResDto } from '../dto/resend-email-verify.res.dto';
 import { ResetPasswordReqDto } from '../dto/reset-password.req.dto';
 import { ResetPasswordResDto } from '../dto/reset-password.res.dto';
+import { SessionResDto } from '../dto/session.res.dto';
 import { LoginReqDto } from '../dto/users/login.req.dto';
 import { LoginResDto } from '../dto/users/login.res.dto';
 import { RegisterReqDto } from '../dto/users/register.req.dto';
@@ -50,8 +53,14 @@ export class UserAuthenticationController {
   })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('login')
-  async signIn(@Body() userLoginDto: LoginReqDto): Promise<LoginResDto> {
-    return await this.userAuthService.signIn(userLoginDto);
+  async signIn(
+    @Body() userLoginDto: LoginReqDto,
+    @Request() req,
+  ): Promise<LoginResDto> {
+    return await this.userAuthService.signIn(userLoginDto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({
@@ -84,6 +93,40 @@ export class UserAuthenticationController {
     await this.userAuthService.logout(userToken);
   }
 
+  @ApiAuth({
+    type: SessionResDto,
+    summary: 'List current user sessions',
+  })
+  @SkipThrottle()
+  @Get('sessions')
+  async sessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.userAuthService.listSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke all current user sessions' })
+  @SkipThrottle()
+  @Delete('sessions')
+  async revokeAllSessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.userAuthService.revokeAllSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke one current user session' })
+  @SkipThrottle()
+  @Delete('sessions/:id')
+  async revokeSession(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Param('id') sessionId: AutoIncrementID,
+  ) {
+    return this.userAuthService.revokeSession(userToken, sessionId);
+  }
+
+  @ApiAuth({ summary: 'Stop impersonating user' })
+  @SkipThrottle()
+  @Post('stop-impersonating')
+  async stopImpersonating(@CurrentUser() userToken: JwtPayloadType) {
+    return this.userAuthService.stopImpersonating(userToken);
+  }
+
   @ApiPublic({ type: ForgotPasswordResDto, summary: 'Forgot password' })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Post('forgot-password')
@@ -107,7 +150,7 @@ export class UserAuthenticationController {
   @ApiQuery({ name: 'token', type: 'string' })
   @Throttle({ default: { limit: 10, ttl: 60000 } })
   @Get('verify/email')
-  async verifyEmail(@Query() token: string) {
+  async verifyEmail(@Query('token') token: string) {
     return await this.userAuthService.verifyAccount(token);
   }
 

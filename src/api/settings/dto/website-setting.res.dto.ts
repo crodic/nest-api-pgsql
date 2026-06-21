@@ -5,6 +5,10 @@ import { Expose } from 'class-transformer';
 export class WebsiteSettingResDto {
   @StringFieldOptional()
   @Expose()
+  site_brand?: string;
+
+  @StringFieldOptional()
+  @Expose()
   site_title?: string;
 
   @StringFieldOptional()
@@ -19,5 +23,14 @@ export class WebsiteSettingResDto {
   @StringFieldOptional()
   @ToFullUrl()
   @Expose()
+  site_dark_logo?: string;
+
+  @StringFieldOptional()
+  @ToFullUrl()
+  @Expose()
   site_favicon?: string;
+
+  @StringFieldOptional()
+  @Expose()
+  backend_version?: string;
 }

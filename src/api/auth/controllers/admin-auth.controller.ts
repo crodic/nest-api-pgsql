@@ -10,17 +10,25 @@ import {
   ApiAuthOptional,
   ApiPublic,
 } from '@/decorators/http.decorators';
+import { CheckPolicies } from '@/decorators/policies.decorator';
+import { SkipPolicies } from '@/decorators/skip-policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
+import { PoliciesGuard } from '@/guards/policies.guard';
+import { AppAbility } from '@/libs/casl/ability.factory';
+import { AppActions, AppSubjects } from '@/utils/permissions.constant';
 import {
   Body,
   Controller,
+  Delete,
   FileTypeValidator,
   Get,
   MaxFileSizeValidator,
+  Param,
   ParseFilePipe,
   Post,
   Put,
   Query,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -31,6 +39,17 @@ import { SkipThrottle, Throttle } from '@nestjs/throttler';
 import { AdminUserLoginReqDto } from '../dto/admin-users/admin-user-login.req.dto';
 import { AdminUserLoginResDto } from '../dto/admin-users/admin-user-login.res.dto';
 import { AdminUserRegisterReqDto } from '../dto/admin-users/admin-user-register.req.dto';
+import { ImpersonateUserReqDto } from '../dto/admin-users/impersonate-user.req.dto';
+import { ImpersonateUserResDto } from '../dto/admin-users/impersonate-user.res.dto';
+import { DisableTwoFactorReqDto } from '../dto/admin-users/two-factor/disable-two-factor.req.dto';
+import { DisableTwoFactorResDto } from '../dto/admin-users/two-factor/disable-two-factor.res.dto';
+import { EnableTwoFactorReqDto } from '../dto/admin-users/two-factor/enable-two-factor.req.dto';
+import { EnableTwoFactorResDto } from '../dto/admin-users/two-factor/enable-two-factor.res.dto';
+import { GenerateBackupCodesResDto } from '../dto/admin-users/two-factor/generate-backup-codes.res.dto';
+import { TwoFactorStatusResDto } from '../dto/admin-users/two-factor/two-factor-status.res.dto';
+import { VerifyTwoFactorLoginReqDto } from '../dto/admin-users/two-factor/verify-two-factor-login.req.dto';
+import { VerifyTwoFactorSetupReqDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.req.dto';
+import { VerifyTwoFactorSetupResDto } from '../dto/admin-users/two-factor/verify-two-factor-setup.res.dto';
 import { ForgotPasswordReqDto } from '../dto/forgot-password.req.dto';
 import { ForgotPasswordResDto } from '../dto/forgot-password.res.dto';
 import { RefreshReqDto } from '../dto/refresh.req.dto';
@@ -40,6 +59,7 @@ import { ResendEmailVerifyReqDto } from '../dto/resend-email-verify.req.dto';
 import { ResendEmailVerifyResDto } from '../dto/resend-email-verify.res.dto';
 import { ResetPasswordReqDto } from '../dto/reset-password.req.dto';
 import { ResetPasswordResDto } from '../dto/reset-password.res.dto';
+import { SessionResDto } from '../dto/session.res.dto';
 import { ProdOnlyThrottleGuard } from '../guards/ProdOnlyThrottle.guard';
 import { AdminAuthService } from '../services/admin-auth.service';
 import { JwtPayloadType } from '../types/jwt-payload.type';
@@ -49,7 +69,7 @@ import { JwtPayloadType } from '../types/jwt-payload.type';
   path: 'auth',
   version: '1',
 })
-@UseGuards(AdminAuthGuard, ProdOnlyThrottleGuard)
+@UseGuards(AdminAuthGuard, PoliciesGuard, ProdOnlyThrottleGuard)
 export class AdminAuthenticationController {
   constructor(private readonly adminAuthService: AdminAuthService) {}
 
@@ -61,8 +81,28 @@ export class AdminAuthenticationController {
   @Post('login')
   async login(
     @Body() adminUserLogin: AdminUserLoginReqDto,
+    @Req() req: any,
   ): Promise<AdminUserLoginResDto> {
-    return await this.adminAuthService.login(adminUserLogin);
+    return await this.adminAuthService.login(adminUserLogin, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
+  }
+
+  @ApiPublic({
+    type: AdminUserLoginResDto,
+    summary: 'Verify admin login two-factor code',
+  })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('2fa/verify-login')
+  async verifyTwoFactorLogin(
+    @Body() dto: VerifyTwoFactorLoginReqDto,
+    @Req() req: any,
+  ): Promise<AdminUserLoginResDto> {
+    return this.adminAuthService.verifyTwoFactorLogin(dto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({
@@ -93,11 +133,59 @@ export class AdminAuthenticationController {
     statusCode: 204,
   })
   @SkipThrottle()
+  @SkipPolicies()
   @Post('logout')
   async logout(@CurrentUser() userToken?: JwtPayloadType): Promise<void> {
     if (userToken) {
       await this.adminAuthService.logout(userToken);
     }
+  }
+
+  @ApiAuth({
+    type: SessionResDto,
+    summary: 'List current admin sessions',
+  })
+  @SkipThrottle()
+  @Get('sessions')
+  async sessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.adminAuthService.listSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke all current admin sessions' })
+  @SkipThrottle()
+  @Delete('sessions')
+  async revokeAllSessions(@CurrentUser() userToken: JwtPayloadType) {
+    return this.adminAuthService.revokeAllSessions(userToken);
+  }
+
+  @ApiAuth({ summary: 'Revoke one current admin session' })
+  @SkipThrottle()
+  @Delete('sessions/:id')
+  async revokeSession(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Param('id') sessionId: AutoIncrementID,
+  ) {
+    return this.adminAuthService.revokeSession(userToken, sessionId);
+  }
+
+  @ApiAuth({
+    type: ImpersonateUserResDto,
+    summary: 'Impersonate user',
+  })
+  @CheckPolicies((ability: AppAbility) =>
+    ability.can(AppActions.Impersonate, AppSubjects.User),
+  )
+  @SkipThrottle()
+  @Post('impersonate-user')
+  async impersonateUser(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: ImpersonateUserReqDto,
+    @Req() req: any,
+  ): Promise<ImpersonateUserResDto> {
+    return this.adminAuthService.impersonateUser(userToken, dto, {
+      ipAddress: req.ip,
+      userAgent: req.headers?.['user-agent'],
+    });
   }
 
   @ApiPublic({
@@ -153,6 +241,70 @@ export class AdminAuthenticationController {
     @CurrentUser('id') userId: AutoIncrementID,
   ): Promise<AdminUserResDto> {
     return await this.adminAuthService.me(userId);
+  }
+
+  @ApiAuth({
+    type: TwoFactorStatusResDto,
+    summary: 'Get current admin two-factor status',
+  })
+  @SkipThrottle()
+  @Get('me/2fa')
+  async twoFactorStatus(
+    @CurrentUser() userToken: JwtPayloadType,
+  ): Promise<TwoFactorStatusResDto> {
+    return this.adminAuthService.twoFactorStatus(userToken);
+  }
+
+  @ApiAuth({
+    type: EnableTwoFactorResDto,
+    summary: 'Start current admin two-factor setup',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/enable')
+  async enableTwoFactor(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: EnableTwoFactorReqDto,
+  ): Promise<EnableTwoFactorResDto> {
+    return this.adminAuthService.enableTwoFactor(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: VerifyTwoFactorSetupResDto,
+    summary: 'Verify and enable current admin two-factor setup',
+  })
+  @Throttle({ default: { limit: 10, ttl: 60000 } })
+  @Post('me/2fa/verify')
+  async verifyTwoFactorSetup(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: VerifyTwoFactorSetupReqDto,
+  ): Promise<VerifyTwoFactorSetupResDto> {
+    return this.adminAuthService.verifyTwoFactorSetup(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: DisableTwoFactorResDto,
+    summary: 'Disable current admin two-factor authentication',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/disable')
+  async disableTwoFactor(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: DisableTwoFactorReqDto,
+  ): Promise<DisableTwoFactorResDto> {
+    return this.adminAuthService.disableTwoFactor(userToken, dto);
+  }
+
+  @ApiAuth({
+    type: GenerateBackupCodesResDto,
+    summary: 'Generate new current admin two-factor backup codes',
+  })
+  @Throttle({ default: { limit: 5, ttl: 60000 } })
+  @Post('me/2fa/backup-codes')
+  async generateTwoFactorBackupCodes(
+    @CurrentUser() userToken: JwtPayloadType,
+    @Body() dto: EnableTwoFactorReqDto,
+  ): Promise<GenerateBackupCodesResDto> {
+    return this.adminAuthService.generateTwoFactorBackupCodes(userToken, dto);
   }
 
   @ApiConsumes('multipart/form-data')

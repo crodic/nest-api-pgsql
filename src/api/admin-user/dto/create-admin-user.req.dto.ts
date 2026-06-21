@@ -7,7 +7,9 @@ import {
   StringFieldOptional,
 } from '@/decorators/field.decorators';
 import { Trim } from '@/decorators/transform.decorators';
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
+import { ArrayNotEmpty, IsArray, IsString } from 'class-validator';
 
 export class CreateAdminUserReqDto {
   @StringField()
@@ -27,8 +29,14 @@ export class CreateAdminUserReqDto {
   @StringFieldOptional()
   bio?: string;
 
-  @StringField()
-  roleId!: AutoIncrementID;
+  @ApiProperty({
+    type: [String],
+    example: ['1', '2'],
+  })
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  roleIds!: AutoIncrementID[];
 
   @StringFieldOptional()
   phone?: string;

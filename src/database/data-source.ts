@@ -1,8 +1,6 @@
+import 'dotenv/config';
 import 'reflect-metadata';
-import { DataSource, type DataSourceOptions } from 'typeorm';
-import type { SeederOptions } from 'typeorm-extension';
-
-const isProduction = process.env.NODE_ENV === 'production';
+import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const AppDataSource = new DataSource({
   type: process.env.DATABASE_TYPE,
@@ -18,29 +16,28 @@ export const AppDataSource = new DataSource({
   dropSchema: false,
   keepConnectionAlive: true,
   logging: process.env.NODE_ENV !== 'production',
-  entities: isProduction ? ['dist/**/*.entity.js'] : ['src/**/*.entity.ts'],
-  migrations: isProduction
-    ? ['dist/database/migrations/**/*.js']
-    : ['src/database/migrations/**/*.ts'],
-  migrationsTableName: 'migrations',
-  poolSize: process.env.DATABASE_MAX_CONNECTIONS
-    ? parseInt(process.env.DATABASE_MAX_CONNECTIONS, 10)
-    : 100,
-  ssl:
-    process.env.DATABASE_SSL_ENABLED === 'true'
-      ? {
-          rejectUnauthorized:
-            process.env.DATABASE_REJECT_UNAUTHORIZED === 'true',
-          ca: process.env.DATABASE_CA ?? undefined,
-          key: process.env.DATABASE_KEY ?? undefined,
-          cert: process.env.DATABASE_CERT ?? undefined,
-        }
-      : undefined,
-  seeds: isProduction
-    ? ['dist/database/seeds/**/*.js']
-    : ['src/database/seeds/**/*.ts'],
-  seedTracking: true,
-  factories: isProduction
-    ? ['dist/database/factories/**/*.js']
-    : ['src/database/factories/**/*.ts'],
-} as DataSourceOptions & SeederOptions);
+  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+  migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+  cli: {
+    entitiesDir: 'src',
+
+    subscribersDir: 'subscriber',
+  },
+  extra: {
+    // based on https://node-postgres.com/api/pool
+    // max connection pool size
+    max: process.env.DATABASE_MAX_CONNECTIONS
+      ? parseInt(process.env.DATABASE_MAX_CONNECTIONS, 10)
+      : 100,
+    ssl:
+      process.env.DATABASE_SSL_ENABLED === 'true'
+        ? {
+            rejectUnauthorized:
+              process.env.DATABASE_REJECT_UNAUTHORIZED === 'true',
+            ca: process.env.DATABASE_CA ?? undefined,
+            key: process.env.DATABASE_KEY ?? undefined,
+            cert: process.env.DATABASE_CERT ?? undefined,
+          }
+        : undefined,
+  },
+} as DataSourceOptions);

@@ -1,8 +1,10 @@
 import {
-  PermissionsArrayField,
+  BooleanFieldOptional,
   StringField,
   StringFieldOptional,
 } from '@/decorators/field.decorators';
+import { ApiProperty } from '@nestjs/swagger';
+import { ArrayNotEmpty, IsArray, IsString } from 'class-validator';
 
 export class CreateRoleReqDto {
   @StringField({ example: 'STAFF' })
@@ -11,8 +13,15 @@ export class CreateRoleReqDto {
   @StringFieldOptional({ minLength: 0 })
   description?: string;
 
-  @PermissionsArrayField({
-    example: ['read:User', 'create:User'],
+  @BooleanFieldOptional()
+  isSystem?: boolean;
+
+  @ApiProperty({
+    type: [String],
+    example: ['1', '2'],
   })
-  permissions: string[];
+  @IsArray()
+  @ArrayNotEmpty()
+  @IsString({ each: true })
+  permissionIds: string[];
 }

@@ -7,9 +7,11 @@ import { JwtModule } from '@nestjs/jwt';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AdminUserEntity } from '../admin-user/entities/admin-user.entity';
+import { NotificationModule } from '../notification/notification.module';
 import { UserEntity } from '../user/entities/user.entity';
 import { AdminAuthenticationController } from './controllers/admin-auth.controller';
 import { UserAuthenticationController } from './controllers/user-auth.controller';
+import { SessionEntity } from './entities/session.entity';
 import { AdminAuthService } from './services/admin-auth.service';
 import { UserAuthService } from './services/user-auth.service';
 import { AdminJwtStrategy } from './strategy/admin.strategy';
@@ -17,7 +19,8 @@ import { UserJwtStrategy } from './strategy/user.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, AdminUserEntity]),
+    TypeOrmModule.forFeature([UserEntity, AdminUserEntity, SessionEntity]),
+    NotificationModule,
     JwtModule.register({}),
     BullModule.registerQueue({
       name: QueueName.EMAIL,

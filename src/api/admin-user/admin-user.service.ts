@@ -1,12 +1,21 @@
+import { IVerifyEmailJob } from '@/common/interfaces/job.interface';
 import { AutoIncrementID } from '@/common/types/common.type';
+import { AllConfigType } from '@/config/config.type';
 import { CacheKey } from '@/constants/cache.constant';
 import { ErrorCode } from '@/constants/error-code.constant';
+import { JobName, QueueName } from '@/constants/job.constant';
 import { ValidationException } from '@/exceptions/validation.exception';
+import { createCacheKey } from '@/utils/cache.util';
+import { InjectQueue } from '@nestjs/bullmq';
 import { Cache, CACHE_MANAGER } from '@nestjs/cache-manager';
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import assert from 'assert';
+import { Queue } from 'bullmq';
 import { plainToInstance } from 'class-transformer';
+import ms, { StringValue } from 'ms';
 import { ClsService } from 'nestjs-cls';
 import {
   FilterOperator,
@@ -14,7 +23,7 @@ import {
   Paginated,
   PaginateQuery,
 } from 'nestjs-paginate';
-import { EntityManager, Repository } from 'typeorm';
+import { EntityManager, In, Repository } from 'typeorm';
 import { RoleEntity } from '../role/entities/role.entity';
 import { SettingsService } from '../settings/settings.service';
 import { AdminUserResDto } from './dto/admin-user.res.dto';
@@ -35,6 +44,10 @@ export class AdminUserService {
     @Inject(CACHE_MANAGER)
     private readonly cacheManager: Cache,
     private readonly settingsService: SettingsService,
+    private readonly configService: ConfigService<AllConfigType>,
+    private readonly jwtService: JwtService,
+    @InjectQueue(QueueName.EMAIL)
+    private readonly emailQueue: Queue<IVerifyEmailJob, any, string>,
   ) {}
 
   async hasAdmin(): Promise<boolean> {
@@ -53,7 +66,17 @@ export class AdminUserService {
 
   async createWithManager(manager: EntityManager, data: CreateAdminUserReqDto) {
     const repo = manager.getRepository(AdminUserEntity);
-    const adminUser = await repo.save(repo.create(data));
+    const roleRepo = manager.getRepository(RoleEntity);
+    const roles = await roleRepo.findBy({ id: In(data.roleIds) });
+    if (roles.length !== data.roleIds.length) {
+      throw new ValidationException(ErrorCode.E002);
+    }
+    const adminUser = await repo.save(
+      repo.create({
+        ...data,
+        roles,
+      }),
+    );
     this.cacheManager.del(CacheKey.SYSTEM_HAS_ADMIN);
 
     return adminUser;
@@ -66,7 +89,7 @@ export class AdminUserService {
       bio,
       firstName,
       lastName,
-      roleId,
+      roleIds,
       birthday,
       phone,
     } = dto;
@@ -81,13 +104,11 @@ export class AdminUserService {
       throw new ValidationException(ErrorCode.E001);
     }
 
-    const role = await this.roleRepository.findOne({
-      where: {
-        id: roleId,
-      },
+    const roles = await this.roleRepository.findBy({
+      id: In(roleIds),
     });
 
-    if (!role) {
+    if (roles.length !== roleIds.length) {
       throw new ValidationException(ErrorCode.E002);
     }
 
@@ -97,14 +118,51 @@ export class AdminUserService {
       email,
       password,
       bio,
-      roleId: role.id,
+      roles,
       birthday: birthday ? new Date(birthday) : null,
       phone,
     });
 
     const savedUser = await this.adminUserRepository.save(newUser);
+    await this.sendVerificationEmail(savedUser);
 
     return plainToInstance(AdminUserResDto, savedUser);
+  }
+
+  private async sendVerificationEmail(user: AdminUserEntity): Promise<void> {
+    const token = await this.jwtService.signAsync(
+      {
+        id: user.id,
+      },
+      {
+        secret: this.configService.getOrThrow('auth.confirmEmailSecret', {
+          infer: true,
+        }),
+        expiresIn: this.configService.getOrThrow('auth.confirmEmailExpires', {
+          infer: true,
+        }),
+      },
+    );
+    const tokenExpiresIn = this.configService.getOrThrow(
+      'auth.confirmEmailExpires',
+      {
+        infer: true,
+      },
+    );
+
+    await this.cacheManager.set(
+      createCacheKey(CacheKey.EMAIL_VERIFICATION, user.id),
+      token,
+      ms(tokenExpiresIn as StringValue),
+    );
+    await this.emailQueue.add(
+      JobName.ADMIN_EMAIL_VERIFICATION,
+      {
+        email: user.email,
+        token,
+      },
+      { attempts: 3, backoff: { type: 'exponential', delay: 60000 } },
+    );
   }
 
   async findAllUser(query: PaginateQuery): Promise<Paginated<AdminUserResDto>> {
@@ -115,12 +173,12 @@ export class AdminUserService {
       searchableColumns: ['email'],
       defaultSortBy: [['id', 'DESC']],
       filterableColumns: {
-        'role.id': [FilterOperator.IN],
+        'roles.id': [FilterOperator.IN],
         email: [FilterOperator.ILIKE],
         fullName: [FilterOperator.ILIKE],
         createdAt: [FilterOperator.GTE, FilterOperator.LTE, FilterOperator.BTW],
       },
-      relations: ['role'],
+      relations: ['roles', 'roles.permissionEntities'],
     });
 
     return {
@@ -133,21 +191,36 @@ export class AdminUserService {
 
   async findOne(id: AutoIncrementID): Promise<AdminUserResDto> {
     assert(id, 'id is required');
-    const user = await this.adminUserRepository.findOneByOrFail({ id });
+    const user = await this.adminUserRepository.findOneOrFail({
+      where: { id },
+      relations: ['roles', 'roles.permissionEntities'],
+    });
 
     return user.toDto(AdminUserResDto);
   }
 
   async update(id: AutoIncrementID, updateUserDto: UpdateAdminUserReqDto) {
-    const user = await this.adminUserRepository.findOneByOrFail({ id });
-    const updatedRole = await this.roleRepository.findOneBy({
-      id: updateUserDto.roleId,
+    const user = await this.adminUserRepository.findOneOrFail({
+      where: { id },
+      relations: ['roles'],
     });
 
     Object.assign(user, updateUserDto);
 
     delete user.password;
-    user.roleId = updatedRole.id;
+    delete (user as AdminUserEntity & { roleIds?: AutoIncrementID[] }).roleIds;
+
+    if (updateUserDto.roleIds) {
+      const roles = await this.roleRepository.findBy({
+        id: In(updateUserDto.roleIds),
+      });
+
+      if (roles.length !== updateUserDto.roleIds.length) {
+        throw new ValidationException(ErrorCode.E002);
+      }
+
+      user.roles = roles;
+    }
 
     await this.adminUserRepository.save(user);
   }

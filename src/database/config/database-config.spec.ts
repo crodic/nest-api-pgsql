@@ -14,6 +14,14 @@ describe('databaseConfig', () => {
     jest.spyOn(console, 'info').mockImplementation();
   });
 
+  describe('url', () => {
+    it('should return the value of DATABASE_URL', async () => {
+      process.env.DATABASE_URL = 'postgres://user:password@localhost:5432/app';
+      const config = await databaseConfig();
+      expect(config.url).toBe('postgres://user:password@localhost:5432/app');
+    });
+  });
+
   describe('type', () => {
     it('should return the value of DATABASE_TYPE', async () => {
       process.env.DATABASE_TYPE = 'postgres';
@@ -130,32 +138,6 @@ describe('databaseConfig', () => {
     it('should throw an error when DATABASE_PASSWORD is not set', async () => {
       delete process.env.DATABASE_PASSWORD;
       await expect(async () => await databaseConfig()).rejects.toThrow(Error);
-    });
-  });
-
-  describe('logging', () => {
-    it('should return the value of DATABASE_LOGGING as a boolean', async () => {
-      process.env.DATABASE_LOGGING = 'true';
-      const config = await databaseConfig();
-      expect(config.logging).toBe(true);
-    });
-
-    it('should return false when DATABASE_LOGGING is an empty', async () => {
-      process.env.DATABASE_LOGGING = '';
-      const config = await databaseConfig();
-      expect(config.logging).toBe(false);
-    });
-
-    it('should return false when DATABASE_LOGGING is not set', async () => {
-      delete process.env.DATABASE_LOGGING;
-      const config = await databaseConfig();
-      expect(config.logging).toBe(false);
-    });
-
-    it('should return false when DATABASE_LOGGING is not a boolean', async () => {
-      process.env.DATABASE_LOGGING = 'invalid';
-      const config = await databaseConfig();
-      expect(config.logging).toBe(false);
     });
   });
 

@@ -11,4 +11,5 @@ export type AppConfig = {
   corsOrigin: boolean | string | RegExp | (string | RegExp)[];
   secureHeaderOrigin: string;
   bullBoardPath: string;
+  notificationRetentionDays: number;
 };
