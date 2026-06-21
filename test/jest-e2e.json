@@ -13,6 +13,9 @@
       }
     ]
   },
+  "transformIgnorePatterns": [
+    "node_modules/(?!.*(@scure/base|@scure/bip39|@noble/hashes|@otplib/plugin-base32-scure|otplib)/)"
+  ],
   "moduleNameMapper": {
     "^@/(.*)$": "<rootDir>/../src/$1",
     "^uuid$": "<rootDir>/mocks/uuid.js"
