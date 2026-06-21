@@ -11,6 +11,7 @@ import {
   ApiPublic,
 } from '@/decorators/http.decorators';
 import { CheckPolicies } from '@/decorators/policies.decorator';
+import { SkipPolicies } from '@/decorators/skip-policies.decorator';
 import { AdminAuthGuard } from '@/guards/admin-auth.guard';
 import { PoliciesGuard } from '@/guards/policies.guard';
 import { AppAbility } from '@/libs/casl/ability.factory';
@@ -132,6 +133,7 @@ export class AdminAuthenticationController {
     statusCode: 204,
   })
   @SkipThrottle()
+  @SkipPolicies()
   @Post('logout')
   async logout(@CurrentUser() userToken?: JwtPayloadType): Promise<void> {
     if (userToken) {
